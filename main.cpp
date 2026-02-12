@@ -571,6 +571,11 @@ int main(int argc, char* argv[]) {
 #endif
 
   try {
+    auto dahiliKomutMu = [](const std::string& deger) {
+      return deger == "fmt" || deger == "paket" || deger == "vm" ||
+             deger == "vm-kati" || deger == "obc" || deger == "derle";
+    };
+
     if (argc < 2) {
       if (gomuluPaketiCalistir(argv[0])) {
         return 0;
@@ -621,6 +626,13 @@ int main(int argc, char* argv[]) {
       }
       const std::string ciktiTemel = argc >= 4 ? argv[3] : "";
       return komutDerle(argv[2], argv[0], ciktiTemel);
+    }
+
+    // Paketli exe, dahili komut dışındaki çağrılarda gömülü payload'ı
+    // çalıştırır. Böylece "oyun.exe --mod hızlı" gibi kullanımda ana script
+    // devreye girer.
+    if (!dahiliKomutMu(komut) && gomuluPaketiCalistir(argv[0])) {
+      return 0;
     }
 
     return dosyaCalistir(komut);
