@@ -21,6 +21,10 @@ $cases = @(
     "tests/cases/slicing"
 )
 
+if ($env:OS -eq "Windows_NT") {
+    $cases += "tests/cases/ffi_kernel32"
+}
+
 $failed = $false
 
 Write-Host "[2/3] Testler calisiyor..."

@@ -1,0 +1,5 @@
+kutuphane olsun ffi.yukle("kernel32.dll")
+uzunluk olsun ffi.cagir(kutuphane, "lstrlenA", "Orhun")
+yazdır uzunluk
+ffi.bosalt(kutuphane)
+

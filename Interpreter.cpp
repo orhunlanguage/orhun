@@ -1048,6 +1048,53 @@ void Interpreter::gomuluIslevleriYukle() {
 #endif
     };
 
+    gomuluIslevler_["ffi.bosalt"] = [this](const std::vector<OrhunDegeri>& args,
+                                           std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "ffi.bosalt(tutamac) tek argüman alır.");
+        }
+
+        int kimlik = 0;
+        if (std::holds_alternative<int>(args[0].veri)) {
+            kimlik = std::get<int>(args[0].veri);
+        } else if (std::holds_alternative<double>(args[0].veri)) {
+            const double d = std::get<double>(args[0].veri);
+            if (!tamSayiMi(d)) {
+                hataFirlat(satir, "ffi.bosalt için tutamac tam sayı olmalıdır.");
+            }
+            kimlik = static_cast<int>(d);
+        } else {
+            hataFirlat(satir, "ffi.bosalt için tutamac tam sayı olmalıdır.");
+        }
+
+        const auto it = ffiKutuphaneTutamaclari_.find(kimlik);
+        if (it == ffiKutuphaneTutamaclari_.end()) {
+            return OrhunDegeri(0);
+        }
+
+#ifdef _WIN32
+        HMODULE tutamac = reinterpret_cast<HMODULE>(it->second);
+        if (!FreeLibrary(tutamac)) {
+            hataFirlat(satir, "ffi.bosalt başarısız: " +
+                                  windowsHataMesaji(GetLastError()));
+        }
+
+        ffiKutuphaneTutamaclari_.erase(it);
+        for (auto kimlikIt = ffiKutuphaneKimlikleri_.begin();
+             kimlikIt != ffiKutuphaneKimlikleri_.end();) {
+            if (kimlikIt->second == kimlik) {
+                kimlikIt = ffiKutuphaneKimlikleri_.erase(kimlikIt);
+            } else {
+                ++kimlikIt;
+            }
+        }
+        return OrhunDegeri(1);
+#else
+        (void)it;
+        hataFirlat(satir, "ffi.bosalt şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
     // Matematik kütüphanesi.
     gomuluIslevler_["karekok"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
@@ -1388,6 +1435,7 @@ void Interpreter::yerlesikModulleriYukle() {
     OrhunDegeri::SozlukVeri ffi;
     ffi["yukle"] = OrhunDegeri("__islev_ref__:ffi.yukle");
     ffi["cagir"] = OrhunDegeri("__islev_ref__:ffi.cagir");
+    ffi["bosalt"] = OrhunDegeri("__islev_ref__:ffi.bosalt");
     globalHafiza_["ffi"] = OrhunDegeri(std::move(ffi));
 }
 
