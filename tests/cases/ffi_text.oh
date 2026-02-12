@@ -1,0 +1,5 @@
+kutuphane olsun ffi.yukle("kernel32.dll")
+komut_satiri olsun ffi.cagir_metin(kutuphane, "GetCommandLineA")
+yazdır icerir(komut_satiri, "orhun_test")
+ffi.bosalt(kutuphane)
+

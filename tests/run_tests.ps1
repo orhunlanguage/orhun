@@ -23,6 +23,8 @@ $cases = @(
 
 if ($env:OS -eq "Windows_NT") {
     $cases += "tests/cases/ffi_kernel32"
+    $cases += "tests/cases/ffi_text"
+    $cases += "tests/cases/ffi_symbol"
 }
 
 $failed = $false
