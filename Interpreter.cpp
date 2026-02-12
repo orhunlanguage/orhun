@@ -14,6 +14,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <thread>
+#include <unordered_set>
 #include <utility>
 
 namespace {
@@ -22,6 +23,10 @@ struct DondurSinyali {
     explicit DondurSinyali(OrhunDegeri v) : deger(std::move(v)) {}
     OrhunDegeri deger;
 };
+
+// Döngü kontrol sinyalleri.
+struct KirSinyali {};
+struct DevamSinyali {};
 
 std::vector<std::string> noktaIleBol(const std::string& metin) {
     std::vector<std::string> parcalar;
@@ -499,6 +504,21 @@ void Interpreter::calistir(const ASTNode* dugum) {
         return;
     }
 
+    if (const auto* denemeYakala = dynamic_cast<const DenemeYakalaNode*>(dugum)) {
+        calistirDenemeYakala(denemeYakala);
+        return;
+    }
+
+    if (const auto* kir = dynamic_cast<const KirNode*>(dugum)) {
+        calistirKir(kir);
+        return;
+    }
+
+    if (const auto* devam = dynamic_cast<const DevamNode*>(dugum)) {
+        calistirDevam(devam);
+        return;
+    }
+
     if (const auto* dondur = dynamic_cast<const DondurNode*>(dugum)) {
         calistirDondur(dondur);
         return;
@@ -559,15 +579,41 @@ void Interpreter::calistirTekrarla(const TekrarlaNode* dugum) {
         hataFirlat(dugum->satir(), "'tekrarla' tekrar sayısı negatif olamaz.");
     }
 
-    for (int i = 0; i < kez; ++i) {
-        calistirBlock(dugum->govde());
+    ++donguDerinligi_;
+    try {
+        for (int i = 0; i < kez; ++i) {
+            try {
+                calistirBlock(dugum->govde());
+            } catch (const DevamSinyali&) {
+                continue;
+            } catch (const KirSinyali&) {
+                break;
+            }
+        }
+    } catch (...) {
+        --donguDerinligi_;
+        throw;
     }
+    --donguDerinligi_;
 }
 
 void Interpreter::calistirSurece(const SureceNode* dugum) {
-    while (dogruMu(ifadeHesapla(dugum->kosul()))) {
-        calistirBlock(dugum->govde());
+    ++donguDerinligi_;
+    try {
+        while (dogruMu(ifadeHesapla(dugum->kosul()))) {
+            try {
+                calistirBlock(dugum->govde());
+            } catch (const DevamSinyali&) {
+                continue;
+            } catch (const KirSinyali&) {
+                break;
+            }
+        }
+    } catch (...) {
+        --donguDerinligi_;
+        throw;
     }
+    --donguDerinligi_;
 }
 
 void Interpreter::calistirIslevTanim(const IslevTanimNode* dugum) {
@@ -576,6 +622,48 @@ void Interpreter::calistirIslevTanim(const IslevTanimNode* dugum) {
 
 void Interpreter::calistirSinifTanim(const SinifTanimNode* dugum) {
     sinifTablosu_[dugum->ad()] = dugum;
+}
+
+void Interpreter::calistirDenemeYakala(const DenemeYakalaNode* dugum) {
+    try {
+        calistirBlock(dugum->denemeBlogu());
+    } catch (const OrhunHatasi& hata) {
+        DegiskenTablosu yakalaKapsami;
+        yakalaKapsami[dugum->hataDegiskeni()] = OrhunDegeri(std::string(hata.what()));
+        yerelKapsamYigini_.push_back(std::move(yakalaKapsami));
+        try {
+            calistirBlock(dugum->yakalaBlogu());
+        } catch (...) {
+            yerelKapsamYigini_.pop_back();
+            throw;
+        }
+        yerelKapsamYigini_.pop_back();
+    } catch (const std::exception& ex) {
+        DegiskenTablosu yakalaKapsami;
+        yakalaKapsami[dugum->hataDegiskeni()] = OrhunDegeri(std::string(ex.what()));
+        yerelKapsamYigini_.push_back(std::move(yakalaKapsami));
+        try {
+            calistirBlock(dugum->yakalaBlogu());
+        } catch (...) {
+            yerelKapsamYigini_.pop_back();
+            throw;
+        }
+        yerelKapsamYigini_.pop_back();
+    }
+}
+
+void Interpreter::calistirKir(const KirNode* dugum) {
+    if (donguDerinligi_ <= 0) {
+        hataFirlat(dugum->satir(), "'kır' yalnızca döngü içinde kullanılabilir.");
+    }
+    throw KirSinyali{};
+}
+
+void Interpreter::calistirDevam(const DevamNode* dugum) {
+    if (donguDerinligi_ <= 0) {
+        hataFirlat(dugum->satir(), "'devam' yalnızca döngü içinde kullanılabilir.");
+    }
+    throw DevamSinyali{};
 }
 
 void Interpreter::calistirDondur(const DondurNode* dugum) {
@@ -710,6 +798,10 @@ OrhunDegeri Interpreter::ifadeHesapla(const ASTNode* dugum) {
 
     if (const auto* liste = dynamic_cast<const ListeNode*>(dugum)) {
         return listeOlustur(liste);
+    }
+
+    if (const auto* uretec = dynamic_cast<const ListeUretecNode*>(dugum)) {
+        return listeUreteciOlustur(uretec);
     }
 
     if (const auto* sozluk = dynamic_cast<const SozlukNode*>(dugum)) {
@@ -933,6 +1025,43 @@ OrhunDegeri Interpreter::listeOlustur(const ListeNode* dugum) {
     return OrhunDegeri(std::move(liste));
 }
 
+OrhunDegeri Interpreter::listeUreteciOlustur(const ListeUretecNode* dugum) {
+    const OrhunDegeri kaynak = ifadeHesapla(dugum->kaynakListe());
+    if (!std::holds_alternative<OrhunDegeri::ListeTipi>(kaynak.veri)) {
+        hataFirlat(dugum->satir(),
+                   "Liste üreteci için 'içinde' kaynağı liste olmalıdır.");
+    }
+
+    const auto& kaynakListe = std::get<OrhunDegeri::ListeTipi>(kaynak.veri);
+    if (!kaynakListe) {
+        return OrhunDegeri(OrhunDegeri::ListeVeri{});
+    }
+
+    OrhunDegeri::ListeVeri sonuc;
+    sonuc.reserve(kaynakListe->size());
+
+    for (const auto& oge : *kaynakListe) {
+        DegiskenTablosu uretecKapsami;
+        uretecKapsami[dugum->donguDegiskeni()] = oge;
+        yerelKapsamYigini_.push_back(std::move(uretecKapsami));
+        try {
+            bool ekle = true;
+            if (dugum->kosul() != nullptr) {
+                ekle = dogruMu(ifadeHesapla(dugum->kosul()));
+            }
+            if (ekle) {
+                sonuc.push_back(ifadeHesapla(dugum->ifade()));
+            }
+        } catch (...) {
+            yerelKapsamYigini_.pop_back();
+            throw;
+        }
+        yerelKapsamYigini_.pop_back();
+    }
+
+    return OrhunDegeri(std::move(sonuc));
+}
+
 OrhunDegeri Interpreter::sozlukOlustur(const SozlukNode* dugum) {
     OrhunDegeri::SozlukVeri sozluk;
     for (const auto& oge : dugum->ogeler()) {
@@ -992,7 +1121,8 @@ OrhunDegeri Interpreter::indeksErisim(const IndeksErisimNode* dugum) {
         return bulunan->second;
     }
 
-    hataFirlat(dugum->satir(), "İndeks erişimi yalnızca liste veya sözlük üzerinde kullanılabilir.");
+    hataFirlat(dugum->satir(),
+               "İndeks erişimi yalnızca liste, sözlük veya nesne üzerinde kullanılabilir.");
 }
 
 OrhunDegeri Interpreter::alanErisim(const AlanErisimNode* dugum) {
@@ -1062,23 +1192,49 @@ OrhunDegeri Interpreter::yeniNesneOlustur(const YeniNesneNode* dugum) {
     nesne->sinifAdi = sinif->ad();
     OrhunDegeri nesneDegeri(nesne);
 
-    // Sınıf gövdesindeki alan varsayılanlarını kopyala, metodları kaydet.
-    for (const auto& komut : sinif->govde()->komutlar()) {
-        if (const auto* atama = dynamic_cast<const AtamaNode*>(komut.get())) {
-            const auto* kimlik = dynamic_cast<const KimlikNode*>(atama->hedef());
-            if (kimlik == nullptr) {
-                continue;
-            }
-            nesne->alanlar->insert_or_assign(kimlik->ad(),
-                                             ifadeHesapla(atama->ifade()));
-            continue;
+    // Miras dahil, alan ve metodları ebeveynden çocuğa doğru yükle.
+    std::unordered_set<std::string> ziyaretEdilenler;
+    const auto sinifUyeleriniYukle =
+        [&](const auto& self, const SinifTanimNode* aktifSinif) -> void {
+        if (aktifSinif == nullptr) {
+            return;
         }
 
-        if (const auto* metod = dynamic_cast<const IslevTanimNode*>(komut.get())) {
-            nesne->metodlar[metod->ad()] = metod;
-            continue;
+        if (!ziyaretEdilenler.insert(aktifSinif->ad()).second) {
+            hataFirlat(dugum->satir(),
+                       "Sınıf mirasında döngü tespit edildi: '" + aktifSinif->ad() + "'");
         }
-    }
+
+        if (!aktifSinif->ebeveynAdi().empty()) {
+            const auto ebeveynBul = sinifTablosu_.find(aktifSinif->ebeveynAdi());
+            if (ebeveynBul == sinifTablosu_.end()) {
+                hataFirlat(dugum->satir(), "'" + aktifSinif->ebeveynAdi() +
+                                           "' adlı ebeveyn sınıf bulunamadı.");
+            }
+            self(self, ebeveynBul->second);
+        }
+
+        for (const auto& komut : aktifSinif->govde()->komutlar()) {
+            if (const auto* atama = dynamic_cast<const AtamaNode*>(komut.get())) {
+                const auto* kimlik = dynamic_cast<const KimlikNode*>(atama->hedef());
+                if (kimlik == nullptr) {
+                    continue;
+                }
+                // Çocuğun alanı aynı ada sahipse ebeveyni override eder.
+                nesne->alanlar->insert_or_assign(kimlik->ad(),
+                                                 ifadeHesapla(atama->ifade()));
+                continue;
+            }
+
+            if (const auto* metod = dynamic_cast<const IslevTanimNode*>(komut.get())) {
+                // Çocuğun metodu aynı ada sahipse ebeveyni override eder.
+                nesne->metodlar[metod->ad()] =
+                    NesneMetodBilgisi{metod, aktifSinif->ad()};
+                continue;
+            }
+        }
+    };
+    sinifUyeleriniYukle(sinifUyeleriniYukle, sinif);
 
     // Kurucu varsa otomatik çağır.
     const auto kur = nesne->metodlar.find("kur");
@@ -1089,12 +1245,9 @@ OrhunDegeri Interpreter::yeniNesneOlustur(const YeniNesneNode* dugum) {
             argumanlarDeger.push_back(ifadeHesapla(arg.get()));
         }
 
-        if (!argumanlarDeger.empty() ||
-            kur->second->parametreler().empty()) {
-            static_cast<void>(kullaniciIslevCalistir(
-                kur->second, argumanlarDeger, dugum->satir(), &nesneDegeri,
-                false));
-        }
+        static_cast<void>(kullaniciIslevCalistir(
+            kur->second.dugum, argumanlarDeger, dugum->satir(), &nesneDegeri,
+            &kur->second.tanimlayanSinif, false));
     } else if (!dugum->argumanlar().empty()) {
         hataFirlat(dugum->satir(),
                    "'" + dugum->sinifAdi() +
@@ -1112,6 +1265,11 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode* dugum) {
     }
 
     const std::string& cagriAdi = dugum->ad();
+    if (cagriAdi.rfind("ust.", 0) == 0) {
+        return ustIslevCagir(cagriAdi.substr(4), argumanDegerleri,
+                             dugum->satir());
+    }
+
     if (islevTablosu_.find(cagriAdi) != islevTablosu_.end() ||
         gomuluIslevler_.find(cagriAdi) != gomuluIslevler_.end()) {
         return islevCagirAdaGore(cagriAdi, argumanDegerleri, dugum->satir());
@@ -1128,13 +1286,64 @@ OrhunDegeri Interpreter::islevCagir(const IslevCagriNode* dugum) {
     return nesneMetoduCagir(hedef, metodAdi, argumanDegerleri, dugum->satir());
 }
 
+OrhunDegeri Interpreter::ustIslevCagir(
+    const std::string& metodAdi, const std::vector<OrhunDegeri>& argumanlar,
+    std::size_t satir) {
+    const OrhunDegeri& benimDegeri = degiskenBul("benim", satir);
+    if (!std::holds_alternative<OrhunDegeri::NesneTipi>(benimDegeri.veri)) {
+        hataFirlat(satir, "'ust' yalnızca nesne metodu içinde kullanılabilir.");
+    }
+
+    const OrhunDegeri& sinifDegeri = degiskenBul("__sinif__", satir);
+    if (!std::holds_alternative<std::string>(sinifDegeri.veri)) {
+        hataFirlat(satir, "'ust' bağlamı çözümlenemedi (sınıf bilgisi eksik).");
+    }
+    const std::string aktifSinif = std::get<std::string>(sinifDegeri.veri);
+
+    const auto sinifBul = sinifTablosu_.find(aktifSinif);
+    if (sinifBul == sinifTablosu_.end()) {
+        hataFirlat(satir, "'" + aktifSinif + "' sınıfı kayıtlı değil.");
+    }
+
+    std::string ebeveynAdi = sinifBul->second->ebeveynAdi();
+    if (ebeveynAdi.empty()) {
+        hataFirlat(satir, "'" + aktifSinif + "' sınıfının üst sınıfı yok.");
+    }
+
+    while (!ebeveynAdi.empty()) {
+        const auto ebeveynBul = sinifTablosu_.find(ebeveynAdi);
+        if (ebeveynBul == sinifTablosu_.end()) {
+            hataFirlat(satir, "'" + ebeveynAdi + "' adlı üst sınıf bulunamadı.");
+        }
+
+        const SinifTanimNode* ebeveyn = ebeveynBul->second;
+        const IslevTanimNode* bulunanMetod = nullptr;
+        for (const auto& komut : ebeveyn->govde()->komutlar()) {
+            const auto* metod = dynamic_cast<const IslevTanimNode*>(komut.get());
+            if (metod != nullptr && metod->ad() == metodAdi) {
+                bulunanMetod = metod;
+                break;
+            }
+        }
+
+        if (bulunanMetod != nullptr) {
+            return kullaniciIslevCalistir(bulunanMetod, argumanlar, satir,
+                                          &benimDegeri, &ebeveynAdi, false);
+        }
+
+        ebeveynAdi = ebeveyn->ebeveynAdi();
+    }
+
+    hataFirlat(satir, "'" + metodAdi + "' metodu üst sınıflarda bulunamadı.");
+}
+
 OrhunDegeri Interpreter::islevCagirAdaGore(
     const std::string& ad, const std::vector<OrhunDegeri>& argumanlar,
     std::size_t satir) {
     const auto yerelIslev = islevTablosu_.find(ad);
     if (yerelIslev != islevTablosu_.end()) {
         return kullaniciIslevCalistir(yerelIslev->second, argumanlar, satir,
-                                      nullptr, true);
+                                      nullptr, nullptr, true);
     }
 
     const auto gomulu = gomuluIslevler_.find(ad);
@@ -1147,7 +1356,8 @@ OrhunDegeri Interpreter::islevCagirAdaGore(
 
 OrhunDegeri Interpreter::kullaniciIslevCalistir(
     const IslevTanimNode* islev, const std::vector<OrhunDegeri>& argumanlar,
-    std::size_t satir, const OrhunDegeri* benimDegeri, bool dondurZorunlu) {
+    std::size_t satir, const OrhunDegeri* benimDegeri,
+    const std::string* etkinSinifAdi, bool dondurZorunlu) {
     if (argumanlar.size() != islev->parametreler().size()) {
         hataFirlat(satir, "'" + islev->ad() + "' için argüman sayısı uyuşmuyor.");
     }
@@ -1155,6 +1365,9 @@ OrhunDegeri Interpreter::kullaniciIslevCalistir(
     DegiskenTablosu yeniKapsam;
     if (benimDegeri != nullptr) {
         yeniKapsam["benim"] = *benimDegeri;
+    }
+    if (etkinSinifAdi != nullptr) {
+        yeniKapsam["__sinif__"] = OrhunDegeri(*etkinSinifAdi);
     }
     for (std::size_t i = 0; i < argumanlar.size(); ++i) {
         yeniKapsam[islev->parametreler()[i]] = argumanlar[i];
@@ -1182,8 +1395,8 @@ OrhunDegeri Interpreter::noktaYoluDegeri(const std::string& yol,
                                          std::size_t satir) const {
     const std::vector<std::string> parcalar = noktaIleBol(yol);
     if (parcalar.empty() || parcalar.front().empty()) {
-        throw std::runtime_error("Satır " + std::to_string(satir) +
-                                 ": Geçersiz nokta erişim yolu: '" + yol + "'");
+        throw OrhunHatasi("Satır " + std::to_string(satir) +
+                          ": Geçersiz nokta erişim yolu: '" + yol + "'");
     }
 
     const OrhunDegeri* aktif = &degiskenBul(parcalar.front(), satir);
@@ -1191,14 +1404,14 @@ OrhunDegeri Interpreter::noktaYoluDegeri(const std::string& yol,
         if (std::holds_alternative<OrhunDegeri::SozlukTipi>(aktif->veri)) {
             const auto& sozlukPtr = std::get<OrhunDegeri::SozlukTipi>(aktif->veri);
             if (!sozlukPtr) {
-                throw std::runtime_error("Satır " + std::to_string(satir) +
-                                         ": Boş sözlük üzerinden nokta erişimi yapılamaz.");
+                throw OrhunHatasi("Satır " + std::to_string(satir) +
+                                  ": Boş sözlük üzerinden nokta erişimi yapılamaz.");
             }
 
             const auto bulunan = sozlukPtr->find(parcalar[i]);
             if (bulunan == sozlukPtr->end()) {
-                throw std::runtime_error("Satır " + std::to_string(satir) + ": '" +
-                                         parcalar[i] + "' anahtarı bulunamadı.");
+                throw OrhunHatasi("Satır " + std::to_string(satir) + ": '" +
+                                  parcalar[i] + "' anahtarı bulunamadı.");
             }
             aktif = &bulunan->second;
             continue;
@@ -1207,21 +1420,21 @@ OrhunDegeri Interpreter::noktaYoluDegeri(const std::string& yol,
         if (std::holds_alternative<OrhunDegeri::NesneTipi>(aktif->veri)) {
             const auto& nesne = std::get<OrhunDegeri::NesneTipi>(aktif->veri);
             if (!nesne || !nesne->alanlar) {
-                throw std::runtime_error("Satır " + std::to_string(satir) +
-                                         ": Geçersiz nesne üzerinden nokta erişimi yapılamaz.");
+                throw OrhunHatasi("Satır " + std::to_string(satir) +
+                                  ": Geçersiz nesne üzerinden nokta erişimi yapılamaz.");
             }
             const auto alan = nesne->alanlar->find(parcalar[i]);
             if (alan == nesne->alanlar->end()) {
-                throw std::runtime_error("Satır " + std::to_string(satir) + ": '" +
-                                         parcalar[i] + "' alanı bulunamadı.");
+                throw OrhunHatasi("Satır " + std::to_string(satir) + ": '" +
+                                  parcalar[i] + "' alanı bulunamadı.");
             }
             aktif = &alan->second;
             continue;
         }
 
-        throw std::runtime_error("Satır " + std::to_string(satir) +
-                                 ": '" + parcalar[i - 1] +
-                                 "' üzerinde nokta erişimi yapılamaz.");
+        throw OrhunHatasi("Satır " + std::to_string(satir) +
+                          ": '" + parcalar[i - 1] +
+                          "' üzerinde nokta erişimi yapılamaz.");
     }
 
     return *aktif;
@@ -1374,8 +1587,9 @@ OrhunDegeri Interpreter::nesneMetoduCagir(
                                   "' adlı metod bulunamadı.");
         }
 
-        return kullaniciIslevCalistir(metod->second, argumanlar, satir, &hedef,
-                                      false);
+        return kullaniciIslevCalistir(metod->second.dugum, argumanlar, satir,
+                                      &hedef,
+                                      &metod->second.tanimlayanSinif, false);
     }
 
     // Metin metodları: buyuk, kucuk, parcala, uzunluk
@@ -1576,7 +1790,7 @@ const OrhunDegeri& Interpreter::degiskenBul(const std::string& ad, std::size_t s
         return global->second;
     }
 
-    throw std::runtime_error("Satır " + std::to_string(satir) + ": '" + ad + "' değişkeni bulunamadı.");
+    throw OrhunHatasi("Satır " + std::to_string(satir) + ": '" + ad + "' değişkeni bulunamadı.");
 }
 
 bool Interpreter::dogruMu(const OrhunDegeri& deger) const {
@@ -1701,9 +1915,9 @@ double Interpreter::sayiDegeri(const OrhunDegeri& deger, std::size_t satir, cons
     }
 
     if (satir == 0) {
-        throw std::runtime_error("Hata: " + baglam + " için sayı bekleniyordu.");
+        throw OrhunHatasi("Hata: " + baglam + " için sayı bekleniyordu.");
     }
-    throw std::runtime_error("Satır " + std::to_string(satir) + ": " + baglam + " için sayı bekleniyordu.");
+    throw OrhunHatasi("Satır " + std::to_string(satir) + ": " + baglam + " için sayı bekleniyordu.");
 }
 
 bool Interpreter::tamSayiMi(const OrhunDegeri& deger) const {
@@ -1744,7 +1958,7 @@ std::size_t Interpreter::listeIndeksiCevir(const OrhunDegeri& deger,
 
 [[noreturn]] void Interpreter::hataFirlat(std::size_t satir, const std::string& mesaj) const {
     if (satir == 0) {
-        throw std::runtime_error("Hata: " + mesaj);
+        throw OrhunHatasi("Hata: " + mesaj);
     }
-    throw std::runtime_error("Satır " + std::to_string(satir) + ": " + mesaj);
+    throw OrhunHatasi("Satır " + std::to_string(satir) + ": " + mesaj);
 }

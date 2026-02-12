@@ -12,6 +12,11 @@ bool cagrilabilirAdCoz(const ASTNode *dugum, std::string &ad) {
     return true;
   }
 
+  if (const auto *ust = dynamic_cast<const UstErisimNode *>(dugum)) {
+    ad = "ust." + ust->metodAdi();
+    return true;
+  }
+
   if (const auto *benim = dynamic_cast<const BenimErisimNode *>(dugum)) {
     ad = "benim." + benim->alanAdi();
     return true;
@@ -105,6 +110,15 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
   }
   if (kontrol(TokenType::ANAHTAR_KELIME, "tip")) {
     return parseSinifTanim();
+  }
+  if (kontrol(TokenType::ANAHTAR_KELIME, "deneme")) {
+    return parseDenemeYakala();
+  }
+  if (kontrol(TokenType::ANAHTAR_KELIME, "kır")) {
+    return parseKir();
+  }
+  if (kontrol(TokenType::ANAHTAR_KELIME, "devam")) {
+    return parseDevam();
   }
   if (kontrol(TokenType::ANAHTAR_KELIME, "döndür")) {
     return parseDondur();
@@ -211,10 +225,51 @@ std::unique_ptr<ASTNode> Parser::parseSinifTanim() {
       tuket(TokenType::ANAHTAR_KELIME, "tip", "'tip' komutu bekleniyor.");
   const Token adToken =
       tuket(TokenType::KIMLIK, "'tip' ifadesinden sonra sınıf adı bekleniyor.");
+  std::string ebeveynAdi;
+  if (eslesir(TokenType::ISLEM, "(")) {
+    ebeveynAdi =
+        tuket(TokenType::KIMLIK,
+              "Miras tanımında ebeveyn sınıf adı bekleniyor.")
+            .deger;
+    tuket(TokenType::ISLEM, ")",
+          "Miras tanımında ebeveyn sınıfından sonra ')' bekleniyor.");
+  }
   tuket(TokenType::ISLEM, ":", "Sınıf adından sonra ':' bekleniyor.");
 
   return std::make_unique<SinifTanimNode>(
-      adToken.deger, parseBlokVeyaTekKomut("tip", true), token.satir);
+      adToken.deger, std::move(ebeveynAdi),
+      parseBlokVeyaTekKomut("tip", true), token.satir);
+}
+
+std::unique_ptr<ASTNode> Parser::parseDenemeYakala() {
+  const Token token =
+      tuket(TokenType::ANAHTAR_KELIME, "deneme", "'deneme' komutu bekleniyor.");
+  tuket(TokenType::ISLEM, ":", "'deneme' ifadesinden sonra ':' bekleniyor.");
+  std::unique_ptr<BlockNode> denemeBlok = parseBlokVeyaTekKomut("deneme", true);
+
+  yeniSatirlariAtla();
+  tuket(TokenType::ANAHTAR_KELIME, "yakala",
+        "'deneme' bloğundan sonra 'yakala' bekleniyor.");
+  const Token hataToken =
+      tuket(TokenType::KIMLIK, "'yakala' ifadesinden sonra hata değişkeni bekleniyor.");
+  tuket(TokenType::ISLEM, ":", "'yakala' ifadesinden sonra ':' bekleniyor.");
+  std::unique_ptr<BlockNode> yakalaBlok = parseBlokVeyaTekKomut("yakala", true);
+
+  return std::make_unique<DenemeYakalaNode>(
+      std::move(denemeBlok), hataToken.deger, std::move(yakalaBlok),
+      token.satir);
+}
+
+std::unique_ptr<ASTNode> Parser::parseKir() {
+  const Token token =
+      tuket(TokenType::ANAHTAR_KELIME, "kır", "'kır' komutu bekleniyor.");
+  return std::make_unique<KirNode>(token.satir);
+}
+
+std::unique_ptr<ASTNode> Parser::parseDevam() {
+  const Token token =
+      tuket(TokenType::ANAHTAR_KELIME, "devam", "'devam' komutu bekleniyor.");
+  return std::make_unique<DevamNode>(token.satir);
 }
 
 std::unique_ptr<ASTNode> Parser::parseDondur() {
@@ -402,9 +457,17 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
       const Token alanToken = tuket(
           TokenType::KIMLIK, "Nokta erişiminden sonra alan adı bekleniyor.");
       if (const auto *kimlik = dynamic_cast<const KimlikNode *>(ifade.get());
-          kimlik != nullptr && kimlik->ad() == "benim") {
-        ifade =
-            std::make_unique<BenimErisimNode>(alanToken.deger, noktaToken.satir);
+          kimlik != nullptr) {
+        if (kimlik->ad() == "benim") {
+          ifade = std::make_unique<BenimErisimNode>(alanToken.deger,
+                                                    noktaToken.satir);
+        } else if (kimlik->ad() == "ust") {
+          ifade =
+              std::make_unique<UstErisimNode>(alanToken.deger, noktaToken.satir);
+        } else {
+          ifade = std::make_unique<AlanErisimNode>(
+              std::move(ifade), alanToken.deger, noktaToken.satir);
+        }
       } else {
         ifade = std::make_unique<AlanErisimNode>(
             std::move(ifade), alanToken.deger, noktaToken.satir);
@@ -436,6 +499,10 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
 
   if (eslesir(TokenType::ANAHTAR_KELIME, "benim")) {
     return std::make_unique<KimlikNode>("benim", onceki().satir);
+  }
+
+  if (eslesir(TokenType::ANAHTAR_KELIME, "ust")) {
+    return std::make_unique<KimlikNode>("ust", onceki().satir);
   }
 
   if (eslesir(TokenType::ANAHTAR_KELIME, "doğru")) {
@@ -484,15 +551,35 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
 
   if (eslesir(TokenType::ISLEM, "[")) {
     const Token token = onceki();
-    std::vector<std::unique_ptr<ASTNode>> ogeler;
-
-    if (!kontrol(TokenType::ISLEM, "]")) {
-      ogeler.push_back(parseIfade());
-      while (eslesir(TokenType::ISLEM, ",")) {
-        ogeler.push_back(parseIfade());
-      }
+    if (eslesir(TokenType::ISLEM, "]")) {
+      return std::make_unique<ListeNode>(
+          std::vector<std::unique_ptr<ASTNode>>{}, token.satir);
     }
 
+    std::unique_ptr<ASTNode> ilkIfade = parseIfade();
+    if (eslesir(TokenType::ANAHTAR_KELIME, "için")) {
+      const Token degisken = tuket(
+          TokenType::KIMLIK, "Liste üretecinde döngü değişkeni bekleniyor.");
+      tuket(TokenType::ANAHTAR_KELIME, "içinde",
+            "Liste üretecinde 'içinde' anahtar kelimesi bekleniyor.");
+      std::unique_ptr<ASTNode> kaynakListe = parseIfade();
+
+      std::unique_ptr<ASTNode> kosul;
+      if (eslesir(TokenType::ANAHTAR_KELIME, "eğer")) {
+        kosul = parseIfade();
+      }
+
+      tuket(TokenType::ISLEM, "]", "Liste üretecinin sonunda ']' bekleniyor.");
+      return std::make_unique<ListeUretecNode>(
+          std::move(ilkIfade), degisken.deger, std::move(kaynakListe),
+          std::move(kosul), token.satir);
+    }
+
+    std::vector<std::unique_ptr<ASTNode>> ogeler;
+    ogeler.push_back(std::move(ilkIfade));
+    while (eslesir(TokenType::ISLEM, ",")) {
+      ogeler.push_back(parseIfade());
+    }
     tuket(TokenType::ISLEM, "]", "Liste ifadesinin sonunda ']' bekleniyor.");
     return std::make_unique<ListeNode>(std::move(ogeler), token.satir);
   }
@@ -636,7 +723,7 @@ bool Parser::ifadeBaslangiciMi(const Token &token) const {
       (token.deger == "sor" || token.deger == "doğru" ||
        token.deger == "yanlış" || token.deger == "değil" ||
        token.deger == "dahil_et" || token.deger == "yeni" ||
-       token.deger == "benim")) {
+       token.deger == "benim" || token.deger == "ust")) {
     return true;
   }
 

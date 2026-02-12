@@ -395,7 +395,8 @@ bool Lexer::anahtarKelimeMi(const std::u32string &metin) const {
       U"işlev",  U"döndür", U"dahil_et", U"sürece", U"eşit",
       U"eşit_değil",
       U"büyük",  U"küçük",  U"ve",       U"veya", U"değil",
-      U"tip",    U"yeni",   U"benim"};
+      U"tip",    U"yeni",   U"benim",    U"deneme", U"yakala",
+      U"kır",    U"devam",  U"ust",      U"için", U"içinde"};
 
   return anahtarKelimeler.find(metin) != anahtarKelimeler.end();
 }

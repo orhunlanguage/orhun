@@ -273,6 +273,23 @@ private:
   std::string alanAdi_;
 };
 
+// ust.metod erişimi için özel düğüm.
+class UstErisimNode final : public ASTNode {
+public:
+  UstErisimNode(std::string metodAdi, std::size_t satir)
+      : ASTNode(satir), metodAdi_(std::move(metodAdi)) {}
+
+  const std::string &metodAdi() const { return metodAdi_; }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "UstErisimNode(" << metodAdi_ << ") [satır " << satir() << "]\n";
+  }
+
+private:
+  std::string metodAdi_;
+};
+
 class IslevCagriNode final : public ASTNode {
 public:
   IslevCagriNode(std::string ad,
@@ -325,6 +342,48 @@ public:
 private:
   std::string sinifAdi_;
   std::vector<std::unique_ptr<ASTNode>> argumanlar_;
+};
+
+// [ ifade için degisken içinde kaynak (opsiyonel: eğer kosul) ] üreteci.
+class ListeUretecNode final : public ASTNode {
+public:
+  ListeUretecNode(std::unique_ptr<ASTNode> ifade, std::string donguDegiskeni,
+                  std::unique_ptr<ASTNode> kaynakListe,
+                  std::unique_ptr<ASTNode> kosul, std::size_t satir)
+      : ASTNode(satir), ifade_(std::move(ifade)),
+        donguDegiskeni_(std::move(donguDegiskeni)),
+        kaynakListe_(std::move(kaynakListe)), kosul_(std::move(kosul)) {}
+
+  const ASTNode *ifade() const { return ifade_.get(); }
+
+  const std::string &donguDegiskeni() const { return donguDegiskeni_; }
+
+  const ASTNode *kaynakListe() const { return kaynakListe_.get(); }
+
+  const ASTNode *kosul() const { return kosul_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "ListeUretecNode(" << donguDegiskeni_ << ") [satır " << satir()
+          << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Ifade:\n";
+    ifade_->yazdir_agac(cikti, girinti + 4);
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Kaynak:\n";
+    kaynakListe_->yazdir_agac(cikti, girinti + 4);
+    if (kosul_ != nullptr) {
+      yazdirGirinti(cikti, girinti + 2);
+      cikti << "Kosul:\n";
+      kosul_->yazdir_agac(cikti, girinti + 4);
+    }
+  }
+
+private:
+  std::unique_ptr<ASTNode> ifade_;
+  std::string donguDegiskeni_;
+  std::unique_ptr<ASTNode> kaynakListe_;
+  std::unique_ptr<ASTNode> kosul_;
 };
 
 class BlockNode final : public ASTNode {
@@ -582,23 +641,86 @@ private:
 // tip SinifAdi: ... sınıf tanımı.
 class SinifTanimNode final : public ASTNode {
 public:
-  SinifTanimNode(std::string ad, std::unique_ptr<BlockNode> govde,
+  SinifTanimNode(std::string ad, std::string ebeveynAdi,
+                 std::unique_ptr<BlockNode> govde,
                  std::size_t satir)
-      : ASTNode(satir), ad_(std::move(ad)), govde_(std::move(govde)) {}
+      : ASTNode(satir), ad_(std::move(ad)),
+        ebeveynAdi_(std::move(ebeveynAdi)), govde_(std::move(govde)) {}
 
   const std::string &ad() const { return ad_; }
+
+  const std::string &ebeveynAdi() const { return ebeveynAdi_; }
 
   const BlockNode *govde() const { return govde_.get(); }
 
   void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
     yazdirGirinti(cikti, girinti);
-    cikti << "SinifTanimNode(" << ad_ << ") [satır " << satir() << "]\n";
+    cikti << "SinifTanimNode(" << ad_;
+    if (!ebeveynAdi_.empty()) {
+      cikti << " <- " << ebeveynAdi_;
+    }
+    cikti << ") [satır " << satir() << "]\n";
     govde_->yazdir_agac(cikti, girinti + 2);
   }
 
 private:
   std::string ad_;
+  std::string ebeveynAdi_;
   std::unique_ptr<BlockNode> govde_;
+};
+
+// deneme: ... yakala hata: ...
+class DenemeYakalaNode final : public ASTNode {
+public:
+  DenemeYakalaNode(std::unique_ptr<BlockNode> denemeBlogu,
+                   std::string hataDegiskeni,
+                   std::unique_ptr<BlockNode> yakalaBlogu, std::size_t satir)
+      : ASTNode(satir), denemeBlogu_(std::move(denemeBlogu)),
+        hataDegiskeni_(std::move(hataDegiskeni)),
+        yakalaBlogu_(std::move(yakalaBlogu)) {}
+
+  const BlockNode *denemeBlogu() const { return denemeBlogu_.get(); }
+
+  const std::string &hataDegiskeni() const { return hataDegiskeni_; }
+
+  const BlockNode *yakalaBlogu() const { return yakalaBlogu_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "DenemeYakalaNode(hata=" << hataDegiskeni_ << ") [satır "
+          << satir() << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Deneme:\n";
+    denemeBlogu_->yazdir_agac(cikti, girinti + 4);
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Yakala:\n";
+    yakalaBlogu_->yazdir_agac(cikti, girinti + 4);
+  }
+
+private:
+  std::unique_ptr<BlockNode> denemeBlogu_;
+  std::string hataDegiskeni_;
+  std::unique_ptr<BlockNode> yakalaBlogu_;
+};
+
+class KirNode final : public ASTNode {
+public:
+  explicit KirNode(std::size_t satir) : ASTNode(satir) {}
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "KirNode [satır " << satir() << "]\n";
+  }
+};
+
+class DevamNode final : public ASTNode {
+public:
+  explicit DevamNode(std::size_t satir) : ASTNode(satir) {}
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "DevamNode [satır " << satir() << "]\n";
+  }
 };
 
 class IfadeKomutNode final : public ASTNode {

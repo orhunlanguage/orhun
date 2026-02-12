@@ -5,12 +5,19 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <variant>
 #include <vector>
 
 struct OrhunNesne;
+struct NesneMetodBilgisi;
+
+class OrhunHatasi : public std::runtime_error {
+public:
+  explicit OrhunHatasi(const std::string &mesaj) : std::runtime_error(mesaj) {}
+};
 
 // Orhun çalışma zamanı değeri.
 // v0.8: sayı(int/double), metin, liste, sözlük ve nesne desteklenir.
@@ -44,11 +51,16 @@ struct OrhunDegeri {
 };
 
 // OOP örnek nesne verisi.
+struct NesneMetodBilgisi {
+  const IslevTanimNode *dugum = nullptr;
+  std::string tanimlayanSinif;
+};
+
 struct OrhunNesne {
   std::string sinifAdi;
   OrhunDegeri::SozlukTipi alanlar =
       std::make_shared<OrhunDegeri::SozlukVeri>();
-  std::unordered_map<std::string, const IslevTanimNode *> metodlar;
+  std::unordered_map<std::string, NesneMetodBilgisi> metodlar;
 };
 
 inline bool OrhunDegeri::operator==(const OrhunDegeri &diger) const {
@@ -109,6 +121,7 @@ private:
 
   DegiskenTablosu globalHafiza_;
   std::vector<DegiskenTablosu> yerelKapsamYigini_;
+  int donguDerinligi_ = 0;
 
   std::unordered_map<std::string, const IslevTanimNode *> islevTablosu_;
   std::unordered_map<std::string, const SinifTanimNode *> sinifTablosu_;
@@ -126,6 +139,9 @@ private:
   void calistirSurece(const SureceNode *dugum);
   void calistirIslevTanim(const IslevTanimNode *dugum);
   void calistirSinifTanim(const SinifTanimNode *dugum);
+  void calistirDenemeYakala(const DenemeYakalaNode *dugum);
+  void calistirKir(const KirNode *dugum);
+  void calistirDevam(const DevamNode *dugum);
   void calistirDondur(const DondurNode *dugum);
   void calistirDahilEt(const DahilEtNode *dugum);
   void calistirIfadeKomut(const IfadeKomutNode *dugum);
@@ -137,6 +153,7 @@ private:
                           const std::string &op, std::size_t satir);
   OrhunDegeri sorCalistir(const SorNode *dugum);
   OrhunDegeri listeOlustur(const ListeNode *dugum);
+  OrhunDegeri listeUreteciOlustur(const ListeUretecNode *dugum);
   OrhunDegeri sozlukOlustur(const SozlukNode *dugum);
   OrhunDegeri indeksErisim(const IndeksErisimNode *dugum);
   OrhunDegeri alanErisim(const AlanErisimNode *dugum);
@@ -144,6 +161,9 @@ private:
   OrhunDegeri yeniNesneOlustur(const YeniNesneNode *dugum);
   OrhunDegeri islevCagir(const IslevCagriNode *dugum);
   OrhunDegeri dahilEtDegerlendir(const DahilEtNode *dugum);
+  OrhunDegeri ustIslevCagir(const std::string &metodAdi,
+                            const std::vector<OrhunDegeri> &argumanlar,
+                            std::size_t satir);
   OrhunDegeri islevCagirAdaGore(const std::string &ad,
                                 const std::vector<OrhunDegeri> &argumanlar,
                                 std::size_t satir);
@@ -151,6 +171,7 @@ private:
                                      const std::vector<OrhunDegeri> &argumanlar,
                                      std::size_t satir,
                                      const OrhunDegeri *benimDegeri,
+                                     const std::string *etkinSinifAdi,
                                      bool dondurZorunlu);
   OrhunDegeri nesneMetoduCagir(const OrhunDegeri &hedef,
                                const std::string &metodAdi,

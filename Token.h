@@ -4,7 +4,7 @@
 #include <string>
 
 // Orhun dilinin token türleri.
-// v0.8 ile sınıf/OOP anahtar kelimeleri de ANAHTAR_KELIME altında taşınır.
+// v1.0 ile ust/için/içinde anahtar kelimeleri de ANAHTAR_KELIME altında.
 enum class TokenType {
     ANAHTAR_KELIME,
     KIMLIK,

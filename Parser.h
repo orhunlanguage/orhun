@@ -29,6 +29,9 @@ private:
   std::unique_ptr<ASTNode> parseTekrarla();
   std::unique_ptr<ASTNode> parseIslevTanim();
   std::unique_ptr<ASTNode> parseSinifTanim();
+  std::unique_ptr<ASTNode> parseDenemeYakala();
+  std::unique_ptr<ASTNode> parseKir();
+  std::unique_ptr<ASTNode> parseDevam();
   std::unique_ptr<ASTNode> parseDondur();
   std::unique_ptr<ASTNode> parseDahilEt();
 
