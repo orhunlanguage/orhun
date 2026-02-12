@@ -632,6 +632,253 @@ std::string windowsHataMesaji(DWORD kod) {
     return mesaj;
 }
 
+LRESULT CALLBACK orhunGrafikPencereProc(HWND hwnd, UINT mesaj, WPARAM wparam,
+                                        LPARAM lparam) {
+    switch (mesaj) {
+    case WM_CLOSE:
+        DestroyWindow(hwnd);
+        return 0;
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        return 0;
+    default:
+        return DefWindowProcW(hwnd, mesaj, wparam, lparam);
+    }
+}
+
+struct GrafikDurumu {
+    bool sinifKayitli = false;
+    std::wstring sinifAdi = L"OrhunGrafikSinifi";
+    HWND pencere = nullptr;
+    HDC cizimAlani = nullptr;
+};
+
+GrafikDurumu& grafikDurumu() {
+    static GrafikDurumu durum;
+    return durum;
+}
+
+struct GdiApi {
+    using CreateSolidBrushFn = HBRUSH(WINAPI*)(COLORREF);
+    using DeleteObjectFn = BOOL(WINAPI*)(HGDIOBJ);
+    using CreatePenFn = HPEN(WINAPI*)(int, int, COLORREF);
+    using SelectObjectFn = HGDIOBJ(WINAPI*)(HDC, HGDIOBJ);
+    using MoveToExFn = BOOL(WINAPI*)(HDC, int, int, LPPOINT);
+    using LineToFn = BOOL(WINAPI*)(HDC, int, int);
+    using SetBkModeFn = int(WINAPI*)(HDC, int);
+    using SetTextColorFn = COLORREF(WINAPI*)(HDC, COLORREF);
+    using TextOutWFn = BOOL(WINAPI*)(HDC, int, int, LPCWSTR, int);
+
+    HMODULE kutuphane = nullptr;
+    CreateSolidBrushFn createSolidBrush = nullptr;
+    DeleteObjectFn deleteObject = nullptr;
+    CreatePenFn createPen = nullptr;
+    SelectObjectFn selectObject = nullptr;
+    MoveToExFn moveToEx = nullptr;
+    LineToFn lineTo = nullptr;
+    SetBkModeFn setBkMode = nullptr;
+    SetTextColorFn setTextColor = nullptr;
+    TextOutWFn textOutW = nullptr;
+
+    GdiApi() {
+        kutuphane = LoadLibraryW(L"gdi32.dll");
+        if (!kutuphane) {
+            throw std::runtime_error("gdi32.dll yüklenemedi: " +
+                                     windowsHataMesaji(GetLastError()));
+        }
+
+        try {
+            yukle(createSolidBrush, "CreateSolidBrush");
+            yukle(deleteObject, "DeleteObject");
+            yukle(createPen, "CreatePen");
+            yukle(selectObject, "SelectObject");
+            yukle(moveToEx, "MoveToEx");
+            yukle(lineTo, "LineTo");
+            yukle(setBkMode, "SetBkMode");
+            yukle(setTextColor, "SetTextColor");
+            yukle(textOutW, "TextOutW");
+        } catch (...) {
+            FreeLibrary(kutuphane);
+            kutuphane = nullptr;
+            throw;
+        }
+    }
+
+    ~GdiApi() {
+        if (kutuphane != nullptr) {
+            FreeLibrary(kutuphane);
+            kutuphane = nullptr;
+        }
+    }
+
+private:
+    template <typename T>
+    void yukle(T& hedef, const char* ad) {
+        FARPROC ham = GetProcAddress(kutuphane, ad);
+        if (!ham) {
+            throw std::runtime_error(std::string("GDI sembolü yüklenemedi: ") + ad);
+        }
+        static_assert(sizeof(hedef) == sizeof(ham),
+                      "GDI fonksiyon işaretçisi boyutu FARPROC ile uyumsuz.");
+        std::memcpy(&hedef, &ham, sizeof(hedef));
+    }
+};
+
+GdiApi& gdiApi() {
+    static GdiApi api;
+    return api;
+}
+
+void grafikMesajlariIsle() {
+    MSG msg;
+    while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE) != 0) {
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+}
+
+void grafikSinifiniKaydet() {
+    GrafikDurumu& durum = grafikDurumu();
+    if (durum.sinifKayitli) {
+        return;
+    }
+
+    WNDCLASSEXW wc;
+    std::memset(&wc, 0, sizeof(wc));
+    wc.cbSize = sizeof(wc);
+    wc.lpfnWndProc = orhunGrafikPencereProc;
+    wc.hInstance = GetModuleHandleW(nullptr);
+    wc.lpszClassName = durum.sinifAdi.c_str();
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
+
+    if (RegisterClassExW(&wc) == 0) {
+        throw std::runtime_error("grafik.pencere_ac: pencere sınıfı kaydı başarısız (" +
+                                 windowsHataMesaji(GetLastError()) + ")");
+    }
+    durum.sinifKayitli = true;
+}
+
+void grafikKapat() {
+    GrafikDurumu& durum = grafikDurumu();
+    if (durum.cizimAlani != nullptr && durum.pencere != nullptr) {
+        ReleaseDC(durum.pencere, durum.cizimAlani);
+        durum.cizimAlani = nullptr;
+    }
+    if (durum.pencere != nullptr) {
+        DestroyWindow(durum.pencere);
+        durum.pencere = nullptr;
+    }
+}
+
+void grafikPencereAc(const std::wstring& baslik, int genislik, int yukseklik) {
+    grafikSinifiniKaydet();
+    grafikKapat();
+
+    GrafikDurumu& durum = grafikDurumu();
+    HWND pencere = CreateWindowExW(
+        0, durum.sinifAdi.c_str(), baslik.c_str(),
+        WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
+        std::max(genislik, 200), std::max(yukseklik, 150), nullptr, nullptr,
+        GetModuleHandleW(nullptr), nullptr);
+
+    if (pencere == nullptr) {
+        throw std::runtime_error("grafik.pencere_ac başarısız: " +
+                                 windowsHataMesaji(GetLastError()));
+    }
+
+    HDC hdc = GetDC(pencere);
+    if (hdc == nullptr) {
+        DestroyWindow(pencere);
+        throw std::runtime_error("grafik.pencere_ac çizim alanı alınamadı: " +
+                                 windowsHataMesaji(GetLastError()));
+    }
+
+    durum.pencere = pencere;
+    durum.cizimAlani = hdc;
+    ShowWindow(durum.pencere, SW_SHOW);
+    UpdateWindow(durum.pencere);
+}
+
+void grafikPencereKontrol() {
+    GrafikDurumu& durum = grafikDurumu();
+    if (durum.pencere == nullptr || durum.cizimAlani == nullptr) {
+        throw std::runtime_error(
+            "Önce grafik.pencere_ac(\"Baslik\", genislik, yukseklik) çağırılmalı.");
+    }
+}
+
+COLORREF rgbRenk(int r, int g, int b) {
+    return RGB(std::clamp(r, 0, 255), std::clamp(g, 0, 255), std::clamp(b, 0, 255));
+}
+
+void grafikTemizle(int r, int g, int b) {
+    grafikPencereKontrol();
+    GrafikDurumu& durum = grafikDurumu();
+    GdiApi& api = gdiApi();
+
+    RECT alan;
+    GetClientRect(durum.pencere, &alan);
+    HBRUSH firca = api.createSolidBrush(rgbRenk(r, g, b));
+    FillRect(durum.cizimAlani, &alan, firca);
+    api.deleteObject(firca);
+}
+
+void grafikDikdortgen(int x, int y, int genislik, int yukseklik, int r, int g,
+                      int b) {
+    grafikPencereKontrol();
+    GrafikDurumu& durum = grafikDurumu();
+    GdiApi& api = gdiApi();
+
+    RECT rc{x, y, x + std::max(genislik, 0), y + std::max(yukseklik, 0)};
+    HBRUSH firca = api.createSolidBrush(rgbRenk(r, g, b));
+    FillRect(durum.cizimAlani, &rc, firca);
+    api.deleteObject(firca);
+}
+
+void grafikCizgi(int x1, int y1, int x2, int y2, int r, int g, int b) {
+    grafikPencereKontrol();
+    GrafikDurumu& durum = grafikDurumu();
+    GdiApi& api = gdiApi();
+
+    HPEN kalem = api.createPen(PS_SOLID, 1, rgbRenk(r, g, b));
+    HGDIOBJ eski = api.selectObject(durum.cizimAlani, kalem);
+    api.moveToEx(durum.cizimAlani, x1, y1, nullptr);
+    api.lineTo(durum.cizimAlani, x2, y2);
+    api.selectObject(durum.cizimAlani, eski);
+    api.deleteObject(kalem);
+}
+
+void grafikYazi(const std::wstring& metin, int x, int y, int r, int g, int b) {
+    grafikPencereKontrol();
+    GrafikDurumu& durum = grafikDurumu();
+    GdiApi& api = gdiApi();
+
+    api.setBkMode(durum.cizimAlani, TRANSPARENT);
+    api.setTextColor(durum.cizimAlani, rgbRenk(r, g, b));
+    api.textOutW(durum.cizimAlani, x, y, metin.c_str(),
+                 static_cast<int>(metin.size()));
+}
+
+void grafikGuncelle() {
+    grafikMesajlariIsle();
+    GrafikDurumu& durum = grafikDurumu();
+    if (durum.pencere != nullptr) {
+        UpdateWindow(durum.pencere);
+    }
+}
+
+void grafikBekle(int milisaniye) {
+    const int adim = 10;
+    int kalan = std::max(0, milisaniye);
+    while (kalan > 0) {
+        grafikMesajlariIsle();
+        const int bekle = std::min(adim, kalan);
+        Sleep(static_cast<DWORD>(bekle));
+        kalan -= bekle;
+    }
+}
+
 template <typename T>
 T farprocDonustur(FARPROC ham) {
     T sonuc{};
@@ -963,6 +1210,7 @@ Interpreter::Interpreter() {
 
 Interpreter::~Interpreter() {
 #ifdef _WIN32
+    grafikKapat();
     for (const auto& [kimlik, hamTutamac] : ffiKutuphaneTutamaclari_) {
         (void)kimlik;
         if (hamTutamac != static_cast<std::uintptr_t>(0)) {
@@ -1586,6 +1834,147 @@ void Interpreter::gomuluIslevleriYukle() {
 #endif
     };
 
+    // Dahili grafik modülü (MVP, Windows).
+    gomuluIslevler_["grafik.pencere_ac"] = [this](const std::vector<OrhunDegeri>& args,
+                                                   std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 3) {
+            hataFirlat(satir, "grafik.pencere_ac(\"Baslik\", genislik, yukseklik) üç argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "grafik.pencere_ac ilk argüman olarak metin başlık bekler.");
+        }
+
+#ifdef _WIN32
+        const double g = sayiDegeri(args[1], satir, "grafik.pencere_ac");
+        const double y = sayiDegeri(args[2], satir, "grafik.pencere_ac");
+        if (!tamSayiMi(g) || !tamSayiMi(y)) {
+            hataFirlat(satir, "grafik.pencere_ac genislik/yukseklik tam sayı olmalıdır.");
+        }
+        grafikPencereAc(utf8denWstringe(std::get<std::string>(args[0].veri)),
+                        static_cast<int>(g), static_cast<int>(y));
+        return OrhunDegeri(1);
+#else
+        hataFirlat(satir, "grafik modülü şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
+    gomuluIslevler_["grafik.temizle"] = [this](const std::vector<OrhunDegeri>& args,
+                                                std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 3) {
+            hataFirlat(satir, "grafik.temizle(r, g, b) üç argüman alır.");
+        }
+#ifdef _WIN32
+        const int r = static_cast<int>(sayiDegeri(args[0], satir, "grafik.temizle"));
+        const int g = static_cast<int>(sayiDegeri(args[1], satir, "grafik.temizle"));
+        const int b = static_cast<int>(sayiDegeri(args[2], satir, "grafik.temizle"));
+        grafikTemizle(r, g, b);
+        return OrhunDegeri(1);
+#else
+        hataFirlat(satir, "grafik modülü şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
+    gomuluIslevler_["grafik.dikdortgen"] = [this](const std::vector<OrhunDegeri>& args,
+                                                   std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 7) {
+            hataFirlat(satir, "grafik.dikdortgen(x, y, w, h, r, g, b) yedi argüman alır.");
+        }
+#ifdef _WIN32
+        const int x = static_cast<int>(sayiDegeri(args[0], satir, "grafik.dikdortgen"));
+        const int y = static_cast<int>(sayiDegeri(args[1], satir, "grafik.dikdortgen"));
+        const int w = static_cast<int>(sayiDegeri(args[2], satir, "grafik.dikdortgen"));
+        const int h = static_cast<int>(sayiDegeri(args[3], satir, "grafik.dikdortgen"));
+        const int r = static_cast<int>(sayiDegeri(args[4], satir, "grafik.dikdortgen"));
+        const int g = static_cast<int>(sayiDegeri(args[5], satir, "grafik.dikdortgen"));
+        const int b = static_cast<int>(sayiDegeri(args[6], satir, "grafik.dikdortgen"));
+        grafikDikdortgen(x, y, w, h, r, g, b);
+        return OrhunDegeri(1);
+#else
+        hataFirlat(satir, "grafik modülü şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
+    gomuluIslevler_["grafik.cizgi"] = [this](const std::vector<OrhunDegeri>& args,
+                                             std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 7) {
+            hataFirlat(satir, "grafik.cizgi(x1, y1, x2, y2, r, g, b) yedi argüman alır.");
+        }
+#ifdef _WIN32
+        const int x1 = static_cast<int>(sayiDegeri(args[0], satir, "grafik.cizgi"));
+        const int y1 = static_cast<int>(sayiDegeri(args[1], satir, "grafik.cizgi"));
+        const int x2 = static_cast<int>(sayiDegeri(args[2], satir, "grafik.cizgi"));
+        const int y2 = static_cast<int>(sayiDegeri(args[3], satir, "grafik.cizgi"));
+        const int r = static_cast<int>(sayiDegeri(args[4], satir, "grafik.cizgi"));
+        const int g = static_cast<int>(sayiDegeri(args[5], satir, "grafik.cizgi"));
+        const int b = static_cast<int>(sayiDegeri(args[6], satir, "grafik.cizgi"));
+        grafikCizgi(x1, y1, x2, y2, r, g, b);
+        return OrhunDegeri(1);
+#else
+        hataFirlat(satir, "grafik modülü şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
+    gomuluIslevler_["grafik.yazi"] = [this](const std::vector<OrhunDegeri>& args,
+                                            std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 6) {
+            hataFirlat(satir, "grafik.yazi(\"metin\", x, y, r, g, b) altı argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "grafik.yazi ilk argüman olarak metin bekler.");
+        }
+#ifdef _WIN32
+        const int x = static_cast<int>(sayiDegeri(args[1], satir, "grafik.yazi"));
+        const int y = static_cast<int>(sayiDegeri(args[2], satir, "grafik.yazi"));
+        const int r = static_cast<int>(sayiDegeri(args[3], satir, "grafik.yazi"));
+        const int g = static_cast<int>(sayiDegeri(args[4], satir, "grafik.yazi"));
+        const int b = static_cast<int>(sayiDegeri(args[5], satir, "grafik.yazi"));
+        grafikYazi(utf8denWstringe(std::get<std::string>(args[0].veri)), x, y, r, g, b);
+        return OrhunDegeri(1);
+#else
+        hataFirlat(satir, "grafik modülü şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
+    gomuluIslevler_["grafik.guncelle"] = [this](const std::vector<OrhunDegeri>& args,
+                                                std::size_t satir) -> OrhunDegeri {
+        if (!args.empty()) {
+            hataFirlat(satir, "grafik.guncelle() argüman almaz.");
+        }
+#ifdef _WIN32
+        grafikGuncelle();
+        return OrhunDegeri(1);
+#else
+        hataFirlat(satir, "grafik modülü şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
+    gomuluIslevler_["grafik.bekle"] = [this](const std::vector<OrhunDegeri>& args,
+                                             std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "grafik.bekle(milisaniye) tek argüman alır.");
+        }
+#ifdef _WIN32
+        const int ms = static_cast<int>(sayiDegeri(args[0], satir, "grafik.bekle"));
+        grafikBekle(ms);
+        return OrhunDegeri(1);
+#else
+        hataFirlat(satir, "grafik modülü şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
+    gomuluIslevler_["grafik.kapat"] = [this](const std::vector<OrhunDegeri>& args,
+                                             std::size_t satir) -> OrhunDegeri {
+        if (!args.empty()) {
+            hataFirlat(satir, "grafik.kapat() argüman almaz.");
+        }
+#ifdef _WIN32
+        grafikKapat();
+        return OrhunDegeri(1);
+#else
+        hataFirlat(satir, "grafik modülü şu an yalnızca Windows üzerinde destekleniyor.");
+#endif
+    };
+
     // Matematik kütüphanesi.
     gomuluIslevler_["karekok"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
@@ -1952,6 +2341,17 @@ void Interpreter::yerlesikModulleriYukle() {
     metin["uzunluk"] = OrhunDegeri("__islev_ref__:metin.uzunluk");
     metin["icerir"] = OrhunDegeri("__islev_ref__:metin.icerir");
     globalHafiza_["metin"] = OrhunDegeri(std::move(metin));
+
+    OrhunDegeri::SozlukVeri grafik;
+    grafik["pencere_ac"] = OrhunDegeri("__islev_ref__:grafik.pencere_ac");
+    grafik["temizle"] = OrhunDegeri("__islev_ref__:grafik.temizle");
+    grafik["dikdortgen"] = OrhunDegeri("__islev_ref__:grafik.dikdortgen");
+    grafik["cizgi"] = OrhunDegeri("__islev_ref__:grafik.cizgi");
+    grafik["yazi"] = OrhunDegeri("__islev_ref__:grafik.yazi");
+    grafik["guncelle"] = OrhunDegeri("__islev_ref__:grafik.guncelle");
+    grafik["bekle"] = OrhunDegeri("__islev_ref__:grafik.bekle");
+    grafik["kapat"] = OrhunDegeri("__islev_ref__:grafik.kapat");
+    globalHafiza_["grafik"] = OrhunDegeri(std::move(grafik));
 
     OrhunDegeri::SozlukVeri ffi;
     ffi["yukle"] = OrhunDegeri("__islev_ref__:ffi.yukle");
