@@ -18,7 +18,8 @@ $cases = @(
     "tests/cases/assignment_equals",
     "tests/cases/json_parse",
     "tests/cases/f_string",
-    "tests/cases/slicing"
+    "tests/cases/slicing",
+    "tests/cases/stdlib_modules"
 )
 
 if ($env:OS -eq "Windows_NT") {

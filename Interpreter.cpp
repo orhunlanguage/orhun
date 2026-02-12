@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -406,6 +407,113 @@ bool yerTutucuYoluGecerliMi(const std::string& yol) {
         bas = nokta + 1;
     }
     return true;
+}
+
+std::string jsonMetniKacisla(const std::string& metin) {
+    std::string sonuc;
+    sonuc.reserve(metin.size() + 8);
+    for (unsigned char c : metin) {
+        switch (c) {
+        case '\\':
+            sonuc += "\\\\";
+            break;
+        case '"':
+            sonuc += "\\\"";
+            break;
+        case '\b':
+            sonuc += "\\b";
+            break;
+        case '\f':
+            sonuc += "\\f";
+            break;
+        case '\n':
+            sonuc += "\\n";
+            break;
+        case '\r':
+            sonuc += "\\r";
+            break;
+        case '\t':
+            sonuc += "\\t";
+            break;
+        default:
+            if (c < 0x20) {
+                const char* hex = "0123456789ABCDEF";
+                sonuc += "\\u00";
+                sonuc.push_back(hex[(c >> 4) & 0x0F]);
+                sonuc.push_back(hex[c & 0x0F]);
+            } else {
+                sonuc.push_back(static_cast<char>(c));
+            }
+            break;
+        }
+    }
+    return sonuc;
+}
+
+std::string orhunDegeriniJsonaCevir(const OrhunDegeri& deger) {
+    if (const auto* tam = std::get_if<int>(&deger.veri)) {
+        return std::to_string(*tam);
+    }
+    if (const auto* ondalik = std::get_if<double>(&deger.veri)) {
+        std::ostringstream oss;
+        oss << *ondalik;
+        return oss.str();
+    }
+    if (const auto* metin = std::get_if<std::string>(&deger.veri)) {
+        return "\"" + jsonMetniKacisla(*metin) + "\"";
+    }
+    if (const auto* listePtr = std::get_if<OrhunDegeri::ListeTipi>(&deger.veri)) {
+        std::string json = "[";
+        const OrhunDegeri::ListeVeri bosListe;
+        const auto& liste = (*listePtr) ? *(*listePtr) : bosListe;
+        for (std::size_t i = 0; i < liste.size(); ++i) {
+            if (i > 0) {
+                json += ",";
+            }
+            json += orhunDegeriniJsonaCevir(liste[i]);
+        }
+        json += "]";
+        return json;
+    }
+    if (const auto* sozlukPtr =
+            std::get_if<OrhunDegeri::SozlukTipi>(&deger.veri)) {
+        std::string json = "{";
+        const OrhunDegeri::SozlukVeri bosSozluk;
+        const auto& sozluk = (*sozlukPtr) ? *(*sozlukPtr) : bosSozluk;
+        bool ilk = true;
+        for (const auto& [anahtar, altDeger] : sozluk) {
+            if (!ilk) {
+                json += ",";
+            }
+            ilk = false;
+            json += "\"" + jsonMetniKacisla(anahtar) + "\":";
+            json += orhunDegeriniJsonaCevir(altDeger);
+        }
+        json += "}";
+        return json;
+    }
+    if (const auto* nesnePtr = std::get_if<OrhunDegeri::NesneTipi>(&deger.veri)) {
+        if (!(*nesnePtr) || !(*nesnePtr)->alanlar) {
+            return "null";
+        }
+
+        std::string json = "{";
+        bool ilk = true;
+        json += "\"__sinif\":\"" + jsonMetniKacisla((*nesnePtr)->sinifAdi) + "\"";
+        ilk = false;
+        for (const auto& [anahtar, altDeger] : *(*nesnePtr)->alanlar) {
+            if (!ilk) {
+                json += ",";
+            }
+            ilk = false;
+            json += "\"" + jsonMetniKacisla(anahtar) + "\":";
+            json += orhunDegeriniJsonaCevir(altDeger);
+        }
+        json += "}";
+        return json;
+    }
+
+    return "null";
 }
 
 #ifdef _WIN32
@@ -868,6 +976,61 @@ void Interpreter::gomuluIslevleriYukle() {
         return OrhunDegeri(1);
     };
 
+    gomuluIslevler_["dosya.var_mi"] = [this](const std::vector<OrhunDegeri>& args,
+                                             std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "dosya.var_mi(\"dosya\") tek argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "dosya.var_mi için dosya yolu metin olmalıdır.");
+        }
+
+        const std::string yol = std::get<std::string>(args[0].veri);
+        std::error_code ec;
+        const bool var = std::filesystem::exists(yol, ec);
+        if (ec) {
+            hataFirlat(satir, "dosya.var_mi başarısız: " + ec.message());
+        }
+        return OrhunDegeri(var ? 1 : 0);
+    };
+
+    gomuluIslevler_["dosya.sil"] = [this](const std::vector<OrhunDegeri>& args,
+                                          std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "dosya.sil(\"dosya\") tek argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "dosya.sil için dosya yolu metin olmalıdır.");
+        }
+
+        const std::string yol = std::get<std::string>(args[0].veri);
+        std::error_code ec;
+        const bool silindi = std::filesystem::remove(yol, ec);
+        if (ec) {
+            hataFirlat(satir, "dosya.sil başarısız: " + ec.message());
+        }
+        return OrhunDegeri(silindi ? 1 : 0);
+    };
+
+    gomuluIslevler_["dosya.ekle_satir"] = [this](const std::vector<OrhunDegeri>& args,
+                                                 std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "dosya.ekle_satir(\"dosya\", metin) iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri)) {
+            hataFirlat(satir, "dosya.ekle_satir için dosya yolu metin olmalıdır.");
+        }
+
+        const std::string yol = std::get<std::string>(args[0].veri);
+        const std::string icerik = metneCevir(args[1]);
+        std::ofstream dosya(yol, std::ios::binary | std::ios::app);
+        if (!dosya.is_open()) {
+            hataFirlat(satir, "'" + yol + "' dosyasına ekleme yapılamadı.");
+        }
+        dosya << icerik << '\n';
+        return OrhunDegeri(1);
+    };
+
     // Ağ / JSON / sistem modülleri.
     gomuluIslevler_["internet.getir"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
@@ -897,6 +1060,18 @@ void Interpreter::gomuluIslevleriYukle() {
             return cozucu.coz();
         } catch (const std::exception& ex) {
             hataFirlat(satir, "json.coz hatası: " + std::string(ex.what()));
+        }
+    };
+
+    gomuluIslevler_["json.yaz"] = [this](const std::vector<OrhunDegeri>& args,
+                                         std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 1) {
+            hataFirlat(satir, "json.yaz(deger) tek argüman alır.");
+        }
+        try {
+            return OrhunDegeri(orhunDegeriniJsonaCevir(args[0]));
+        } catch (const std::exception& ex) {
+            hataFirlat(satir, "json.yaz hatası: " + std::string(ex.what()));
         }
     };
 
@@ -1544,6 +1719,14 @@ void Interpreter::yerlesikModulleriYukle() {
 
     gomuluIslevler_["zaman.simdi"] = gomuluIslevler_["zaman"];
     gomuluIslevler_["zaman.bekle"] = gomuluIslevler_["bekle"];
+    gomuluIslevler_["metin.buyuk"] = gomuluIslevler_["buyuk_harf"];
+    gomuluIslevler_["metin.kucuk"] = gomuluIslevler_["kucuk_harf"];
+    gomuluIslevler_["metin.parcala"] = gomuluIslevler_["parcala"];
+    gomuluIslevler_["metin.birlestir"] = gomuluIslevler_["birlestir"];
+    gomuluIslevler_["metin.uzunluk"] = gomuluIslevler_["metin_uzunluk"];
+    gomuluIslevler_["metin.icerir"] = gomuluIslevler_["icerir"];
+    gomuluIslevler_["dosya.oku"] = gomuluIslevler_["dosya_oku"];
+    gomuluIslevler_["dosya.yaz"] = gomuluIslevler_["dosyaya_yaz"];
 
     // Python benzeri erişim için hazır sözlük modülleri.
     OrhunDegeri::SozlukVeri matematik;
@@ -1567,11 +1750,29 @@ void Interpreter::yerlesikModulleriYukle() {
 
     OrhunDegeri::SozlukVeri json;
     json["coz"] = OrhunDegeri("__islev_ref__:json.coz");
+    json["yaz"] = OrhunDegeri("__islev_ref__:json.yaz");
     globalHafiza_["json"] = OrhunDegeri(std::move(json));
 
     OrhunDegeri::SozlukVeri sistem;
     sistem["komut"] = OrhunDegeri("__islev_ref__:sistem.komut");
     globalHafiza_["sistem"] = OrhunDegeri(std::move(sistem));
+
+    OrhunDegeri::SozlukVeri dosya;
+    dosya["oku"] = OrhunDegeri("__islev_ref__:dosya.oku");
+    dosya["yaz"] = OrhunDegeri("__islev_ref__:dosya.yaz");
+    dosya["var_mi"] = OrhunDegeri("__islev_ref__:dosya.var_mi");
+    dosya["sil"] = OrhunDegeri("__islev_ref__:dosya.sil");
+    dosya["ekle_satir"] = OrhunDegeri("__islev_ref__:dosya.ekle_satir");
+    globalHafiza_["dosya"] = OrhunDegeri(std::move(dosya));
+
+    OrhunDegeri::SozlukVeri metin;
+    metin["buyuk"] = OrhunDegeri("__islev_ref__:metin.buyuk");
+    metin["kucuk"] = OrhunDegeri("__islev_ref__:metin.kucuk");
+    metin["parcala"] = OrhunDegeri("__islev_ref__:metin.parcala");
+    metin["birlestir"] = OrhunDegeri("__islev_ref__:metin.birlestir");
+    metin["uzunluk"] = OrhunDegeri("__islev_ref__:metin.uzunluk");
+    metin["icerir"] = OrhunDegeri("__islev_ref__:metin.icerir");
+    globalHafiza_["metin"] = OrhunDegeri(std::move(metin));
 
     OrhunDegeri::SozlukVeri ffi;
     ffi["yukle"] = OrhunDegeri("__islev_ref__:ffi.yukle");

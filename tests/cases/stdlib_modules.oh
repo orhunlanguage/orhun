@@ -1,0 +1,13 @@
+dosya.yaz("_tmp_stdlib_modul.txt", "ilk")
+dosya.ekle_satir("_tmp_stdlib_modul.txt", "ikinci")
+icerik olsun dosya.oku("_tmp_stdlib_modul.txt")
+yazdır metin.icerir(icerik, "ikinci")
+
+veri olsun { "ad": "Orhun", "surum": 2, "liste": [1, 2] }
+json_metin olsun json.yaz(veri)
+yazdır metin.icerir(json_metin, "\"ad\"")
+
+yazdır dosya.var_mi("_tmp_stdlib_modul.txt")
+dosya.sil("_tmp_stdlib_modul.txt")
+yazdır dosya.var_mi("_tmp_stdlib_modul.txt")
+

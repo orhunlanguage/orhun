@@ -18,6 +18,7 @@ cases=(
   "tests/cases/json_parse"
   "tests/cases/f_string"
   "tests/cases/slicing"
+  "tests/cases/stdlib_modules"
 )
 
 failed=0
