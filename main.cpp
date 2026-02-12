@@ -121,6 +121,11 @@ bool kodCalistirVM(const std::string& kaynakKod, std::string* hataMesaji = nullp
   }
 }
 
+bool vmDerlemeHatasiMi(const std::exception& ex) {
+  const std::string mesaj = ex.what();
+  return mesaj.rfind("VM Derleme Hatasi", 0) == 0;
+}
+
 std::uint32_t crc32Hesapla(const std::vector<std::uint8_t>& veri) {
   std::uint32_t crc = 0xFFFFFFFFu;
   for (const std::uint8_t b : veri) {
@@ -494,12 +499,28 @@ int dosyaCalistir(const std::string& dosyaYolu) {
   return 0;
 }
 
-int dosyaCalistirVM(const std::string& dosyaYolu) {
+int dosyaCalistirVM(const std::string& dosyaYolu, bool katiMod) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error("Hata: VM calistirma icin .oh dosyasi bekleniyor.");
   }
+
   const std::string kod = dosyaOku(dosyaYolu);
-  kodCalistirVM(kod);
+  if (katiMod) {
+    kodCalistirVM(kod);
+    return 0;
+  }
+
+  try {
+    kodCalistirVM(kod);
+  } catch (const std::exception& ex) {
+    if (!vmDerlemeHatasiMi(ex)) {
+      throw;
+    }
+    std::cerr << "[VM] " << ex.what() << "\n";
+    std::cerr << "[VM] Desteklenmeyen ozellik bulundu, Interpreter moduna geciliyor.\n";
+    Interpreter yorumlayici;
+    kodCalistir(kod, yorumlayici);
+  }
   return 0;
 }
 
@@ -577,7 +598,14 @@ int main(int argc, char* argv[]) {
       if (argc < 3) {
         throw std::runtime_error("Hata: vm komutu icin .oh dosyasi bekleniyor.");
       }
-      return dosyaCalistirVM(argv[2]);
+      return dosyaCalistirVM(argv[2], false);
+    }
+
+    if (komut == "vm-kati") {
+      if (argc < 3) {
+        throw std::runtime_error("Hata: vm-kati komutu icin .oh dosyasi bekleniyor.");
+      }
+      return dosyaCalistirVM(argv[2], true);
     }
 
     if (komut == "obc") {
@@ -601,4 +629,3 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 }
-
