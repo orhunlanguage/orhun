@@ -115,7 +115,8 @@ std::vector<Token> Lexer::tokenize() {
             continue;
         }
 
-        if (operatorMu(c) || c == U'(' || c == U')' || c == U'[' || c == U']' || c == U',' || c == U':') {
+        if (operatorMu(c) || c == U'(' || c == U')' || c == U'[' || c == U']' || c == U',' || c == U':' ||
+            c == U'{' || c == U'}' || c == U'.') {
             const std::u32string tekKarakter(1, ilerle());
             tokenlar.push_back({TokenType::ISLEM, u32ToUtf8(tekKarakter), satir_});
             continue;
@@ -243,6 +244,14 @@ char32_t Lexer::bak() const {
     return kaynakKod_[konum_];
 }
 
+char32_t Lexer::bakIleri(std::size_t uzaklik) const {
+    const std::size_t hedef = konum_ + uzaklik;
+    if (hedef >= kaynakKod_.size()) {
+        return U'\0';
+    }
+    return kaynakKod_[hedef];
+}
+
 char32_t Lexer::ilerle() {
     if (dosyaSonu()) {
         return U'\0';
@@ -269,9 +278,23 @@ Token Lexer::kimlikVeyaAnahtarKelime() {
 Token Lexer::sayi() {
     const std::size_t baslangicSatir = satir_;
     std::u32string yazi;
+    bool noktaGoruldu = false;
 
-    while (!dosyaSonu() && rakamMi(bak())) {
-        yazi.push_back(ilerle());
+    while (!dosyaSonu()) {
+        const char32_t c = bak();
+        if (rakamMi(c)) {
+            yazi.push_back(ilerle());
+            continue;
+        }
+
+        // Ondalık destek: sadece bir kez ve ardından en az bir rakam varsa.
+        if (c == U'.' && !noktaGoruldu && rakamMi(bakIleri(1))) {
+            noktaGoruldu = true;
+            yazi.push_back(ilerle());
+            continue;
+        }
+
+        break;
     }
 
     return {TokenType::SAYI, u32ToUtf8(yazi), baslangicSatir};

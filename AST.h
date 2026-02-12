@@ -200,6 +200,32 @@ private:
     std::vector<std::unique_ptr<ASTNode>> ogeler_;
 };
 
+// Sözlük literal düğümü: { anahtar: deger, ... }
+class SozlukNode final : public ASTNode {
+public:
+    using OgeTipi = std::pair<std::string, std::unique_ptr<ASTNode>>;
+
+    SozlukNode(std::vector<OgeTipi> ogeler, std::size_t satir)
+        : ASTNode(satir), ogeler_(std::move(ogeler)) {}
+
+    const std::vector<OgeTipi>& ogeler() const {
+        return ogeler_;
+    }
+
+    void yazdir_agac(std::ostream& cikti, int girinti = 0) const override {
+        yazdirGirinti(cikti, girinti);
+        cikti << "SozlukNode [satır " << satir() << "]\n";
+        for (const auto& oge : ogeler_) {
+            yazdirGirinti(cikti, girinti + 2);
+            cikti << "Anahtar: " << oge.first << '\n';
+            oge.second->yazdir_agac(cikti, girinti + 4);
+        }
+    }
+
+private:
+    std::vector<OgeTipi> ogeler_;
+};
+
 class IndeksErisimNode final : public ASTNode {
 public:
     IndeksErisimNode(std::unique_ptr<ASTNode> hedef, std::unique_ptr<ASTNode> indeks, std::size_t satir)
@@ -227,6 +253,31 @@ public:
 private:
     std::unique_ptr<ASTNode> hedef_;
     std::unique_ptr<ASTNode> indeks_;
+};
+
+// Nokta notasyonu erişimi: hedef.alan
+class AlanErisimNode final : public ASTNode {
+public:
+    AlanErisimNode(std::unique_ptr<ASTNode> hedef, std::string alanAdi, std::size_t satir)
+        : ASTNode(satir), hedef_(std::move(hedef)), alanAdi_(std::move(alanAdi)) {}
+
+    const ASTNode* hedef() const {
+        return hedef_.get();
+    }
+
+    const std::string& alanAdi() const {
+        return alanAdi_;
+    }
+
+    void yazdir_agac(std::ostream& cikti, int girinti = 0) const override {
+        yazdirGirinti(cikti, girinti);
+        cikti << "AlanErisimNode(" << alanAdi_ << ") [satır " << satir() << "]\n";
+        hedef_->yazdir_agac(cikti, girinti + 2);
+    }
+
+private:
+    std::unique_ptr<ASTNode> hedef_;
+    std::string alanAdi_;
 };
 
 class IslevCagriNode final : public ASTNode {

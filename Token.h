@@ -4,7 +4,7 @@
 #include <string>
 
 // Orhun dilinin token türleri.
-// Parser bu sınıfları kullanarak sözdizimini anlamlandırır.
+// v0.5 ile sözlük/dot erişim sembolleri de ISLEM altında taşınır.
 enum class TokenType {
     ANAHTAR_KELIME,
     KIMLIK,

@@ -42,6 +42,7 @@ private:
     std::unique_ptr<ASTNode> parseTekli();
     std::unique_ptr<ASTNode> parsePostfix();
     std::unique_ptr<ASTNode> parseBirincil();
+    std::string parseSozlukAnahtari();
 
     // Token gezinme yardımcıları.
     bool dosyaSonu() const;

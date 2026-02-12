@@ -3,23 +3,28 @@
 #include "AST.h"
 
 #include <functional>
+#include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <variant>
 #include <vector>
 
 // Orhun çalışma zamanı değeri.
-// v0.4.1: sayı, metin ve liste desteklenir.
+// v0.5: sayı(int/double), metin, liste ve sözlük desteklenir.
 struct OrhunDegeri {
     using ListeTipi = std::vector<OrhunDegeri>;
+    using SozlukTipi = std::map<std::string, OrhunDegeri>;
 
-    std::variant<int, std::string, ListeTipi> veri;
+    std::variant<int, double, std::string, ListeTipi, SozlukTipi> veri;
 
     OrhunDegeri() : veri(0) {}
     explicit OrhunDegeri(int v) : veri(v) {}
+    explicit OrhunDegeri(double v) : veri(v) {}
     explicit OrhunDegeri(std::string v) : veri(std::move(v)) {}
     explicit OrhunDegeri(const char* v) : veri(std::string(v)) {}
     explicit OrhunDegeri(ListeTipi v) : veri(std::move(v)) {}
+    explicit OrhunDegeri(SozlukTipi v) : veri(std::move(v)) {}
 
     bool operator==(const OrhunDegeri& diger) const {
         return veri == diger.veri;
@@ -65,7 +70,9 @@ private:
                             std::size_t satir);
     OrhunDegeri sorCalistir(const SorNode* dugum);
     OrhunDegeri listeOlustur(const ListeNode* dugum);
+    OrhunDegeri sozlukOlustur(const SozlukNode* dugum);
     OrhunDegeri indeksErisim(const IndeksErisimNode* dugum);
+    OrhunDegeri alanErisim(const AlanErisimNode* dugum);
     OrhunDegeri islevCagir(const IslevCagriNode* dugum);
 
     DegiskenTablosu& aktifKapsam();
@@ -74,6 +81,13 @@ private:
     bool dogruMu(const OrhunDegeri& deger) const;
     bool esittir(const OrhunDegeri& sol, const OrhunDegeri& sag) const;
     std::string metneCevir(const OrhunDegeri& deger) const;
+
+    // Sayı yardımcıları: int/double birlikte işlenir.
+    bool sayiMi(const OrhunDegeri& deger) const;
+    double sayiDegeri(const OrhunDegeri& deger, std::size_t satir, const std::string& baglam) const;
+    bool tamSayiMi(const OrhunDegeri& deger) const;
+    bool tamSayiMi(double deger) const;
+    std::size_t listeIndeksiCevir(const OrhunDegeri& deger, std::size_t satir, const std::string& baglam) const;
 
     [[noreturn]] void hataFirlat(std::size_t satir, const std::string& mesaj) const;
 };

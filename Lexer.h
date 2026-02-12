@@ -25,6 +25,7 @@ private:
 
     bool dosyaSonu() const;
     char32_t bak() const;
+    char32_t bakIleri(std::size_t uzaklik) const;
     char32_t ilerle();
 
     Token kimlikVeyaAnahtarKelime();

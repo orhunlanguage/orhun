@@ -3,6 +3,7 @@
 #include "Lexer.h"
 #include "Parser.h"
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -34,8 +35,11 @@ void Interpreter::gomuluIslevleriYukle() {
         if (std::holds_alternative<OrhunDegeri::ListeTipi>(hedef.veri)) {
             return OrhunDegeri(static_cast<int>(std::get<OrhunDegeri::ListeTipi>(hedef.veri).size()));
         }
+        if (std::holds_alternative<OrhunDegeri::SozlukTipi>(hedef.veri)) {
+            return OrhunDegeri(static_cast<int>(std::get<OrhunDegeri::SozlukTipi>(hedef.veri).size()));
+        }
 
-        hataFirlat(satir, "uzunluk yalnızca metin veya liste üzerinde kullanılabilir.");
+        hataFirlat(satir, "uzunluk yalnızca metin, liste veya sözlük üzerinde kullanılabilir.");
     };
 
     gomuluIslevler_["listeye_ekle"] =
@@ -93,7 +97,7 @@ void Interpreter::gomuluIslevleriYukle() {
         return OrhunDegeri(1);
     };
 
-    // yazdır ve sor, dilde ayrıca keyword olarak da desteklenir.
+    // yazdır ve sor, dilde ayrıca anahtar kelime olarak da var.
     gomuluIslevler_["yazdır"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
             hataFirlat(satir, "yazdır tek argüman alır.");
@@ -203,11 +207,11 @@ void Interpreter::calistirEger(const EgerNode* dugum) {
 
 void Interpreter::calistirTekrarla(const TekrarlaNode* dugum) {
     const OrhunDegeri tekrarDegeri = ifadeHesapla(dugum->kacKezIfadesi());
-    if (!std::holds_alternative<int>(tekrarDegeri.veri)) {
-        hataFirlat(dugum->satir(), "'tekrarla' ifadesinde tekrar sayısı sayı olmalıdır.");
+    if (!tamSayiMi(tekrarDegeri)) {
+        hataFirlat(dugum->satir(), "'tekrarla' ifadesinde tekrar sayısı tam sayı olmalıdır.");
     }
 
-    const int kez = std::get<int>(tekrarDegeri.veri);
+    const int kez = static_cast<int>(sayiDegeri(tekrarDegeri, dugum->satir(), "tekrar sayısı"));
     if (kez < 0) {
         hataFirlat(dugum->satir(), "'tekrarla' tekrar sayısı negatif olamaz.");
     }
@@ -243,8 +247,6 @@ void Interpreter::calistirDahilEt(const DahilEtNode* dugum) {
         Parser parser(std::move(tokenlar));
         std::unique_ptr<ProgramNode> program = parser.parse();
 
-        // Modül AST'sini interpreter ömrü boyunca saklıyoruz.
-        // Aksi halde modül içindeki işlev tanım işaretçileri boşa düşer.
         ProgramNode* programHam = program.get();
         yukluModuller_.push_back(std::move(program));
         calistir(programHam);
@@ -264,6 +266,15 @@ OrhunDegeri Interpreter::ifadeHesapla(const ASTNode* dugum) {
 
     if (const auto* sayi = dynamic_cast<const SayiNode*>(dugum)) {
         try {
+            if (sayi->deger().find('.') != std::string::npos) {
+                std::size_t okunan = 0;
+                const double deger = std::stod(sayi->deger(), &okunan);
+                if (okunan != sayi->deger().size()) {
+                    hataFirlat(sayi->satir(), "'" + sayi->deger() + "' geçerli bir sayı değil.");
+                }
+                return OrhunDegeri(deger);
+            }
+
             std::size_t okunan = 0;
             const int deger = std::stoi(sayi->deger(), &okunan, 10);
             if (okunan != sayi->deger().size()) {
@@ -303,8 +314,16 @@ OrhunDegeri Interpreter::ifadeHesapla(const ASTNode* dugum) {
         return listeOlustur(liste);
     }
 
+    if (const auto* sozluk = dynamic_cast<const SozlukNode*>(dugum)) {
+        return sozlukOlustur(sozluk);
+    }
+
     if (const auto* indeks = dynamic_cast<const IndeksErisimNode*>(dugum)) {
         return indeksErisim(indeks);
+    }
+
+    if (const auto* alan = dynamic_cast<const AlanErisimNode*>(dugum)) {
+        return alanErisim(alan);
     }
 
     if (const auto* cagri = dynamic_cast<const IslevCagriNode*>(dugum)) {
@@ -322,10 +341,13 @@ OrhunDegeri Interpreter::tekliIslemHesapla(const TekliIslemNode* dugum) {
     }
 
     if (dugum->op() == "-") {
-        if (!std::holds_alternative<int>(deger.veri)) {
-            hataFirlat(dugum->satir(), "Tekli '-' yalnızca sayılarla kullanılabilir.");
+        if (std::holds_alternative<int>(deger.veri)) {
+            return OrhunDegeri(-std::get<int>(deger.veri));
         }
-        return OrhunDegeri(-std::get<int>(deger.veri));
+        if (std::holds_alternative<double>(deger.veri)) {
+            return OrhunDegeri(-std::get<double>(deger.veri));
+        }
+        hataFirlat(dugum->satir(), "Tekli '-' yalnızca sayılarla kullanılabilir.");
     }
 
     hataFirlat(dugum->satir(), "Bilinmeyen tekli operatör: " + dugum->op());
@@ -361,11 +383,8 @@ OrhunDegeri Interpreter::ikiliIslemHesapla(const IkiliIslemNode* dugum) {
         return OrhunDegeri(esittir(sol, sag) ? 0 : 1);
     }
     if (op == "büyük" || op == "küçük") {
-        if (!std::holds_alternative<int>(sol.veri) || !std::holds_alternative<int>(sag.veri)) {
-            hataFirlat(dugum->satir(), "'büyük' ve 'küçük' yalnızca sayılarla kullanılabilir.");
-        }
-        const int a = std::get<int>(sol.veri);
-        const int b = std::get<int>(sag.veri);
+        const double a = sayiDegeri(sol, dugum->satir(), "karşılaştırma");
+        const double b = sayiDegeri(sag, dugum->satir(), "karşılaştırma");
         if (op == "büyük") {
             return OrhunDegeri(a > b ? 1 : 0);
         }
@@ -386,36 +405,45 @@ OrhunDegeri Interpreter::listeIslemi(const OrhunDegeri& sol,
     const bool solListe = std::holds_alternative<OrhunDegeri::ListeTipi>(sol.veri);
     const bool sagListe = std::holds_alternative<OrhunDegeri::ListeTipi>(sag.veri);
 
-    // + operatöründe en az bir taraf metinse, diğer taraf metne çevrilerek birleştirilir.
+    // + operatöründe en az bir taraf metinse metin birleştirme yapılır.
     if (op == "+" &&
         (std::holds_alternative<std::string>(sol.veri) || std::holds_alternative<std::string>(sag.veri))) {
         return OrhunDegeri(metneCevir(sol) + metneCevir(sag));
     }
 
-    auto sayiIslemi = [&](int a, int b) -> int {
-        if (op == "+") {
-            return a + b;
-        }
-        if (op == "-") {
-            return a - b;
-        }
-        if (op == "*") {
-            return a * b;
-        }
-        if (op == "/") {
-            if (b == 0) {
-                hataFirlat(satir, "Sıfıra bölme yapılamaz.");
-            }
-            return a / b;
-        }
-        hataFirlat(satir, "Bilinmeyen aritmetik operatör: " + op);
-    };
-
-    const bool solSayi = std::holds_alternative<int>(sol.veri);
-    const bool sagSayi = std::holds_alternative<int>(sag.veri);
+    const bool solSayi = sayiMi(sol);
+    const bool sagSayi = sayiMi(sag);
 
     if (solSayi && sagSayi) {
-        return OrhunDegeri(sayiIslemi(std::get<int>(sol.veri), std::get<int>(sag.veri)));
+        const double a = sayiDegeri(sol, satir, "aritmetik işlem");
+        const double b = sayiDegeri(sag, satir, "aritmetik işlem");
+
+        if (op == "+") {
+            if (std::holds_alternative<int>(sol.veri) && std::holds_alternative<int>(sag.veri)) {
+                return OrhunDegeri(static_cast<int>(a + b));
+            }
+            return OrhunDegeri(a + b);
+        }
+        if (op == "-") {
+            if (std::holds_alternative<int>(sol.veri) && std::holds_alternative<int>(sag.veri)) {
+                return OrhunDegeri(static_cast<int>(a - b));
+            }
+            return OrhunDegeri(a - b);
+        }
+        if (op == "*") {
+            if (std::holds_alternative<int>(sol.veri) && std::holds_alternative<int>(sag.veri)) {
+                return OrhunDegeri(static_cast<int>(a * b));
+            }
+            return OrhunDegeri(a * b);
+        }
+        if (op == "/") {
+            if (std::fabs(b) < 1e-12) {
+                hataFirlat(satir, "Sıfıra bölme yapılamaz.");
+            }
+            return OrhunDegeri(a / b);
+        }
+
+        hataFirlat(satir, "Bilinmeyen aritmetik operatör: " + op);
     }
 
     if (solListe && sagListe) {
@@ -482,24 +510,56 @@ OrhunDegeri Interpreter::listeOlustur(const ListeNode* dugum) {
     return OrhunDegeri(std::move(liste));
 }
 
+OrhunDegeri Interpreter::sozlukOlustur(const SozlukNode* dugum) {
+    OrhunDegeri::SozlukTipi sozluk;
+    for (const auto& oge : dugum->ogeler()) {
+        sozluk[oge.first] = ifadeHesapla(oge.second.get());
+    }
+    return OrhunDegeri(std::move(sozluk));
+}
+
 OrhunDegeri Interpreter::indeksErisim(const IndeksErisimNode* dugum) {
     const OrhunDegeri hedef = ifadeHesapla(dugum->hedef());
     const OrhunDegeri indeks = ifadeHesapla(dugum->indeks());
 
-    if (!std::holds_alternative<OrhunDegeri::ListeTipi>(hedef.veri)) {
-        hataFirlat(dugum->satir(), "İndeks erişimi yalnızca listeler üzerinde kullanılabilir.");
-    }
-    if (!std::holds_alternative<int>(indeks.veri)) {
-        hataFirlat(dugum->satir(), "Liste indeksi sayı olmalıdır.");
-    }
-
-    const auto& liste = std::get<OrhunDegeri::ListeTipi>(hedef.veri);
-    const int idx = std::get<int>(indeks.veri);
-    if (idx < 0 || static_cast<std::size_t>(idx) >= liste.size()) {
-        hataFirlat(dugum->satir(), "Liste indeksi sınır dışında.");
+    if (std::holds_alternative<OrhunDegeri::ListeTipi>(hedef.veri)) {
+        const auto& liste = std::get<OrhunDegeri::ListeTipi>(hedef.veri);
+        const std::size_t idx = listeIndeksiCevir(indeks, dugum->satir(), "liste indeksi");
+        if (idx >= liste.size()) {
+            hataFirlat(dugum->satir(), "Liste indeksi sınır dışında.");
+        }
+        return liste[idx];
     }
 
-    return liste[static_cast<std::size_t>(idx)];
+    if (std::holds_alternative<OrhunDegeri::SozlukTipi>(hedef.veri)) {
+        if (!std::holds_alternative<std::string>(indeks.veri)) {
+            hataFirlat(dugum->satir(), "Sözlük anahtarı metin olmalıdır.");
+        }
+
+        const std::string& anahtar = std::get<std::string>(indeks.veri);
+        const auto& sozluk = std::get<OrhunDegeri::SozlukTipi>(hedef.veri);
+        const auto bulunan = sozluk.find(anahtar);
+        if (bulunan == sozluk.end()) {
+            hataFirlat(dugum->satir(), "'" + anahtar + "' anahtarı sözlükte bulunamadı!");
+        }
+        return bulunan->second;
+    }
+
+    hataFirlat(dugum->satir(), "İndeks erişimi yalnızca liste veya sözlük üzerinde kullanılabilir.");
+}
+
+OrhunDegeri Interpreter::alanErisim(const AlanErisimNode* dugum) {
+    const OrhunDegeri hedef = ifadeHesapla(dugum->hedef());
+    if (!std::holds_alternative<OrhunDegeri::SozlukTipi>(hedef.veri)) {
+        hataFirlat(dugum->satir(), "Nokta erişimi yalnızca sözlük üzerinde kullanılabilir.");
+    }
+
+    const auto& sozluk = std::get<OrhunDegeri::SozlukTipi>(hedef.veri);
+    const auto bulunan = sozluk.find(dugum->alanAdi());
+    if (bulunan == sozluk.end()) {
+        hataFirlat(dugum->satir(), "'" + dugum->alanAdi() + "' anahtarı sözlükte bulunamadı!");
+    }
+    return bulunan->second;
 }
 
 OrhunDegeri Interpreter::islevCagir(const IslevCagriNode* dugum) {
@@ -570,13 +630,22 @@ bool Interpreter::dogruMu(const OrhunDegeri& deger) const {
     if (std::holds_alternative<int>(deger.veri)) {
         return std::get<int>(deger.veri) != 0;
     }
+    if (std::holds_alternative<double>(deger.veri)) {
+        return std::fabs(std::get<double>(deger.veri)) > 1e-12;
+    }
     if (std::holds_alternative<std::string>(deger.veri)) {
         return !std::get<std::string>(deger.veri).empty();
     }
-    return !std::get<OrhunDegeri::ListeTipi>(deger.veri).empty();
+    if (std::holds_alternative<OrhunDegeri::ListeTipi>(deger.veri)) {
+        return !std::get<OrhunDegeri::ListeTipi>(deger.veri).empty();
+    }
+    return !std::get<OrhunDegeri::SozlukTipi>(deger.veri).empty();
 }
 
 bool Interpreter::esittir(const OrhunDegeri& sol, const OrhunDegeri& sag) const {
+    if (sayiMi(sol) && sayiMi(sag)) {
+        return std::fabs(sayiDegeri(sol, 0, "eşitlik") - sayiDegeri(sag, 0, "eşitlik")) < 1e-12;
+    }
     return sol == sag;
 }
 
@@ -585,20 +654,109 @@ std::string Interpreter::metneCevir(const OrhunDegeri& deger) const {
         return std::to_string(std::get<int>(deger.veri));
     }
 
+    if (std::holds_alternative<double>(deger.veri)) {
+        std::ostringstream os;
+        os << std::get<double>(deger.veri);
+        std::string sonuc = os.str();
+
+        // İnsan okunabilirlik için gereksiz sıfırları temizle.
+        if (sonuc.find('.') != std::string::npos) {
+            while (!sonuc.empty() && sonuc.back() == '0') {
+                sonuc.pop_back();
+            }
+            if (!sonuc.empty() && sonuc.back() == '.') {
+                sonuc.pop_back();
+            }
+            if (sonuc.empty()) {
+                sonuc = "0";
+            }
+        }
+        return sonuc;
+    }
+
     if (std::holds_alternative<std::string>(deger.veri)) {
         return std::get<std::string>(deger.veri);
     }
 
-    const auto& liste = std::get<OrhunDegeri::ListeTipi>(deger.veri);
-    std::string sonuc = "[";
-    for (std::size_t i = 0; i < liste.size(); ++i) {
-        if (i > 0) {
+    if (std::holds_alternative<OrhunDegeri::ListeTipi>(deger.veri)) {
+        const auto& liste = std::get<OrhunDegeri::ListeTipi>(deger.veri);
+        std::string sonuc = "[";
+        for (std::size_t i = 0; i < liste.size(); ++i) {
+            if (i > 0) {
+                sonuc += ", ";
+            }
+            sonuc += metneCevir(liste[i]);
+        }
+        sonuc += "]";
+        return sonuc;
+    }
+
+    const auto& sozluk = std::get<OrhunDegeri::SozlukTipi>(deger.veri);
+    std::string sonuc = "{";
+    bool ilk = true;
+    for (const auto& [anahtar, degerIc] : sozluk) {
+        if (!ilk) {
             sonuc += ", ";
         }
-        sonuc += metneCevir(liste[i]);
+        ilk = false;
+        sonuc += anahtar + ": " + metneCevir(degerIc);
     }
-    sonuc += "]";
+    sonuc += "}";
     return sonuc;
+}
+
+bool Interpreter::sayiMi(const OrhunDegeri& deger) const {
+    return std::holds_alternative<int>(deger.veri) || std::holds_alternative<double>(deger.veri);
+}
+
+double Interpreter::sayiDegeri(const OrhunDegeri& deger, std::size_t satir, const std::string& baglam) const {
+    if (std::holds_alternative<int>(deger.veri)) {
+        return static_cast<double>(std::get<int>(deger.veri));
+    }
+    if (std::holds_alternative<double>(deger.veri)) {
+        return std::get<double>(deger.veri);
+    }
+
+    if (satir == 0) {
+        throw std::runtime_error("Hata: " + baglam + " için sayı bekleniyordu.");
+    }
+    throw std::runtime_error("Satır " + std::to_string(satir) + ": " + baglam + " için sayı bekleniyordu.");
+}
+
+bool Interpreter::tamSayiMi(const OrhunDegeri& deger) const {
+    if (std::holds_alternative<int>(deger.veri)) {
+        return true;
+    }
+    if (std::holds_alternative<double>(deger.veri)) {
+        return tamSayiMi(std::get<double>(deger.veri));
+    }
+    return false;
+}
+
+bool Interpreter::tamSayiMi(double deger) const {
+    return std::fabs(deger - std::round(deger)) < 1e-12;
+}
+
+std::size_t Interpreter::listeIndeksiCevir(const OrhunDegeri& deger,
+                                           std::size_t satir,
+                                           const std::string& baglam) const {
+    double hamDeger = 0.0;
+    if (std::holds_alternative<int>(deger.veri)) {
+        hamDeger = static_cast<double>(std::get<int>(deger.veri));
+    } else if (std::holds_alternative<double>(deger.veri)) {
+        hamDeger = std::get<double>(deger.veri);
+    } else {
+        hataFirlat(satir, baglam + " tam sayı olmalıdır.");
+    }
+
+    if (!tamSayiMi(hamDeger)) {
+        hataFirlat(satir, baglam + " tam sayı olmalıdır.");
+    }
+    if (hamDeger < 0.0) {
+        hataFirlat(satir, baglam + " negatif olamaz.");
+    }
+
+    return static_cast<std::size_t>(hamDeger);
 }
 
 [[noreturn]] void Interpreter::hataFirlat(std::size_t satir, const std::string& mesaj) const {

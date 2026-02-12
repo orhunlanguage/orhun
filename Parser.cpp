@@ -309,6 +309,13 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
             continue;
         }
 
+        if (eslesir(TokenType::ISLEM, ".")) {
+            const Token noktaToken = onceki();
+            const Token alanToken = tuket(TokenType::KIMLIK, "Nokta erişiminden sonra alan adı bekleniyor.");
+            ifade = std::make_unique<AlanErisimNode>(std::move(ifade), alanToken.deger, noktaToken.satir);
+            continue;
+        }
+
         break;
     }
 
@@ -359,13 +366,41 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
         return std::make_unique<ListeNode>(std::move(ogeler), token.satir);
     }
 
+    if (eslesir(TokenType::ISLEM, "{")) {
+        const Token token = onceki();
+        std::vector<SozlukNode::OgeTipi> ogeler;
+
+        if (!kontrol(TokenType::ISLEM, "}")) {
+            while (true) {
+                const std::string anahtar = parseSozlukAnahtari();
+                tuket(TokenType::ISLEM, ":", "Sözlükte anahtardan sonra ':' bekleniyor.");
+                std::unique_ptr<ASTNode> deger = parseIfade();
+                ogeler.push_back({anahtar, std::move(deger)});
+
+                if (!eslesir(TokenType::ISLEM, ",")) {
+                    break;
+                }
+            }
+        }
+
+        tuket(TokenType::ISLEM, "}", "Sözlük ifadesinin sonunda '}' bekleniyor.");
+        return std::make_unique<SozlukNode>(std::move(ogeler), token.satir);
+    }
+
     if (eslesir(TokenType::ISLEM, "(")) {
         std::unique_ptr<ASTNode> ic = parseIfade();
         tuket(TokenType::ISLEM, ")", "Parantezli ifade kapanırken ')' bekleniyor.");
         return ic;
     }
 
-    syntaxError(bak(), "İfade bekleniyordu (sayı, metin, kimlik, liste veya parantez).");
+    syntaxError(bak(), "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez).");
+}
+
+std::string Parser::parseSozlukAnahtari() {
+    if (eslesir(TokenType::KIMLIK) || eslesir(TokenType::METIN) || eslesir(TokenType::ANAHTAR_KELIME)) {
+        return onceki().deger;
+    }
+    syntaxError(bak(), "Sözlük anahtarı bekleniyor (kimlik veya metin).");
 }
 
 bool Parser::dosyaSonu() const {
@@ -453,7 +488,8 @@ bool Parser::ifadeBaslangiciMi(const Token& token) const {
         return true;
     }
 
-    if (token.tur == TokenType::ISLEM && (token.deger == "(" || token.deger == "[" || token.deger == "-")) {
+    if (token.tur == TokenType::ISLEM &&
+        (token.deger == "(" || token.deger == "[" || token.deger == "{" || token.deger == "-")) {
         return true;
     }
 
