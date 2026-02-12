@@ -1,0 +1,3 @@
+# v1.1 '=' atama testi
+sayi = 10
+yazdır "Eşittir ile atama çalıştı: " + sayi

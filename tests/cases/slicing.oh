@@ -1,0 +1,10 @@
+# v1.1 dilimleme testi
+liste = [10, 20, 30, 40, 50]
+yazdır liste[1:4]
+yazdır liste[:3]
+yazdır liste[2:]
+yazdır liste[-2:]
+yazdır liste[:]
+
+metin = "ABCDEFG"
+yazdır metin[2:5]

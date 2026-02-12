@@ -1,7 +1,9 @@
 #include "Parser.h"
+#include "Yardimci.h"
 
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 namespace {
@@ -32,6 +34,44 @@ bool cagrilabilirAdCoz(const ASTNode *dugum, std::string &ad) {
   }
 
   return false;
+}
+
+const std::vector<std::string> &orhunAnahtarKelimeleri() {
+  static const std::vector<std::string> anahtarlar = {
+      "yazdır", "olsun",   "eğer",  "ise",     "değilse", "doğru",
+      "yanlış", "tekrarla", "kez",   "sor",     "işlev",   "döndür",
+      "dahil_et", "sürece", "eşit", "eşit_değil", "büyük", "küçük",
+      "ve",     "veya",    "değil", "tip",     "yeni",    "benim",
+      "deneme", "yakala",  "kır",   "devam",   "ust",     "için",
+      "içinde"};
+  return anahtarlar;
+}
+
+std::vector<std::string>
+olasiOneriAdaylariniTopla(const std::vector<Token> &tokenlar) {
+  std::vector<std::string> adaylar = orhunAnahtarKelimeleri();
+  std::unordered_set<std::string> gorulen(adaylar.begin(), adaylar.end());
+
+  for (const Token &token : tokenlar) {
+    if ((token.tur == TokenType::KIMLIK || token.tur == TokenType::ANAHTAR_KELIME) &&
+        !token.deger.empty() && gorulen.insert(token.deger).second) {
+      adaylar.push_back(token.deger);
+    }
+  }
+
+  return adaylar;
+}
+
+std::optional<std::string> akilliOneriBul(const Token &token,
+                                          const std::vector<Token> &tokenlar) {
+  if (token.tur != TokenType::KIMLIK || token.deger.empty()) {
+    return std::nullopt;
+  }
+
+  const auto adaylar = olasiOneriAdaylariniTopla(tokenlar);
+  const std::size_t maxMesafe =
+      utf8KodNoktalarinaCevir(token.deger).size() >= 7 ? 3 : 2;
+  return enYakinOneri(token.deger, adaylar, maxMesafe);
 }
 } // namespace
 
@@ -70,12 +110,15 @@ std::unique_ptr<ProgramNode> Parser::parse() {
 std::unique_ptr<ASTNode> Parser::parseKomut() {
   // Genel atama: hedef olsun ifade
   // Hedef; kimlik, benim.alan, alan erişimi veya indeks erişimi olabilir.
-  if (kontrol(TokenType::KIMLIK) || kontrol(TokenType::ANAHTAR_KELIME, "benim")) {
+  if (kontrol(TokenType::KIMLIK) ||
+      kontrol(TokenType::ANAHTAR_KELIME, "benim")) {
     const std::size_t kayit = konum_;
     std::unique_ptr<ASTNode> hedef = parsePostfix();
-    if (eslesir(TokenType::ANAHTAR_KELIME, "olsun")) {
+    if (eslesir(TokenType::ANAHTAR_KELIME, "olsun") ||
+        eslesir(TokenType::ISLEM, "=")) {
       if (!atanabilirHedefMi(hedef.get())) {
-        syntaxError(bak(), "Atama hedefi yalnızca değişken, alan veya indeks erişimi olabilir.");
+        syntaxError(bak(), "Atama hedefi yalnızca değişken, alan veya indeks "
+                           "erişimi olabilir.");
       }
       const std::size_t satir = hedef->satir();
       return parseAtama(std::move(hedef), satir);
@@ -86,6 +129,21 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
   if (kontrol(TokenType::ANAHTAR_KELIME, "yazdır")) {
     return parseYazdir();
   }
+
+  if (kontrol(TokenType::KIMLIK)) {
+    const Token &adayKomut = bak();
+    const auto oneri = akilliOneriBul(adayKomut, tokenlar_);
+    const Token &sonraki = bakIleri(1);
+    const bool komutGibiBaslangic =
+        sonraki.tur == TokenType::KIMLIK || sonraki.tur == TokenType::METIN ||
+        sonraki.tur == TokenType::SAYI || sonraki.tur == TokenType::ONDALIK ||
+        (sonraki.tur == TokenType::ANAHTAR_KELIME &&
+         sonraki.deger != "olsun");
+    if (oneri.has_value() && komutGibiBaslangic) {
+      syntaxError(adayKomut, "Tanınmayan komut: '" + adayKomut.deger + "'.");
+    }
+  }
+
   if (kontrol(TokenType::ANAHTAR_KELIME, "eğer")) {
     return parseEger();
   }
@@ -100,8 +158,7 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
     }
 
     std::unique_ptr<ASTNode> kosul = parseIfade();
-    tuket(TokenType::ISLEM, ":",
-          "'sürece' koşulundan sonra ':' bekleniyor.");
+    tuket(TokenType::ISLEM, ":", "'sürece' koşulundan sonra ':' bekleniyor.");
     return std::make_unique<SureceNode>(
         std::move(kosul), parseBlokVeyaTekKomut("sürece", false), token.satir);
   }
@@ -138,7 +195,7 @@ std::unique_ptr<ASTNode> Parser::parseKomut() {
 std::unique_ptr<ASTNode> Parser::parseAtama(std::unique_ptr<ASTNode> hedef,
                                             std::size_t satir) {
   if (kontrol(TokenType::YENI_SATIR) || kontrol(TokenType::DOSYA_SONU)) {
-    syntaxError(bak(), "'olsun' komutundan sonra bir değer bekleniyor.");
+    syntaxError(bak(), "'olsun' veya '=' atamasından sonra bir değer bekleniyor.");
   }
 
   return std::make_unique<AtamaNode>(std::move(hedef), parseIfade(), satir);
@@ -165,11 +222,17 @@ std::unique_ptr<ASTNode> Parser::parseEger() {
 
   std::unique_ptr<ASTNode> kosul = parseIfade();
   tuket(TokenType::ANAHTAR_KELIME, "ise", "Koşuldan sonra 'ise' bekleniyor.");
+  if (kontrol(TokenType::ISLEM, ":")) {
+    ilerle();
+  }
 
   std::unique_ptr<BlockNode> dogruBlok = parseBlokVeyaTekKomut("eğer", false);
 
   std::unique_ptr<BlockNode> yanlisBlok;
   if (eslesir(TokenType::ANAHTAR_KELIME, "değilse")) {
+    if (kontrol(TokenType::ISLEM, ":")) {
+      ilerle();
+    }
     yanlisBlok = parseBlokVeyaTekKomut("değilse", false);
   }
 
@@ -227,18 +290,17 @@ std::unique_ptr<ASTNode> Parser::parseSinifTanim() {
       tuket(TokenType::KIMLIK, "'tip' ifadesinden sonra sınıf adı bekleniyor.");
   std::string ebeveynAdi;
   if (eslesir(TokenType::ISLEM, "(")) {
-    ebeveynAdi =
-        tuket(TokenType::KIMLIK,
-              "Miras tanımında ebeveyn sınıf adı bekleniyor.")
-            .deger;
+    ebeveynAdi = tuket(TokenType::KIMLIK,
+                       "Miras tanımında ebeveyn sınıf adı bekleniyor.")
+                     .deger;
     tuket(TokenType::ISLEM, ")",
           "Miras tanımında ebeveyn sınıfından sonra ')' bekleniyor.");
   }
   tuket(TokenType::ISLEM, ":", "Sınıf adından sonra ':' bekleniyor.");
 
-  return std::make_unique<SinifTanimNode>(
-      adToken.deger, std::move(ebeveynAdi),
-      parseBlokVeyaTekKomut("tip", true), token.satir);
+  return std::make_unique<SinifTanimNode>(adToken.deger, std::move(ebeveynAdi),
+                                          parseBlokVeyaTekKomut("tip", true),
+                                          token.satir);
 }
 
 std::unique_ptr<ASTNode> Parser::parseDenemeYakala() {
@@ -251,13 +313,14 @@ std::unique_ptr<ASTNode> Parser::parseDenemeYakala() {
   tuket(TokenType::ANAHTAR_KELIME, "yakala",
         "'deneme' bloğundan sonra 'yakala' bekleniyor.");
   const Token hataToken =
-      tuket(TokenType::KIMLIK, "'yakala' ifadesinden sonra hata değişkeni bekleniyor.");
+      tuket(TokenType::KIMLIK,
+            "'yakala' ifadesinden sonra hata değişkeni bekleniyor.");
   tuket(TokenType::ISLEM, ":", "'yakala' ifadesinden sonra ':' bekleniyor.");
   std::unique_ptr<BlockNode> yakalaBlok = parseBlokVeyaTekKomut("yakala", true);
 
-  return std::make_unique<DenemeYakalaNode>(
-      std::move(denemeBlok), hataToken.deger, std::move(yakalaBlok),
-      token.satir);
+  return std::make_unique<DenemeYakalaNode>(std::move(denemeBlok),
+                                            hataToken.deger,
+                                            std::move(yakalaBlok), token.satir);
 }
 
 std::unique_ptr<ASTNode> Parser::parseKir() {
@@ -445,10 +508,40 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
 
     if (eslesir(TokenType::ISLEM, "[")) {
       const Token acilisKose = onceki();
-      std::unique_ptr<ASTNode> indeks = parseIfade();
-      tuket(TokenType::ISLEM, "]", "İndeks erişiminde ']' bekleniyor.");
-      ifade = std::make_unique<IndeksErisimNode>(
-          std::move(ifade), std::move(indeks), acilisKose.satir);
+      std::unique_ptr<ASTNode> ilkParca;
+      bool ilkParcaVar = false;
+
+      if (!kontrol(TokenType::ISLEM, ":")) {
+        if (kontrol(TokenType::ISLEM, "]")) {
+          syntaxError(bak(), "İndeks veya dilim ifadesi bekleniyor.");
+        }
+        ilkParca = parseIfade();
+        ilkParcaVar = true;
+      }
+
+      if (eslesir(TokenType::ISLEM, ":")) {
+        std::unique_ptr<ASTNode> baslangic;
+        if (ilkParcaVar) {
+          baslangic = std::move(ilkParca);
+        }
+
+        std::unique_ptr<ASTNode> bitis;
+        if (!kontrol(TokenType::ISLEM, "]")) {
+          bitis = parseIfade();
+        }
+
+        tuket(TokenType::ISLEM, "]", "Dilim erişiminde ']' bekleniyor.");
+        ifade = std::make_unique<DilimErisimNode>(
+            std::move(ifade), std::move(baslangic), std::move(bitis),
+            acilisKose.satir);
+      } else {
+        if (!ilkParcaVar) {
+          syntaxError(bak(), "İndeks ifadesi bekleniyor.");
+        }
+        tuket(TokenType::ISLEM, "]", "İndeks erişiminde ']' bekleniyor.");
+        ifade = std::make_unique<IndeksErisimNode>(
+            std::move(ifade), std::move(ilkParca), acilisKose.satir);
+      }
       continue;
     }
 
@@ -462,8 +555,8 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
           ifade = std::make_unique<BenimErisimNode>(alanToken.deger,
                                                     noktaToken.satir);
         } else if (kimlik->ad() == "ust") {
-          ifade =
-              std::make_unique<UstErisimNode>(alanToken.deger, noktaToken.satir);
+          ifade = std::make_unique<UstErisimNode>(alanToken.deger,
+                                                  noktaToken.satir);
         } else {
           ifade = std::make_unique<AlanErisimNode>(
               std::move(ifade), alanToken.deger, noktaToken.satir);
@@ -545,8 +638,8 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
             "Kurucu argüman listesinin sonunda ')' bekleniyor.");
     }
 
-    return std::make_unique<YeniNesneNode>(sinifAdi.deger, std::move(argumanlar),
-                                           token.satir);
+    return std::make_unique<YeniNesneNode>(sinifAdi.deger,
+                                           std::move(argumanlar), token.satir);
   }
 
   if (eslesir(TokenType::ISLEM, "[")) {
@@ -740,6 +833,11 @@ bool Parser::atanabilirHedefMi(const ASTNode *dugum) const {
 [[noreturn]] void Parser::syntaxError(const Token &token,
                                       const std::string &mesaj) const {
   const std::string gorunen = token.deger.empty() ? "<boş>" : token.deger;
+  std::string detayliMesaj = mesaj;
+  if (const auto oneri = akilliOneriBul(token, tokenlar_); oneri.has_value()) {
+    detayliMesaj += " Bunu mu demek istediniz: '" + oneri.value() + "'?";
+  }
+
   throw std::runtime_error("Satır " + std::to_string(token.satir) + ": " +
-                           mesaj + " [token: " + gorunen + "]");
+                           detayliMesaj + " [token: " + gorunen + "]");
 }

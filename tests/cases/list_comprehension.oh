@@ -1,0 +1,6 @@
+# Liste ureteci testi
+sayilar olsun [1, 2, 3, 4, 5]
+kareler olsun [x * x için x içinde sayilar]
+buyukler olsun [x için x içinde sayilar eğer x büyük 3]
+yazdır "Kareler: " + kareler
+yazdır "Buyukler: " + buyukler

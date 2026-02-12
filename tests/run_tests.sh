@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+COMPILER="${1:-g++}"
+OUTPUT="${2:-orhun_test}"
+
+echo "[1/3] Building..."
+"${COMPILER}" -std=c++17 -Wall -Wextra -pedantic \
+  main.cpp Lexer.cpp Parser.cpp Interpreter.cpp \
+  -o "${OUTPUT}"
+
+cases=(
+  "tests/cases/basic_math"
+  "tests/cases/oop_super"
+  "tests/cases/list_comprehension"
+  "tests/cases/try_break_continue"
+  "tests/cases/assignment_equals"
+  "tests/cases/json_parse"
+  "tests/cases/f_string"
+  "tests/cases/slicing"
+)
+
+failed=0
+echo "[2/3] Running tests..."
+for case in "${cases[@]}"; do
+  src="${case}.oh"
+  expected_path="${case}.expected.txt"
+
+  actual="$("./${OUTPUT}" "${src}" 2>&1 || true)"
+  expected="$(cat "${expected_path}")"
+
+  # normalize trailing newline differences
+  actual="${actual%$'\n'}"
+  expected="${expected%$'\n'}"
+
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo ""
+    echo "[FAIL] ${src}"
+    echo "Expected:"
+    echo "${expected}"
+    echo "Actual:"
+    echo "${actual}"
+    failed=1
+  else
+    echo "[OK] ${src}"
+  fi
+done
+
+echo "[3/3] Result..."
+if [[ "${failed}" -ne 0 ]]; then
+  echo "Some tests failed."
+  exit 1
+fi
+echo "All tests passed."

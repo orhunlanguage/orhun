@@ -1,0 +1,19 @@
+# OOP + miras + ust testi
+tip Arac:
+    hiz olsun 0
+    işlev kur(baslangic):
+        benim.hiz olsun baslangic
+    işlev bilgi():
+        yazdır "Arac hiz: " + benim.hiz
+
+tip SporAraba (Arac):
+    turbo olsun yanlış
+    işlev kur(hiz, t):
+        ust.kur(hiz)
+        benim.turbo olsun t
+    işlev bilgi():
+        ust.bilgi()
+        yazdır "Turbo: " + benim.turbo
+
+f olsun yeni SporAraba(220, doğru)
+f.bilgi()

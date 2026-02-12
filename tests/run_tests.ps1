@@ -1,0 +1,57 @@
+param(
+    [string]$Compiler = "g++",
+    [string]$Output = "orhun_test.exe"
+)
+
+$ErrorActionPreference = "Stop"
+
+Write-Host "[1/3] Derleniyor..."
+& $Compiler -std=c++17 -Wall -Wextra -pedantic `
+    main.cpp Lexer.cpp Parser.cpp Interpreter.cpp `
+    -o $Output
+
+$cases = @(
+    "tests/cases/basic_math",
+    "tests/cases/oop_super",
+    "tests/cases/list_comprehension",
+    "tests/cases/try_break_continue",
+    "tests/cases/assignment_equals",
+    "tests/cases/json_parse",
+    "tests/cases/f_string",
+    "tests/cases/slicing"
+)
+
+$failed = $false
+
+Write-Host "[2/3] Testler calisiyor..."
+foreach ($case in $cases) {
+    $src = "$case.oh"
+    $expectedPath = "$case.expected.txt"
+
+    $actual = & ".\$Output" $src 2>&1 | Out-String
+    $actual = $actual -replace "`r`n", "`n"
+    $actual = $actual.TrimEnd("`n")
+
+    $expected = Get-Content $expectedPath -Raw -Encoding utf8
+    $expected = $expected -replace "`r`n", "`n"
+    $expected = $expected.TrimEnd("`n")
+
+    if ($actual -ne $expected) {
+        Write-Host ""
+        Write-Host "[HATA] $src"
+        Write-Host "Beklenen:"
+        Write-Host $expected
+        Write-Host "Alinan:"
+        Write-Host $actual
+        $failed = $true
+    } else {
+        Write-Host "[OK] $src"
+    }
+}
+
+Write-Host "[3/3] Sonuc..."
+if ($failed) {
+    throw "Bazi testler basarisiz."
+}
+
+Write-Host "Tum testler basarili."

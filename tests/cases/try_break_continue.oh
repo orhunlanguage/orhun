@@ -1,0 +1,17 @@
+# deneme/yakala + kir/devam testi
+sayac olsun 0
+deneme:
+    x olsun 5 / 0
+yakala hata:
+    yazdır "Yakalanan: " + hata
+
+toplam olsun 0
+sürece sayac küçük 6:
+    sayac olsun sayac + 1
+    eğer sayac eşit 3 ise:
+        devam
+    eğer sayac eşit 5 ise:
+        kır
+    toplam olsun toplam + sayac
+
+yazdır "Toplam: " + toplam

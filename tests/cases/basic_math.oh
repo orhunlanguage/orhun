@@ -1,0 +1,7 @@
+# Temel aritmetik ve metin birlestirme testi
+a olsun 7
+b olsun 5
+yazdır "Toplam: " + (a + b)
+yazdır "Carpim: " + (a * b)
+yazdır "Bolum: " + (a / b)
+yazdır "Esit mi: " + (a eşit b)

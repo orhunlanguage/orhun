@@ -118,8 +118,9 @@ std::vector<Token> Lexer::tokenize() {
       continue;
     }
 
-    if (operatorMu(c) || c == U'(' || c == U')' || c == U'[' || c == U']' ||
-        c == U',' || c == U':' || c == U'{' || c == U'}' || c == U'.') {
+    if (operatorMu(c) || c == U'=' || c == U'(' || c == U')' || c == U'[' ||
+        c == U']' || c == U',' || c == U':' || c == U'{' || c == U'}' ||
+        c == U'.') {
       const std::u32string tekKarakter(1, ilerle());
       tokenlar.push_back({TokenType::ISLEM, u32ToUtf8(tekKarakter), satir_});
       continue;

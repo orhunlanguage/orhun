@@ -232,6 +232,46 @@ private:
   std::unique_ptr<ASTNode> indeks_;
 };
 
+// Dilim erişimi: hedef[baslangic:bitis]
+// baslangic veya bitis boş bırakılabilir (örn: [:3], [2:], [:]).
+class DilimErisimNode final : public ASTNode {
+public:
+  DilimErisimNode(std::unique_ptr<ASTNode> hedef,
+                  std::unique_ptr<ASTNode> baslangic,
+                  std::unique_ptr<ASTNode> bitis, std::size_t satir)
+      : ASTNode(satir), hedef_(std::move(hedef)),
+        baslangic_(std::move(baslangic)), bitis_(std::move(bitis)) {}
+
+  const ASTNode *hedef() const { return hedef_.get(); }
+
+  const ASTNode *baslangic() const { return baslangic_.get(); }
+
+  const ASTNode *bitis() const { return bitis_.get(); }
+
+  void yazdir_agac(std::ostream &cikti, int girinti = 0) const override {
+    yazdirGirinti(cikti, girinti);
+    cikti << "DilimErisimNode [satır " << satir() << "]\n";
+    yazdirGirinti(cikti, girinti + 2);
+    cikti << "Hedef:\n";
+    hedef_->yazdir_agac(cikti, girinti + 4);
+    if (baslangic_ != nullptr) {
+      yazdirGirinti(cikti, girinti + 2);
+      cikti << "Baslangic:\n";
+      baslangic_->yazdir_agac(cikti, girinti + 4);
+    }
+    if (bitis_ != nullptr) {
+      yazdirGirinti(cikti, girinti + 2);
+      cikti << "Bitis:\n";
+      bitis_->yazdir_agac(cikti, girinti + 4);
+    }
+  }
+
+private:
+  std::unique_ptr<ASTNode> hedef_;
+  std::unique_ptr<ASTNode> baslangic_;
+  std::unique_ptr<ASTNode> bitis_;
+};
+
 // Nokta notasyonu erişimi: hedef.alan
 class AlanErisimNode final : public ASTNode {
 public:

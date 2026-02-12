@@ -155,6 +155,7 @@ private:
   OrhunDegeri listeOlustur(const ListeNode *dugum);
   OrhunDegeri listeUreteciOlustur(const ListeUretecNode *dugum);
   OrhunDegeri sozlukOlustur(const SozlukNode *dugum);
+  OrhunDegeri dilimErisim(const DilimErisimNode *dugum);
   OrhunDegeri indeksErisim(const IndeksErisimNode *dugum);
   OrhunDegeri alanErisim(const AlanErisimNode *dugum);
   OrhunDegeri benimErisim(const BenimErisimNode *dugum);
@@ -192,6 +193,8 @@ private:
   bool dogruMu(const OrhunDegeri &deger) const;
   bool esittir(const OrhunDegeri &sol, const OrhunDegeri &sag) const;
   std::string metneCevir(const OrhunDegeri &deger) const;
+  std::string metinGomuleriCoz(const std::string &metin,
+                               std::size_t satir) const;
 
   // Sayı yardımcıları: int/double birlikte işlenir.
   bool sayiMi(const OrhunDegeri &deger) const;
@@ -199,6 +202,9 @@ private:
                     const std::string &baglam) const;
   bool tamSayiMi(const OrhunDegeri &deger) const;
   bool tamSayiMi(double deger) const;
+  long long dilimSiniriCevir(const ASTNode *sinirIfadesi, long long varsayilan,
+                             long long uzunluk, std::size_t satir,
+                             const std::string &baglam);
   std::size_t listeIndeksiCevir(const OrhunDegeri &deger, std::size_t satir,
                                 const std::string &baglam) const;
 
