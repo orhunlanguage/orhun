@@ -26,6 +26,7 @@ cases=(
   "tests/cases/module_stdlib"
   "tests/cases/try_catch_runtime"
   "tests/cases/f_string_escape"
+  "tests/cases/vm_loop_control"
 )
 
 failed=0
@@ -54,7 +55,38 @@ for case in "${cases[@]}"; do
   fi
 done
 
-echo "[3/3] Result..."
+vm_cases=(
+  "tests/cases/assignment_equals"
+  "tests/cases/while_float"
+  "tests/cases/list_comprehension"
+  "tests/cases/vm_loop_control"
+)
+
+echo "[3/4] Running strict VM subset..."
+for case in "${vm_cases[@]}"; do
+  src="${case}.oh"
+  expected_path="${case}.expected.txt"
+
+  actual="$("./${OUTPUT}" vm-kati "${src}" 2>&1 || true)"
+  expected="$(cat "${expected_path}")"
+
+  actual="${actual%$'\n'}"
+  expected="${expected%$'\n'}"
+
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo ""
+    echo "[VM-FAIL] ${src}"
+    echo "Expected:"
+    echo "${expected}"
+    echo "Actual:"
+    echo "${actual}"
+    failed=1
+  else
+    echo "[VM-OK] ${src}"
+  fi
+done
+
+echo "[4/4] Result..."
 if [[ "${failed}" -ne 0 ]]; then
   echo "Some tests failed."
   exit 1

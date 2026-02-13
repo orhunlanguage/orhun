@@ -1,0 +1,8 @@
+sayi olsun 0
+tekrarla 5 kez
+    sayi olsun sayi + 1
+    eğer sayi eşit 2 ise:
+        devam
+    eğer sayi eşit 4 ise:
+        kır
+yazdır sayi

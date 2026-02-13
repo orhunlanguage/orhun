@@ -26,7 +26,8 @@ $cases = @(
     "tests/cases/while_float",
     "tests/cases/module_stdlib",
     "tests/cases/try_catch_runtime",
-    "tests/cases/f_string_escape"
+    "tests/cases/f_string_escape",
+    "tests/cases/vm_loop_control"
 )
 
 if ($env:OS -eq "Windows_NT") {
@@ -63,7 +64,40 @@ foreach ($case in $cases) {
     }
 }
 
-Write-Host "[3/3] Sonuc..."
+Write-Host "[3/4] VM-kati secili testler..."
+$vmCases = @(
+    "tests/cases/assignment_equals",
+    "tests/cases/while_float",
+    "tests/cases/list_comprehension",
+    "tests/cases/vm_loop_control"
+)
+
+foreach ($case in $vmCases) {
+    $src = "$case.oh"
+    $expectedPath = "$case.expected.txt"
+
+    $actual = & ".\$Output" vm-kati $src 2>&1 | Out-String
+    $actual = $actual -replace "`r`n", "`n"
+    $actual = $actual.TrimEnd("`n")
+
+    $expected = Get-Content $expectedPath -Raw -Encoding utf8
+    $expected = $expected -replace "`r`n", "`n"
+    $expected = $expected.TrimEnd("`n")
+
+    if ($actual -ne $expected) {
+        Write-Host ""
+        Write-Host "[VM-HATA] $src"
+        Write-Host "Beklenen:"
+        Write-Host $expected
+        Write-Host "Alinan:"
+        Write-Host $actual
+        $failed = $true
+    } else {
+        Write-Host "[VM-OK] $src"
+    }
+}
+
+Write-Host "[4/4] Sonuc..."
 if ($failed) {
     throw "Bazi testler basarisiz."
 }

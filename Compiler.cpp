@@ -67,6 +67,18 @@ void Compiler::komutDerle(const ASTNode* dugum) {
     sureceDerle(surece);
     return;
   }
+  if (const auto* tekrarla = dynamic_cast<const TekrarlaNode*>(dugum)) {
+    tekrarlaDerle(tekrarla);
+    return;
+  }
+  if (const auto* kir = dynamic_cast<const KirNode*>(dugum)) {
+    kirDerle(kir);
+    return;
+  }
+  if (const auto* devam = dynamic_cast<const DevamNode*>(dugum)) {
+    devamDerle(devam);
+    return;
+  }
   if (const auto* blok = dynamic_cast<const BlockNode*>(dugum)) {
     blokDerle(blok);
     return;
@@ -259,6 +271,11 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
     return;
   }
 
+  if (const auto* uretec = dynamic_cast<const ListeUretecNode*>(dugum)) {
+    listeUretecDerle(uretec);
+    return;
+  }
+
   if (const auto* sozluk = dynamic_cast<const SozlukNode*>(dugum)) {
     for (const auto& [anahtar, deger] : sozluk->ogeler()) {
       sabitYaz(SabitDeger(anahtar), sozluk->satir());
@@ -302,6 +319,92 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
 
   derlemeHatasi(dugum->satir(),
                 "Bu ifade VM derleyicisinin Faz 2 kapsaminda degil.");
+}
+
+void Compiler::listeUretecDerle(const ListeUretecNode* dugum) {
+  const std::size_t satir = dugum->satir();
+  const std::string sonucAd = geciciAdUret("__vm_uretec_sonuc");
+  const std::string kaynakAd = geciciAdUret("__vm_uretec_kaynak");
+  const std::string indeksAd = geciciAdUret("__vm_uretec_indeks");
+
+  // sonuc = []
+  chunk_.yazOpCode(OpCode::OP_LISTE_OLUSTUR, satir);
+  chunk_.yazU16(0, satir);
+  degiskenYaz(sonucAd, satir);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  // kaynak = <kaynakListe>
+  ifadeDerle(dugum->kaynakListe());
+  degiskenYaz(kaynakAd, satir);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  // indeks = 0
+  sabitYaz(SabitDeger(0.0), satir);
+  degiskenYaz(indeksAd, satir);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  const std::size_t loopBaslangic = chunk_.kod.size();
+
+  // indeks < kaynak.uzunluk()
+  degiskenYukle(indeksAd, satir);
+  degiskenYukle(kaynakAd, satir);
+  const std::uint16_t uzunlukSabit = chunk_.sabitEkle(SabitDeger("uzunluk"));
+  chunk_.yazOpCode(OpCode::OP_ALAN_AL, satir);
+  chunk_.yazU16(uzunlukSabit, satir);
+  chunk_.yazOpCode(OpCode::OP_CAGIR, satir);
+  chunk_.yazU16(0, satir);
+  opcodeYaz(OpCode::OP_KUCUK, satir);
+
+  const std::size_t cikisAtlamasi =
+      atlaYaz(OpCode::OP_ATLA_EGER_YANLIS, satir);
+  opcodeYaz(OpCode::OP_POP, satir);  // true kosul bool'unu temizle
+
+  // donguDegiskeni = kaynak[indeks]
+  degiskenYukle(kaynakAd, satir);
+  degiskenYukle(indeksAd, satir);
+  opcodeYaz(OpCode::OP_INDEKS_AL, satir);
+  degiskenYaz(dugum->donguDegiskeni(), satir);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  std::size_t kosulYanlisaAtla = 0;
+  std::size_t kosulSonunaAtla = 0;
+  if (dugum->kosul() != nullptr) {
+    ifadeDerle(dugum->kosul());
+    kosulYanlisaAtla = atlaYaz(OpCode::OP_ATLA_EGER_YANLIS, satir);
+    opcodeYaz(OpCode::OP_POP, satir);  // true kosul bool
+  }
+
+  // sonuc.ekle(<ifade>)
+  degiskenYukle(sonucAd, satir);
+  const std::uint16_t ekleSabit = chunk_.sabitEkle(SabitDeger("ekle"));
+  chunk_.yazOpCode(OpCode::OP_ALAN_AL, satir);
+  chunk_.yazU16(ekleSabit, satir);
+  ifadeDerle(dugum->ifade());
+  chunk_.yazOpCode(OpCode::OP_CAGIR, satir);
+  chunk_.yazU16(1, satir);
+  opcodeYaz(OpCode::OP_POP, satir);  // liste.ekle donus degeri
+
+  if (dugum->kosul() != nullptr) {
+    kosulSonunaAtla = atlaYaz(OpCode::OP_ATLA, satir);
+    atlaYamala(kosulYanlisaAtla);
+    opcodeYaz(OpCode::OP_POP, satir);  // false kosul bool
+    atlaYamala(kosulSonunaAtla);
+  }
+
+  // indeks = indeks + 1
+  degiskenYukle(indeksAd, satir);
+  sabitYaz(SabitDeger(1.0), satir);
+  opcodeYaz(OpCode::OP_TOPLA, satir);
+  degiskenYaz(indeksAd, satir);
+  opcodeYaz(OpCode::OP_POP, satir);
+
+  donguYaz(loopBaslangic, satir);
+
+  atlaYamala(cikisAtlamasi);
+  opcodeYaz(OpCode::OP_POP, satir);  // false kosul bool'unu temizle
+
+  // Ifadenin sonucu olarak uretilen listeyi stack'e birak.
+  degiskenYukle(sonucAd, satir);
 }
 
 void Compiler::atamaDerle(const AtamaNode* dugum) {
@@ -383,6 +486,11 @@ void Compiler::egerDerle(const EgerNode* dugum) {
 
 void Compiler::sureceDerle(const SureceNode* dugum) {
   const std::size_t loopBaslangic = chunk_.kod.size();
+  Loop loop;
+  loop.loopStart = loopBaslangic;
+  loop.continueDest = loopBaslangic;
+  loop.continueHazir = true;
+  loopStack_.push_back(loop);
 
   ifadeDerle(dugum->kosul());
   const std::size_t cikisAtlamasi =
@@ -394,6 +502,96 @@ void Compiler::sureceDerle(const SureceNode* dugum) {
 
   atlaYamala(cikisAtlamasi);
   opcodeYaz(OpCode::OP_POP, dugum->satir());
+
+  const std::size_t breakHedefi = chunk_.kod.size();
+  for (const std::size_t kirAtlamasi : loopStack_.back().breakJumps) {
+    atlaYamala(kirAtlamasi);
+  }
+  for (const std::size_t devamAtlamasi : loopStack_.back().continueJumps) {
+    (void)devamAtlamasi;
+    derlemeHatasi(
+        dugum->satir(),
+        "Ic hata: surece dongusunde yamanmamis 'devam' atlamasi kaldi.");
+  }
+  (void)breakHedefi;
+  loopStack_.pop_back();
+}
+
+void Compiler::tekrarlaDerle(const TekrarlaNode* dugum) {
+  // Sayac degeri dongu boyunca stack'te tutulur.
+  ifadeDerle(dugum->kacKezIfadesi());
+  const std::size_t loopKontrol = chunk_.kod.size();
+
+  Loop loop;
+  loop.loopStart = loopKontrol;
+  loop.continueDest = 0;
+  loop.continueHazir = false;
+  loopStack_.push_back(loop);
+
+  // sayac > 0 ?
+  opcodeYaz(OpCode::OP_KOPYA, dugum->satir());
+  sabitYaz(SabitDeger(0.0), dugum->satir());
+  opcodeYaz(OpCode::OP_BUYUK, dugum->satir());
+  const std::size_t cikisAtlamasi =
+      atlaYaz(OpCode::OP_ATLA_EGER_YANLIS, dugum->satir());
+  opcodeYaz(OpCode::OP_POP, dugum->satir());  // kosul bool'unu temizle
+
+  blokDerle(dugum->govde());
+
+  // devam hedefi: sayaci azaltma bolumu
+  const std::size_t devamHedefi = chunk_.kod.size();
+  Loop& aktifLoop = loopStack_.back();
+  aktifLoop.continueDest = devamHedefi;
+  aktifLoop.continueHazir = true;
+  for (const std::size_t devamAtlamasi : aktifLoop.continueJumps) {
+    atlaYamala(devamAtlamasi);
+  }
+  aktifLoop.continueJumps.clear();
+
+  sabitYaz(SabitDeger(1.0), dugum->satir());
+  opcodeYaz(OpCode::OP_CIKAR, dugum->satir());  // sayac = sayac - 1
+  donguYaz(loopKontrol, dugum->satir());
+
+  // Kosul false oldugunda stack: [sayac, false]
+  atlaYamala(cikisAtlamasi);
+  opcodeYaz(OpCode::OP_POP, dugum->satir());  // false bool
+  const std::size_t breakHedefi = chunk_.kod.size();
+  for (const std::size_t kirAtlamasi : aktifLoop.breakJumps) {
+    atlaYamala(kirAtlamasi);
+  }
+  opcodeYaz(OpCode::OP_POP, dugum->satir());  // sayac
+  (void)breakHedefi;
+  loopStack_.pop_back();
+}
+
+void Compiler::kirDerle(const KirNode* dugum) {
+  if (loopStack_.empty()) {
+    derlemeHatasi(dugum->satir(), "'kır' komutu dongu disinda kullanilamaz.");
+  }
+  const std::size_t atlama = atlaYaz(OpCode::OP_ATLA, dugum->satir());
+  loopStack_.back().breakJumps.push_back(atlama);
+}
+
+void Compiler::devamDerle(const DevamNode* dugum) {
+  if (loopStack_.empty()) {
+    derlemeHatasi(dugum->satir(),
+                  "'devam' komutu dongu disinda kullanilamaz.");
+  }
+
+  Loop& loop = loopStack_.back();
+  if (!loop.continueHazir) {
+    const std::size_t atlama = atlaYaz(OpCode::OP_ATLA, dugum->satir());
+    loop.continueJumps.push_back(atlama);
+    return;
+  }
+
+  if (loop.continueDest <= chunk_.kod.size()) {
+    donguYaz(loop.continueDest, dugum->satir());
+    return;
+  }
+
+  const std::size_t ileriAtlama = atlaYaz(OpCode::OP_ATLA, dugum->satir());
+  loop.continueJumps.push_back(ileriAtlama);
 }
 
 void Compiler::ifadeKomutDerle(const IfadeKomutNode* dugum) {
@@ -538,6 +736,29 @@ void Compiler::sabitYaz(const SabitDeger& deger, std::size_t satir) {
   const std::uint16_t sabitIndeksi = chunk_.sabitEkle(deger);
   chunk_.yazOpCode(OpCode::OP_SABIT, satir);
   chunk_.yazU16(sabitIndeksi, satir);
+}
+
+void Compiler::degiskenYukle(const std::string& ad, std::size_t satir) {
+  if (const std::uint16_t* local = localBul(ad)) {
+    chunk_.yazOpCode(OpCode::OP_GET_LOCAL, satir);
+    chunk_.yazU16(*local, satir);
+    return;
+  }
+  globalOperandYaz(OpCode::OP_GET_GLOBAL, ad, satir);
+}
+
+void Compiler::degiskenYaz(const std::string& ad, std::size_t satir) {
+  if (islevIcindeyim()) {
+    const std::uint16_t local = localAlVeyaOlustur(ad);
+    chunk_.yazOpCode(OpCode::OP_SET_LOCAL, satir);
+    chunk_.yazU16(local, satir);
+    return;
+  }
+  globalOperandYaz(OpCode::OP_SET_GLOBAL, ad, satir);
+}
+
+std::string Compiler::geciciAdUret(const std::string& onEk) {
+  return onEk + "_" + std::to_string(geciciSayac_++);
 }
 
 void Compiler::globalOperandYaz(OpCode op, const std::string& ad,
