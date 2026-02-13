@@ -1383,12 +1383,27 @@ int komutDerle(const std::string& kaynakYolu, const std::string& calisanExeYolu,
   obcYolu.replace_extension(".obc");
   fs::path exeYolu = temel;
   exeYolu.replace_extension(".exe");
+  fs::path metaYolu = temel;
+  metaYolu.replace_extension(".obc.meta.json");
 
   dosyaYazIkili(obcYolu.string(), payload);
   paketliExeUret(calisanExeYolu, exeYolu.string(), payload);
 
+  const std::uint32_t payloadCrc = crc32Hesapla(payload);
+  std::ostringstream meta;
+  meta << "{\n"
+       << "  \"format\": \"orhun-obc-v1\",\n"
+       << "  \"payload_size\": " << payload.size() << ",\n"
+       << "  \"payload_crc32\": \"" << std::hex << std::setfill('0') << std::setw(8)
+       << payloadCrc << "\",\n"
+       << "  \"source_name\": \"" << jsonKacis(fs::path(kaynakYolu).filename().u8string())
+       << "\"\n"
+       << "}\n";
+  dosyaYaz(metaYolu.string(), meta.str());
+
   std::cout << "Bytecode uretildi: " << obcYolu.string() << "\n";
   std::cout << "Paketli exe uretildi: " << exeYolu.string() << "\n";
+  std::cout << "Metadata yazildi: " << metaYolu.string() << "\n";
   return 0;
 }
 

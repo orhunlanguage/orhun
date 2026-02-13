@@ -1,0 +1,53 @@
+name: Orhun Nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  test-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup C++ toolchain (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++
+
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./tests/run_tests.ps1
+
+      - name: Run tests (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x tests/run_tests.sh
+          ./tests/run_tests.sh
+
+      - name: Benchmark smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./tests/benchmark.ps1 -Output orhun_bench.exe -Tekrar 5 -JsonCikti benchmark_results.jsonl
+
+      - name: Benchmark smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          chmod +x tests/benchmark.sh
+          ./tests/benchmark.sh g++ orhun_bench 5 benchmark_results.jsonl
+
+      - name: Upload benchmark artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-${{ runner.os }}
+          path: benchmark_results.jsonl
