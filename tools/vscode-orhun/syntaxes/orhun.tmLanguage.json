@@ -1,0 +1,86 @@
+{
+  "name": "Orhun",
+  "scopeName": "source.orhun",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.orhun",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.orhun",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.orhun",
+              "match": "\\\\."
+            },
+            {
+              "name": "variable.interpolation.orhun",
+              "match": "\\{[^}]+\\}"
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.orhun",
+          "match": "\\b(eğer|ise|değilse|sürece|tekrarla|kez|deneme|yakala|kır|devam)\\b"
+        },
+        {
+          "name": "keyword.declaration.orhun",
+          "match": "\\b(olsun|işlev|döndür|tip|yeni|dahil_et|dış_işlev|dis_islev)\\b"
+        },
+        {
+          "name": "constant.language.orhun",
+          "match": "\\b(doğru|yanlış|benim|ust|için|içinde|sor|yazdır)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.orhun",
+          "match": "\\b(eşit|eşit_değil|büyük|küçük|ve|veya|değil)\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.orhun",
+          "match": "\\b\\d+(?:\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.orhun",
+          "match": "[+\\-*/=.:,\\[\\](){}]"
+        }
+      ]
+    }
+  }
+}

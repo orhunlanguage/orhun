@@ -18,6 +18,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #ifdef _WIN32
@@ -1034,6 +1035,167 @@ int komutDerle(const std::string& kaynakYolu, const std::string& calisanExeYolu,
   return 0;
 }
 
+std::string soldanBoslukKirp(std::string metin) {
+  std::size_t i = 0;
+  while (i < metin.size() && std::isspace(static_cast<unsigned char>(metin[i]))) {
+    ++i;
+  }
+  return metin.substr(i);
+}
+
+std::optional<std::string> lspMesajOku(std::istream& in) {
+  std::string satir;
+  std::size_t icerikUzunlugu = 0;
+  bool uzunlukBulundu = false;
+
+  while (std::getline(in, satir)) {
+    if (!satir.empty() && satir.back() == '\r') {
+      satir.pop_back();
+    }
+    if (satir.empty()) {
+      break;
+    }
+    const std::string onEk = "Content-Length:";
+    if (satir.rfind(onEk, 0) == 0) {
+      std::string sayi = soldanBoslukKirp(satir.substr(onEk.size()));
+      icerikUzunlugu = static_cast<std::size_t>(std::stoul(sayi));
+      uzunlukBulundu = true;
+    }
+  }
+
+  if (!uzunlukBulundu) {
+    return std::nullopt;
+  }
+
+  std::string govde(icerikUzunlugu, '\0');
+  in.read(govde.data(), static_cast<std::streamsize>(icerikUzunlugu));
+  if (static_cast<std::size_t>(in.gcount()) != icerikUzunlugu) {
+    return std::nullopt;
+  }
+  return govde;
+}
+
+std::optional<std::string> lspIdTokenBul(const std::string& json) {
+  const std::size_t idPos = json.find("\"id\"");
+  if (idPos == std::string::npos) {
+    return std::nullopt;
+  }
+  std::size_t i = json.find(':', idPos + 4);
+  if (i == std::string::npos) {
+    return std::nullopt;
+  }
+  ++i;
+  while (i < json.size() && std::isspace(static_cast<unsigned char>(json[i]))) {
+    ++i;
+  }
+  if (i >= json.size()) {
+    return std::nullopt;
+  }
+
+  if (json[i] == '"') {
+    const std::size_t bas = i++;
+    bool kacis = false;
+    while (i < json.size()) {
+      if (!kacis && json[i] == '"') {
+        ++i;
+        return json.substr(bas, i - bas);
+      }
+      if (!kacis && json[i] == '\\') {
+        kacis = true;
+      } else {
+        kacis = false;
+      }
+      ++i;
+    }
+    return std::nullopt;
+  }
+
+  const std::size_t bas = i;
+  while (i < json.size() && json[i] != ',' && json[i] != '}' && json[i] != ']') {
+    ++i;
+  }
+  return sagaBoslukKirp(json.substr(bas, i - bas));
+}
+
+bool lspMethodMu(const std::string& json, const std::string& method) {
+  return json.find("\"method\":\"" + method + "\"") != std::string::npos ||
+         json.find("\"method\": \"" + method + "\"") != std::string::npos;
+}
+
+void lspYanitYaz(std::ostream& out, const std::string& idToken,
+                 const std::string& resultJson) {
+  const std::string yuk = std::string("{\"jsonrpc\":\"2.0\",\"id\":") + idToken +
+                          ",\"result\":" + resultJson + "}";
+  out << "Content-Length: " << yuk.size() << "\r\n\r\n" << yuk;
+  out.flush();
+}
+
+std::string lspTamamlamaSonucuJson() {
+  static const std::vector<std::string> anahtarlar = {
+      "yazdır",   "olsun",     "eğer",      "ise",      "değilse",
+      "doğru",    "yanlış",    "eşit",      "eşit_değil", "büyük",
+      "küçük",    "ve",        "veya",      "değil",    "tekrarla",
+      "kez",      "sürece",    "sor",       "işlev",    "döndür",
+      "tip",      "yeni",      "benim",     "ust",      "deneme",
+      "yakala",   "kır",       "devam",     "dahil_et", "için",
+      "içinde"};
+  std::ostringstream ss;
+  ss << "{\"isIncomplete\":false,\"items\":[";
+  for (std::size_t i = 0; i < anahtarlar.size(); ++i) {
+    if (i > 0) {
+      ss << ",";
+    }
+    ss << "{\"label\":\"" << anahtarlar[i]
+       << "\",\"kind\":14,\"detail\":\"Orhun anahtar kelimesi\"}";
+  }
+  ss << "]}";
+  return ss.str();
+}
+
+int komutLsp() {
+  bool shutdownIstendi = false;
+  while (true) {
+    std::optional<std::string> gelen = lspMesajOku(std::cin);
+    if (!gelen.has_value()) {
+      break;
+    }
+    const std::string& mesaj = *gelen;
+    const std::optional<std::string> idToken = lspIdTokenBul(mesaj);
+
+    if (lspMethodMu(mesaj, "initialize")) {
+      if (idToken.has_value()) {
+        lspYanitYaz(std::cout, *idToken,
+                    "{\"capabilities\":{\"textDocumentSync\":1,"
+                    "\"completionProvider\":{\"resolveProvider\":false}}}");
+      }
+      continue;
+    }
+    if (lspMethodMu(mesaj, "initialized")) {
+      continue;
+    }
+    if (lspMethodMu(mesaj, "shutdown")) {
+      shutdownIstendi = true;
+      if (idToken.has_value()) {
+        lspYanitYaz(std::cout, *idToken, "null");
+      }
+      continue;
+    }
+    if (lspMethodMu(mesaj, "exit")) {
+      return shutdownIstendi ? 0 : 1;
+    }
+    if (lspMethodMu(mesaj, "textDocument/completion")) {
+      if (idToken.has_value()) {
+        lspYanitYaz(std::cout, *idToken, lspTamamlamaSonucuJson());
+      }
+      continue;
+    }
+    if (idToken.has_value()) {
+      lspYanitYaz(std::cout, *idToken, "null");
+    }
+  }
+  return 0;
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
@@ -1046,7 +1208,7 @@ int main(int argc, char* argv[]) {
     auto dahiliKomutMu = [](const std::string& deger) {
       return deger == "fmt" || deger == "paket" || deger == "vm" ||
              deger == "vm-kati" || deger == "obc" || deger == "derle" ||
-             deger == "hiz" || deger == "lint";
+             deger == "hiz" || deger == "lint" || deger == "lsp";
     };
 
     if (argc < 2) {
@@ -1187,6 +1349,10 @@ int main(int argc, char* argv[]) {
         tekrar = std::stoi(argv[3]);
       }
       return komutHiz(argv[2], tekrar);
+    }
+
+    if (komut == "lsp") {
+      return komutLsp();
     }
 
     // Paketli exe, dahili komut dışındaki çağrılarda gömülü payload'ı

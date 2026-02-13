@@ -1,0 +1,35 @@
+{
+  "name": "orhun-language",
+  "displayName": "Orhun Language",
+  "description": "Orhun dili icin temel sozdizimi renklendirme ve dil tanimi.",
+  "version": "0.1.0",
+  "publisher": "orhun",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "orhun",
+        "aliases": [
+          "Orhun",
+          "orhun"
+        ],
+        "extensions": [
+          ".oh"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "orhun",
+        "scopeName": "source.orhun",
+        "path": "./syntaxes/orhun.tmLanguage.json"
+      }
+    ]
+  }
+}
