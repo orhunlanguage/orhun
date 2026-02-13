@@ -1974,6 +1974,24 @@ void VM::calistir(const BytecodeChunk& chunk) {
         yiginPush(Value::bos());
         break;
       }
+      case OpCode::OP_LISTE_REZERVE: {
+        const Value kapasiteV = yiginPop();
+        const Value hedef = yiginPop();
+        if (!objTipiMi(hedef, ObjType::LIST)) {
+          calismaHatasi("LISTE_REZERVE yalnizca listelerde calisir.");
+        }
+        const double kapasiteD =
+            kapasiteV.type == ValueType::SAYI
+                ? kapasiteV.as.sayi
+                : sayiyaCevir(kapasiteV, "liste reserve");
+        if (kapasiteD < 0.0 || !tamSayiMi(kapasiteD)) {
+          calismaHatasi("LISTE_REZERVE kapasitesi sifirdan buyuk tam sayi olmali.");
+        }
+        static_cast<ObjList*>(hedef.as.nesne)
+            ->ogeler.reserve(static_cast<std::size_t>(kapasiteD));
+        yiginPush(Value::bos());
+        break;
+      }
       case OpCode::OP_SOZLUK_OLUSTUR: {
         const std::uint16_t adet = u16Oku();
         if (static_cast<std::size_t>(adet) * 2 > yigin_.size()) {
