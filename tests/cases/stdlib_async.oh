@@ -1,0 +1,8 @@
+g1 olsun gorev.baslat_bekle(0)
+g2 olsun gorev.baslat_bekle(0)
+sonuclar olsun gorev.hepsi_bekle([g1, g2])
+yazdır uzunluk(sonuclar)
+yazdır sonuclar[0]
+yazdır sonuclar[1]
+yazdır gorev.tamamlandi_mi(g1)
+yazdır gorev.bekle(g2)

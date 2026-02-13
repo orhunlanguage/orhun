@@ -210,6 +210,8 @@ void VM::sifirla() {
   tryYigini_.clear();
   yigin_.clear();
   globaller_.clear();
+  gorevler_.clear();
+  gorevSonrakiKimlik_ = 1;
   ffiKutuphaneleri_.clear();
   ffiKutuphaneKimlikleri_.clear();
   ffiSonrakiKimlik_ = 1;
@@ -892,6 +894,113 @@ void VM::yerlesikNativesYukle() {
         return Value::sayi(static_cast<double>(cikis));
       });
   globaller_["sistem"] = Value::nesne(sistem);
+
+  auto* gorev = memory_.allocate<ObjDict>();
+  gorev->alanlar["baslat_bekle"] = nativeOlustur(
+      "gorev.baslat_bekle", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const double saniye = vm.sayiyaCevir(a[0], "gorev.baslat_bekle");
+        if (!std::isfinite(saniye) || saniye < 0.0) {
+          throw std::runtime_error("gorev.baslat_bekle icin sifirdan buyuk sayi beklenir.");
+        }
+        const int kimlik = vm.gorevSonrakiKimlik_++;
+        VM::GorevKaydi kayit{
+            std::async(std::launch::async, [saniye]() -> double {
+              const auto ms =
+                  std::chrono::milliseconds(static_cast<int>(std::llround(saniye * 1000.0)));
+              if (ms.count() > 0) {
+                std::this_thread::sleep_for(ms);
+              }
+              return 1.0;
+            })};
+        vm.gorevler_.emplace(kimlik, std::move(kayit));
+        return Value::sayi(static_cast<double>(kimlik));
+      });
+  gorev->alanlar["baslat_komut"] = nativeOlustur(
+      "gorev.baslat_komut", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const std::string komut = vm.metneCevir(a[0]);
+        const int kimlik = vm.gorevSonrakiKimlik_++;
+        VM::GorevKaydi kayit{
+            std::async(std::launch::async, [komut]() -> double {
+              const int cikis = std::system(komut.c_str());
+              return static_cast<double>(cikis);
+            })};
+        vm.gorevler_.emplace(kimlik, std::move(kayit));
+        return Value::sayi(static_cast<double>(kimlik));
+      });
+  gorev->alanlar["tamamlandi_mi"] = nativeOlustur(
+      "gorev.tamamlandi_mi", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const double d = vm.sayiyaCevir(a[0], "gorev.tamamlandi_mi");
+        if (!tamSayiMi(d)) {
+          throw std::runtime_error("gorev.tamamlandi_mi icin gorev kimligi tam sayi olmalidir.");
+        }
+        const int kimlik = static_cast<int>(std::llround(d));
+        const auto it = vm.gorevler_.find(kimlik);
+        if (it == vm.gorevler_.end()) {
+          return Value::mantik(false);
+        }
+        if (it->second.sonucHazir) {
+          return Value::mantik(true);
+        }
+        if (it->second.future.valid() &&
+            it->second.future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+          it->second.sonuc = it->second.future.get();
+          it->second.sonucHazir = true;
+          return Value::mantik(true);
+        }
+        return Value::mantik(false);
+      });
+  gorev->alanlar["bekle"] = nativeOlustur(
+      "gorev.bekle", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        const double d = vm.sayiyaCevir(a[0], "gorev.bekle");
+        if (!tamSayiMi(d)) {
+          throw std::runtime_error("gorev.bekle icin gorev kimligi tam sayi olmalidir.");
+        }
+        const int kimlik = static_cast<int>(std::llround(d));
+        const auto it = vm.gorevler_.find(kimlik);
+        if (it == vm.gorevler_.end()) {
+          throw std::runtime_error("gorev.bekle: gecersiz gorev kimligi.");
+        }
+        if (!it->second.sonucHazir) {
+          if (!it->second.future.valid()) {
+            throw std::runtime_error("gorev.bekle: gorev sonucu kullanilamaz durumda.");
+          }
+          it->second.sonuc = it->second.future.get();
+          it->second.sonucHazir = true;
+        }
+        return Value::sayi(it->second.sonuc);
+      });
+  gorev->alanlar["hepsi_bekle"] = nativeOlustur(
+      "gorev.hepsi_bekle", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (!a[0].nesneMi() || a[0].as.nesne == nullptr ||
+            a[0].as.nesne->type != ObjType::LIST) {
+          throw std::runtime_error("gorev.hepsi_bekle icin gorev kimlikleri listesi beklenir.");
+        }
+        const auto* liste = static_cast<ObjList*>(a[0].as.nesne);
+        std::vector<Value> sonuc;
+        sonuc.reserve(liste->ogeler.size());
+        for (const Value& oge : liste->ogeler) {
+          const double d = vm.sayiyaCevir(oge, "gorev.hepsi_bekle");
+          if (!tamSayiMi(d)) {
+            throw std::runtime_error(
+                "gorev.hepsi_bekle listesindeki tum kimlikler tam sayi olmalidir.");
+          }
+          const int kimlik = static_cast<int>(std::llround(d));
+          const auto it = vm.gorevler_.find(kimlik);
+          if (it == vm.gorevler_.end()) {
+            throw std::runtime_error("gorev.hepsi_bekle: gecersiz gorev kimligi.");
+          }
+          if (!it->second.sonucHazir) {
+            if (!it->second.future.valid()) {
+              throw std::runtime_error("gorev.hepsi_bekle: gorev sonucu kullanilamaz durumda.");
+            }
+            it->second.sonuc = it->second.future.get();
+            it->second.sonucHazir = true;
+          }
+          sonuc.push_back(Value::sayi(it->second.sonuc));
+        }
+        return vm.yeniListe(std::move(sonuc));
+      });
+  globaller_["gorev"] = Value::nesne(gorev);
 
   auto* ffi = memory_.allocate<ObjDict>();
   ffi->alanlar["yukle"] = nativeOlustur(

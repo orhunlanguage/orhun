@@ -4,6 +4,7 @@
 #include "Memory.h"
 
 #include <cstddef>
+#include <future>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -48,6 +49,13 @@ private:
   std::vector<TryFrame> tryYigini_;
   std::vector<Value> yigin_;
   std::unordered_map<std::string, Value> globaller_;
+  struct GorevKaydi {
+    std::future<double> future;
+    bool sonucHazir = false;
+    double sonuc = 0.0;
+  };
+  std::unordered_map<int, GorevKaydi> gorevler_;
+  int gorevSonrakiKimlik_ = 1;
   std::unordered_map<int, std::shared_ptr<runtime::DynamicLibrary>>
       ffiKutuphaneleri_;
   std::unordered_map<std::string, int> ffiKutuphaneKimlikleri_;
