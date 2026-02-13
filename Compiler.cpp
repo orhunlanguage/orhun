@@ -1,5 +1,6 @@
 #include "Compiler.h"
 
+#include <cctype>
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
@@ -27,6 +28,33 @@ std::vector<std::string> noktaylaBol(const std::string& ad) {
     parcali.push_back(parca);
   }
   return parcali;
+}
+
+bool yerTutucuYoluGecerliMi(const std::string& yol) {
+  if (yol.empty()) {
+    return false;
+  }
+  for (unsigned char c : yol) {
+    // UTF-8 baytlarini da kabul et (>=128), boylece Turkce adlar engellenmez.
+    if (!(std::isalnum(c) || c == '_' || c == '.' || c >= 128)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+std::string kirpilmisKopya(const std::string& metin) {
+  std::size_t sol = 0;
+  while (sol < metin.size() &&
+         std::isspace(static_cast<unsigned char>(metin[sol]))) {
+    ++sol;
+  }
+  std::size_t sag = metin.size();
+  while (sag > sol &&
+         std::isspace(static_cast<unsigned char>(metin[sag - 1]))) {
+    --sag;
+  }
+  return metin.substr(sol, sag - sol);
 }
 
 }  // namespace
@@ -103,6 +131,12 @@ void Compiler::komutDerle(const ASTNode* dugum) {
     dondurDerle(dondur);
     return;
   }
+  if (const auto* dahil = dynamic_cast<const DahilEtNode*>(dugum)) {
+    // Komut formu: "dahil_et \"modul.oh\""
+    ifadeDerle(dahil);
+    opcodeYaz(OpCode::OP_POP, dahil->satir());
+    return;
+  }
 
   derlemeHatasi(dugum->satir(),
                 "Bu komut VM derleyicisinin Faz 2 kapsaminda degil.");
@@ -134,7 +168,53 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
   }
 
   if (const auto* metin = dynamic_cast<const MetinNode*>(dugum)) {
-    sabitYaz(SabitDeger(metin->deger()), metin->satir());
+    const std::string& s = metin->deger();
+    if (s.find('{') == std::string::npos) {
+      sabitYaz(SabitDeger(s), metin->satir());
+      return;
+    }
+
+    // Birikimli string: "" + parcalar...
+    sabitYaz(SabitDeger(std::string("")), metin->satir());
+    const auto metinParcasiEkle = [&](std::size_t bas, std::size_t bit) {
+      if (bit <= bas) {
+        return;
+      }
+      sabitYaz(SabitDeger(s.substr(bas, bit - bas)), metin->satir());
+      opcodeYaz(OpCode::OP_TOPLA, metin->satir());
+    };
+
+    std::size_t parcaBaslangic = 0;
+    std::size_t i = 0;
+    while (i < s.size()) {
+      if (s[i] == '{' && i + 1 < s.size() && s[i + 1] == '{') {
+        metinParcasiEkle(parcaBaslangic, i);
+        sabitYaz(SabitDeger(std::string("{")), metin->satir());
+        opcodeYaz(OpCode::OP_TOPLA, metin->satir());
+        i += 2;
+        parcaBaslangic = i;
+        continue;
+      }
+
+      if (s[i] == '{') {
+        const std::size_t kapanis = s.find('}', i + 1);
+        if (kapanis != std::string::npos) {
+          const std::string yol =
+              kirpilmisKopya(s.substr(i + 1, kapanis - (i + 1)));
+          if (yerTutucuYoluGecerliMi(yol)) {
+            metinParcasiEkle(parcaBaslangic, i);
+            cagrilanAdYukle(yol, metin->satir());
+            opcodeYaz(OpCode::OP_TOPLA, metin->satir());
+            i = kapanis + 1;
+            parcaBaslangic = i;
+            continue;
+          }
+        }
+      }
+      ++i;
+    }
+
+    metinParcasiEkle(parcaBaslangic, s.size());
     return;
   }
 
@@ -336,6 +416,13 @@ void Compiler::ifadeDerle(const ASTNode* dugum) {
     sabitYaz(SabitDeger(dahil->dosyaAdi()), dahil->satir());
     chunk_.yazOpCode(OpCode::OP_CAGIR, dahil->satir());
     chunk_.yazU16(1, dahil->satir());
+    return;
+  }
+  if (const auto* sor = dynamic_cast<const SorNode*>(dugum)) {
+    globalOperandYaz(OpCode::OP_GET_GLOBAL, "sor", sor->satir());
+    ifadeDerle(sor->soruIfadesi());
+    chunk_.yazOpCode(OpCode::OP_CAGIR, sor->satir());
+    chunk_.yazU16(1, sor->satir());
     return;
   }
 

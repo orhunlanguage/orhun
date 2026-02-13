@@ -178,6 +178,14 @@ void VM::yerlesikNativesYukle() {
     return Value::bos();
   });
 
+  ekleNative("sor", 1, [](VM& vm, const std::vector<Value>& args) -> Value {
+    std::cout << vm.metneCevir(args[0]);
+    std::cout.flush();
+    std::string giris;
+    std::getline(std::cin, giris);
+    return vm.yeniString(giris);
+  });
+
   ekleNative("karekok", 1, [](VM& vm, const std::vector<Value>& args) -> Value {
     return Value::sayi(std::sqrt(vm.sayiyaCevir(args[0], "karekok")));
   });
@@ -1112,7 +1120,8 @@ std::string VM::metneCevir(const Value& deger) const {
     return sayiyiMetinlestir(deger.as.sayi);
   }
   if (deger.type == ValueType::MANTIK) {
-    return deger.as.mantik ? "dogru" : "yanlis";
+    // Interpreter parity: bool degerleri 1/0 olarak goster.
+    return deger.as.mantik ? "1" : "0";
   }
   if (deger.as.nesne == nullptr) {
     return "bos";
