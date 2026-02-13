@@ -463,6 +463,119 @@ int komutFmt(const std::string& dosyaYolu) {
   return 0;
 }
 
+struct LintMesaji {
+  std::size_t satir = 0;
+  std::string seviye;
+  std::string mesaj;
+};
+
+std::vector<std::string> satirlaraBol(const std::string& icerik) {
+  std::vector<std::string> satirlar;
+  std::string aktif;
+  for (char c : icerik) {
+    if (c == '\n') {
+      satirlar.push_back(aktif);
+      aktif.clear();
+      continue;
+    }
+    if (c != '\r') {
+      aktif.push_back(c);
+    }
+  }
+  if (!aktif.empty() || icerik.empty() || icerik.back() != '\n') {
+    satirlar.push_back(aktif);
+  }
+  return satirlar;
+}
+
+void lintMesajiEkle(std::vector<LintMesaji>& mesajlar, std::size_t satir,
+                    const std::string& seviye, const std::string& mesaj) {
+  mesajlar.push_back({satir, seviye, mesaj});
+}
+
+std::vector<LintMesaji> lintCalistir(const std::string& kaynakKod) {
+  std::vector<LintMesaji> mesajlar;
+  const std::vector<std::string> satirlar = satirlaraBol(kaynakKod);
+  std::size_t bosSeri = 0;
+
+  for (std::size_t i = 0; i < satirlar.size(); ++i) {
+    const std::string& satir = satirlar[i];
+    const std::size_t satirNo = i + 1;
+
+    if (satir.find('\t') != std::string::npos) {
+      lintMesajiEkle(mesajlar, satirNo, "uyari",
+                     "Tab karakteri tespit edildi; 4 bosluk kullanin.");
+    }
+    if (!satir.empty() && (satir.back() == ' ' || satir.back() == '\t')) {
+      lintMesajiEkle(mesajlar, satirNo, "uyari",
+                     "Satir sonunda gereksiz bosluk var.");
+    }
+    if (satir.size() > 140) {
+      lintMesajiEkle(
+          mesajlar, satirNo, "uyari",
+          "Satir uzunlugu 140 karakteri asiyor (okunabilirlik dusuyor).");
+    }
+
+    std::size_t bosluk = 0;
+    while (bosluk < satir.size() && satir[bosluk] == ' ') {
+      ++bosluk;
+    }
+    const bool bosSatir = bosluk == satir.size();
+    if (!bosSatir && (bosluk % 4) != 0) {
+      lintMesajiEkle(
+          mesajlar, satirNo, "uyari",
+          "Girinti 4'un kati degil; blok hizalamasi bozulabilir.");
+    }
+
+    if (bosSatir) {
+      ++bosSeri;
+      if (bosSeri > 2) {
+        lintMesajiEkle(mesajlar, satirNo, "uyari",
+                       "Ardisik cok fazla bos satir var.");
+      }
+    } else {
+      bosSeri = 0;
+    }
+  }
+
+  try {
+    static_cast<void>(parseEt(kaynakKod));
+  } catch (const std::exception& ex) {
+    lintMesajiEkle(mesajlar, 0, "hata",
+                   std::string("Parser hatasi: ") + ex.what());
+  }
+
+  return mesajlar;
+}
+
+int komutLint(const std::string& dosyaYolu, bool strict) {
+  if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
+    throw std::runtime_error("Hata: lint komutu icin .oh dosyasi bekleniyor.");
+  }
+
+  const std::string kaynakKod = dosyaOku(dosyaYolu);
+  const std::vector<LintMesaji> mesajlar = lintCalistir(kaynakKod);
+  std::size_t hataSayisi = 0;
+  std::size_t uyariSayisi = 0;
+
+  for (const auto& mesaj : mesajlar) {
+    if (mesaj.seviye == "hata") {
+      ++hataSayisi;
+      std::cout << "[HATA] " << mesaj.mesaj << "\n";
+      continue;
+    }
+    ++uyariSayisi;
+    std::cout << "[UYARI] Satir " << mesaj.satir << ": " << mesaj.mesaj << "\n";
+  }
+
+  std::cout << "Lint ozeti: " << hataSayisi << " hata, " << uyariSayisi
+            << " uyari.\n";
+  if (hataSayisi > 0 || (strict && uyariSayisi > 0)) {
+    return 1;
+  }
+  return 0;
+}
+
 int komutPaketYeni(const std::string& projeAdi) {
   namespace fs = std::filesystem;
   if (projeAdi.empty()) {
@@ -745,7 +858,7 @@ int main(int argc, char* argv[]) {
     auto dahiliKomutMu = [](const std::string& deger) {
       return deger == "fmt" || deger == "paket" || deger == "vm" ||
              deger == "vm-kati" || deger == "obc" || deger == "derle" ||
-             deger == "hiz";
+             deger == "hiz" || deger == "lint";
     };
 
     if (argc < 2) {
@@ -763,10 +876,26 @@ int main(int argc, char* argv[]) {
       return komutFmt(argv[2]);
     }
 
+    if (komut == "lint") {
+      if (argc < 3) {
+        throw std::runtime_error("Hata: lint komutu icin dosya adi bekleniyor.");
+      }
+      bool strict = false;
+      if (argc >= 4) {
+        const std::string secenek = argv[3];
+        if (secenek == "--strict") {
+          strict = true;
+        } else {
+          throw std::runtime_error("Hata: bilinmeyen lint secenegi. Yalnizca '--strict' destekleniyor.");
+        }
+      }
+      return komutLint(argv[2], strict);
+    }
+
     if (komut == "paket") {
       if (argc < 3) {
         throw std::runtime_error(
-            "Hata: paket komutlari: yeni | kur | liste");
+            "Hata: paket komutlari: yeni | kur | ekle | liste");
       }
 
       const std::string alt = argv[2];
@@ -787,12 +916,21 @@ int main(int argc, char* argv[]) {
         return komutPaketKur(argv[3], hedefAdi);
       }
 
+      if (alt == "ekle") {
+        if (argc < 4) {
+          throw std::runtime_error(
+              "Hata: paket ekle <kaynak> [paket_adi] kullanin.");
+        }
+        const std::string hedefAdi = argc >= 5 ? argv[4] : "";
+        return komutPaketKur(argv[3], hedefAdi);
+      }
+
       if (alt == "liste") {
         return komutPaketListe();
       }
 
       throw std::runtime_error(
-          "Hata: bilinmeyen paket komutu. 'yeni', 'kur' veya 'liste' kullanin.");
+          "Hata: bilinmeyen paket komutu. 'yeni', 'kur', 'ekle' veya 'liste' kullanin.");
     }
 
     if (komut == "vm") {

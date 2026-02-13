@@ -20,7 +20,8 @@ $cases = @(
     "tests/cases/f_string",
     "tests/cases/slicing",
     "tests/cases/stdlib_modules",
-    "tests/cases/stdlib_database"
+    "tests/cases/stdlib_database",
+    "tests/cases/stdlib_regex_date"
 )
 
 if ($env:OS -eq "Windows_NT") {

@@ -10,6 +10,7 @@
 #include <cctype>
 #include <chrono>
 #include <cmath>
+#include <ctime>
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
@@ -18,6 +19,7 @@
 #include <iostream>
 #include <limits>
 #include <random>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 #include <thread>
@@ -2792,6 +2794,145 @@ void Interpreter::gomuluIslevleriYukle() {
         return OrhunDegeri(metin.find(aranan) != std::string::npos ? 1 : 0);
     };
 
+    // Regex modülü.
+    gomuluIslevler_["regex.eslesir"] = [this](const std::vector<OrhunDegeri>& args,
+                                              std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "regex.eslesir(metin, desen) iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri) ||
+            !std::holds_alternative<std::string>(args[1].veri)) {
+            hataFirlat(satir, "regex.eslesir için metin ve desen argümanları metin olmalıdır.");
+        }
+        try {
+            const std::regex desen(std::get<std::string>(args[1].veri));
+            const bool eslesme = std::regex_search(std::get<std::string>(args[0].veri), desen);
+            return OrhunDegeri(eslesme ? 1 : 0);
+        } catch (const std::regex_error& ex) {
+            hataFirlat(satir, "regex.eslesir deseni geçersiz: " + std::string(ex.what()));
+        }
+    };
+
+    gomuluIslevler_["regex.ilk"] = [this](const std::vector<OrhunDegeri>& args,
+                                          std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "regex.ilk(metin, desen) iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri) ||
+            !std::holds_alternative<std::string>(args[1].veri)) {
+            hataFirlat(satir, "regex.ilk için metin ve desen argümanları metin olmalıdır.");
+        }
+        try {
+            const std::regex desen(std::get<std::string>(args[1].veri));
+            std::smatch sonuc;
+            const std::string metin = std::get<std::string>(args[0].veri);
+            if (!std::regex_search(metin, sonuc, desen)) {
+                return OrhunDegeri("");
+            }
+            return OrhunDegeri(sonuc.str());
+        } catch (const std::regex_error& ex) {
+            hataFirlat(satir, "regex.ilk deseni geçersiz: " + std::string(ex.what()));
+        }
+    };
+
+    gomuluIslevler_["regex.tum"] = [this](const std::vector<OrhunDegeri>& args,
+                                          std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 2) {
+            hataFirlat(satir, "regex.tum(metin, desen) iki argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri) ||
+            !std::holds_alternative<std::string>(args[1].veri)) {
+            hataFirlat(satir, "regex.tum için metin ve desen argümanları metin olmalıdır.");
+        }
+        try {
+            const std::regex desen(std::get<std::string>(args[1].veri));
+            const std::string metin = std::get<std::string>(args[0].veri);
+            OrhunDegeri::ListeVeri sonuc;
+            for (std::sregex_iterator it(metin.begin(), metin.end(), desen), son;
+                 it != son; ++it) {
+                sonuc.emplace_back(it->str());
+            }
+            return OrhunDegeri(std::move(sonuc));
+        } catch (const std::regex_error& ex) {
+            hataFirlat(satir, "regex.tum deseni geçersiz: " + std::string(ex.what()));
+        }
+    };
+
+    gomuluIslevler_["regex.degistir"] = [this](const std::vector<OrhunDegeri>& args,
+                                               std::size_t satir) -> OrhunDegeri {
+        if (args.size() != 3) {
+            hataFirlat(satir, "regex.degistir(metin, desen, yeni) üç argüman alır.");
+        }
+        if (!std::holds_alternative<std::string>(args[0].veri) ||
+            !std::holds_alternative<std::string>(args[1].veri) ||
+            !std::holds_alternative<std::string>(args[2].veri)) {
+            hataFirlat(satir, "regex.degistir için tüm argümanlar metin olmalıdır.");
+        }
+        try {
+            const std::regex desen(std::get<std::string>(args[1].veri));
+            return OrhunDegeri(std::regex_replace(
+                std::get<std::string>(args[0].veri), desen,
+                std::get<std::string>(args[2].veri)));
+        } catch (const std::regex_error& ex) {
+            hataFirlat(satir, "regex.degistir deseni geçersiz: " + std::string(ex.what()));
+        }
+    };
+
+    // Tarih/Saat modülü.
+    auto yerelZamaniFormatla = [this](const char* bicim,
+                                      std::size_t satir) -> std::string {
+        std::time_t an = std::time(nullptr);
+        if (an == static_cast<std::time_t>(-1)) {
+            hataFirlat(satir, "tarih zaman bilgisi okunamadı.");
+        }
+
+        std::tm tmDegeri{};
+#ifdef _WIN32
+        if (localtime_s(&tmDegeri, &an) != 0) {
+            hataFirlat(satir, "tarih yerel zaman dönüşümü başarısız.");
+        }
+#else
+        if (localtime_r(&an, &tmDegeri) == nullptr) {
+            hataFirlat(satir, "tarih yerel zaman dönüşümü başarısız.");
+        }
+#endif
+        char tampon[64];
+        const std::size_t yazilan =
+            std::strftime(tampon, sizeof(tampon), bicim, &tmDegeri);
+        if (yazilan == 0) {
+            hataFirlat(satir, "tarih biçimlendirilemedi.");
+        }
+        return std::string(tampon, yazilan);
+    };
+
+    gomuluIslevler_["tarih.simdi"] = [this, yerelZamaniFormatla](const std::vector<OrhunDegeri>& args,
+                                                                  std::size_t satir) -> OrhunDegeri {
+        if (!args.empty()) {
+            hataFirlat(satir, "tarih.simdi() argüman almaz.");
+        }
+        return OrhunDegeri(yerelZamaniFormatla("%Y-%m-%d %H:%M:%S", satir));
+    };
+
+    gomuluIslevler_["tarih.bugun"] = [this, yerelZamaniFormatla](const std::vector<OrhunDegeri>& args,
+                                                                  std::size_t satir) -> OrhunDegeri {
+        if (!args.empty()) {
+            hataFirlat(satir, "tarih.bugun() argüman almaz.");
+        }
+        return OrhunDegeri(yerelZamaniFormatla("%Y-%m-%d", satir));
+    };
+
+    gomuluIslevler_["tarih.unix"] = [this](const std::vector<OrhunDegeri>& args,
+                                           std::size_t satir) -> OrhunDegeri {
+        if (!args.empty()) {
+            hataFirlat(satir, "tarih.unix() argüman almaz.");
+        }
+        const std::time_t an = std::time(nullptr);
+        if (an == static_cast<std::time_t>(-1)) {
+            hataFirlat(satir, "tarih.unix() zamanı okunamadı.");
+        }
+        return OrhunDegeri(static_cast<int>(an));
+    };
+
     // Tip dönüşümleri.
     gomuluIslevler_["sayiya_cevir"] = [this](const std::vector<OrhunDegeri>& args, std::size_t satir) -> OrhunDegeri {
         if (args.size() != 1) {
@@ -2946,6 +3087,19 @@ void Interpreter::yerlesikModulleriYukle() {
     metin["uzunluk"] = OrhunDegeri("__islev_ref__:metin.uzunluk");
     metin["icerir"] = OrhunDegeri("__islev_ref__:metin.icerir");
     globalHafiza_["metin"] = OrhunDegeri(std::move(metin));
+
+    OrhunDegeri::SozlukVeri regex;
+    regex["eslesir"] = OrhunDegeri("__islev_ref__:regex.eslesir");
+    regex["ilk"] = OrhunDegeri("__islev_ref__:regex.ilk");
+    regex["tum"] = OrhunDegeri("__islev_ref__:regex.tum");
+    regex["degistir"] = OrhunDegeri("__islev_ref__:regex.degistir");
+    globalHafiza_["regex"] = OrhunDegeri(std::move(regex));
+
+    OrhunDegeri::SozlukVeri tarih;
+    tarih["simdi"] = OrhunDegeri("__islev_ref__:tarih.simdi");
+    tarih["bugun"] = OrhunDegeri("__islev_ref__:tarih.bugun");
+    tarih["unix"] = OrhunDegeri("__islev_ref__:tarih.unix");
+    globalHafiza_["tarih"] = OrhunDegeri(std::move(tarih));
 
     OrhunDegeri::SozlukVeri grafik;
     grafik["pencere_ac"] = OrhunDegeri("__islev_ref__:grafik.pencere_ac");
