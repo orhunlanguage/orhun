@@ -86,6 +86,12 @@ $vmCases = @(
     "tests/cases/vm_try_catch"
 )
 
+if ($env:OS -eq "Windows_NT") {
+    $vmCases += "tests/cases/ffi_kernel32"
+    $vmCases += "tests/cases/ffi_text"
+    $vmCases += "tests/cases/ffi_symbol"
+}
+
 foreach ($case in $vmCases) {
     $src = "$case.oh"
     $expectedPath = "$case.expected.txt"

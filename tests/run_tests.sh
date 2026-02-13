@@ -29,6 +29,15 @@ cases=(
   "tests/cases/vm_loop_control"
 )
 
+uname_lc="$(uname -s | tr '[:upper:]' '[:lower:]')"
+if [[ "${uname_lc}" == *mingw* || "${uname_lc}" == *msys* || "${uname_lc}" == *cygwin* ]]; then
+  cases+=(
+    "tests/cases/ffi_kernel32"
+    "tests/cases/ffi_text"
+    "tests/cases/ffi_symbol"
+  )
+fi
+
 failed=0
 echo "[2/3] Running tests..."
 for case in "${cases[@]}"; do
@@ -75,6 +84,14 @@ vm_cases=(
   "tests/cases/slicing"
   "tests/cases/vm_try_catch"
 )
+
+if [[ "${uname_lc}" == *mingw* || "${uname_lc}" == *msys* || "${uname_lc}" == *cygwin* ]]; then
+  vm_cases+=(
+    "tests/cases/ffi_kernel32"
+    "tests/cases/ffi_text"
+    "tests/cases/ffi_symbol"
+  )
+fi
 
 echo "[3/4] Running strict VM subset..."
 for case in "${vm_cases[@]}"; do

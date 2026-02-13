@@ -3,6 +3,7 @@
 #include "Compiler.h"
 #include "Lexer.h"
 #include "Parser.h"
+#include "DynamicLibrary.h"
 #include "Yerlesik.h"
 
 #include <algorithm>
@@ -65,6 +66,54 @@ std::string zamanBicimlendir(const char* bicim, std::time_t zaman) {
   std::ostringstream ss;
   ss << std::put_time(&tmDegeri, bicim);
   return ss.str();
+}
+
+std::intptr_t ffiHamCagir(std::uintptr_t fonksiyon,
+                          const std::vector<std::intptr_t>& argumanlar) {
+  switch (argumanlar.size()) {
+    case 0:
+      return reinterpret_cast<std::intptr_t (*)()>(fonksiyon)();
+    case 1:
+      return reinterpret_cast<std::intptr_t (*)(std::intptr_t)>(fonksiyon)(
+          argumanlar[0]);
+    case 2:
+      return reinterpret_cast<std::intptr_t (*)(std::intptr_t, std::intptr_t)>(
+          fonksiyon)(argumanlar[0], argumanlar[1]);
+    case 3:
+      return reinterpret_cast<std::intptr_t (*)(
+          std::intptr_t, std::intptr_t, std::intptr_t)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2]);
+    case 4:
+      return reinterpret_cast<std::intptr_t (*)(
+          std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t)>(
+          fonksiyon)(argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3]);
+    case 5:
+      return reinterpret_cast<std::intptr_t (*)(
+          std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t,
+          std::intptr_t)>(fonksiyon)(argumanlar[0], argumanlar[1], argumanlar[2],
+                                     argumanlar[3], argumanlar[4]);
+    case 6:
+      return reinterpret_cast<std::intptr_t (*)(
+          std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t,
+          std::intptr_t, std::intptr_t)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3],
+          argumanlar[4], argumanlar[5]);
+    case 7:
+      return reinterpret_cast<std::intptr_t (*)(
+          std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t,
+          std::intptr_t, std::intptr_t, std::intptr_t)>(fonksiyon)(
+          argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3],
+          argumanlar[4], argumanlar[5], argumanlar[6]);
+    case 8:
+      return reinterpret_cast<std::intptr_t (*)(
+          std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t,
+          std::intptr_t, std::intptr_t, std::intptr_t, std::intptr_t)>(
+          fonksiyon)(argumanlar[0], argumanlar[1], argumanlar[2], argumanlar[3],
+                     argumanlar[4], argumanlar[5], argumanlar[6], argumanlar[7]);
+    default:
+      throw std::runtime_error(
+          "ffi.cagir simdilik en fazla 8 arguman destekliyor.");
+  }
 }
 
 yerlesik::JsonDeger vmDegerindenJsona(const Value& deger) {
@@ -160,6 +209,9 @@ void VM::sifirla() {
   tryYigini_.clear();
   yigin_.clear();
   globaller_.clear();
+  ffiKutuphaneleri_.clear();
+  ffiKutuphaneKimlikleri_.clear();
+  ffiSonrakiKimlik_ = 1;
   gcEsigi_ = 1024;
   yerlesikNativesYukle();
 }
@@ -255,6 +307,11 @@ void VM::yerlesikNativesYukle() {
     } catch (...) {
       throw std::runtime_error("sayiya_cevir: gecersiz sayi.");
     }
+  });
+  ekleNative("icerir", 2, [](VM& vm, const std::vector<Value>& args) -> Value {
+    const std::string kaynak = vm.metneCevir(args[0]);
+    const std::string aranan = vm.metneCevir(args[1]);
+    return Value::mantik(kaynak.find(aranan) != std::string::npos);
   });
 
   ekleNative("uzunluk", 1, [](VM&, const std::vector<Value>& args) -> Value {
@@ -789,6 +846,267 @@ void VM::yerlesikNativesYukle() {
         return Value::mantik(silindi);
       });
   globaller_["veritabani"] = Value::nesne(veritabani);
+
+  auto* ffi = memory_.allocate<ObjDict>();
+  ffi->alanlar["yukle"] = nativeOlustur(
+      "ffi.yukle", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() != 1) {
+          throw std::runtime_error("ffi.yukle(\"kutuphane\") tek arguman alir.");
+        }
+        if (!objTipiMi(a[0], ObjType::STRING)) {
+          throw std::runtime_error("ffi.yukle icin metin kutuphane yolu bekleniyor.");
+        }
+
+        const std::string yol = static_cast<ObjString*>(a[0].as.nesne)->deger;
+        const auto mevcut = vm.ffiKutuphaneKimlikleri_.find(yol);
+        if (mevcut != vm.ffiKutuphaneKimlikleri_.end()) {
+          return Value::sayi(static_cast<double>(mevcut->second));
+        }
+
+        auto kutuphane = std::make_shared<runtime::DynamicLibrary>(yol);
+        std::string hata;
+        if (!kutuphane->load(&hata)) {
+          throw std::runtime_error("ffi.yukle basarisiz: '" + yol + "' (" + hata + ")");
+        }
+
+        const int kimlik = vm.ffiSonrakiKimlik_++;
+        vm.ffiKutuphaneleri_[kimlik] = std::move(kutuphane);
+        vm.ffiKutuphaneKimlikleri_[yol] = kimlik;
+        return Value::sayi(static_cast<double>(kimlik));
+      });
+  ffi->alanlar["cagir"] = nativeOlustur(
+      "ffi.cagir", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() < 2) {
+          throw std::runtime_error(
+              "ffi.cagir(tutamac, \"fonksiyon\", ...argumanlar) en az 2 arguman alir.");
+        }
+        if (!objTipiMi(a[1], ObjType::STRING)) {
+          throw std::runtime_error("ffi.cagir icinde fonksiyon adi metin olmalidir.");
+        }
+
+        int kimlik = 0;
+        if (a[0].sayiMi()) {
+          if (!tamSayiMi(a[0].as.sayi)) {
+            throw std::runtime_error("ffi.cagir icin tutamac tam sayi olmalidir.");
+          }
+          kimlik = static_cast<int>(std::llround(a[0].as.sayi));
+        } else if (objTipiMi(a[0], ObjType::STRING)) {
+          const std::string yol = static_cast<ObjString*>(a[0].as.nesne)->deger;
+          const auto mevcut = vm.ffiKutuphaneKimlikleri_.find(yol);
+          if (mevcut != vm.ffiKutuphaneKimlikleri_.end()) {
+            kimlik = mevcut->second;
+          } else {
+            auto kutuphane = std::make_shared<runtime::DynamicLibrary>(yol);
+            std::string hata;
+            if (!kutuphane->load(&hata)) {
+              throw std::runtime_error("ffi.cagir: '" + yol +
+                                       "' kutuphanesi yuklenemedi (" + hata + ")");
+            }
+            kimlik = vm.ffiSonrakiKimlik_++;
+            vm.ffiKutuphaneleri_[kimlik] = std::move(kutuphane);
+            vm.ffiKutuphaneKimlikleri_[yol] = kimlik;
+          }
+        } else {
+          throw std::runtime_error(
+              "ffi.cagir icin ilk arguman tutamac(int) veya kutuphane adi(metin) olmalidir.");
+        }
+
+        const auto itKutuphane = vm.ffiKutuphaneleri_.find(kimlik);
+        if (itKutuphane == vm.ffiKutuphaneleri_.end() || !itKutuphane->second ||
+            !itKutuphane->second->isLoaded()) {
+          throw std::runtime_error("ffi.cagir: gecersiz kutuphane tutamaci #" +
+                                   std::to_string(kimlik));
+        }
+
+        const std::string fonksiyonAdi = static_cast<ObjString*>(a[1].as.nesne)->deger;
+        std::string sembolHatasi;
+        const std::uintptr_t fonksiyon =
+            itKutuphane->second->getSymbol(fonksiyonAdi, &sembolHatasi);
+        if (fonksiyon == 0) {
+          throw std::runtime_error("ffi.cagir: '" + fonksiyonAdi +
+                                   "' sembolu bulunamadi (" + sembolHatasi + ")");
+        }
+
+        std::vector<std::string> metinSahipligi;
+        std::vector<std::intptr_t> hamArgumanlar;
+        metinSahipligi.reserve(a.size() > 2 ? a.size() - 2 : 0);
+        hamArgumanlar.reserve(a.size() > 2 ? a.size() - 2 : 0);
+
+        for (std::size_t i = 2; i < a.size(); ++i) {
+          if (a[i].sayiMi()) {
+            if (!tamSayiMi(a[i].as.sayi)) {
+              throw std::runtime_error("ffi.cagir ondalik argumanlari desteklemiyor (arg #" +
+                                       std::to_string(i - 1) + ").");
+            }
+            hamArgumanlar.push_back(
+                static_cast<std::intptr_t>(std::llround(a[i].as.sayi)));
+            continue;
+          }
+          if (a[i].mantikMi()) {
+            hamArgumanlar.push_back(a[i].as.mantik ? 1 : 0);
+            continue;
+          }
+          if (objTipiMi(a[i], ObjType::STRING)) {
+            metinSahipligi.push_back(static_cast<ObjString*>(a[i].as.nesne)->deger);
+            hamArgumanlar.push_back(
+                reinterpret_cast<std::intptr_t>(metinSahipligi.back().c_str()));
+            continue;
+          }
+          throw std::runtime_error(
+              "ffi.cagir sadece int/bool/metin argumanlarini destekliyor.");
+        }
+
+        const std::intptr_t donus = ffiHamCagir(fonksiyon, hamArgumanlar);
+        return Value::sayi(static_cast<double>(donus));
+      });
+  ffi->alanlar["cagir_metin"] = nativeOlustur(
+      "ffi.cagir_metin", -1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        if (a.size() < 2) {
+          throw std::runtime_error(
+              "ffi.cagir_metin(tutamac, \"fonksiyon\", ...argumanlar) en az 2 arguman alir.");
+        }
+        if (!objTipiMi(a[1], ObjType::STRING)) {
+          throw std::runtime_error("ffi.cagir_metin icinde fonksiyon adi metin olmalidir.");
+        }
+
+        int kimlik = 0;
+        if (a[0].sayiMi()) {
+          if (!tamSayiMi(a[0].as.sayi)) {
+            throw std::runtime_error("ffi.cagir_metin icin tutamac tam sayi olmalidir.");
+          }
+          kimlik = static_cast<int>(std::llround(a[0].as.sayi));
+        } else if (objTipiMi(a[0], ObjType::STRING)) {
+          const std::string yol = static_cast<ObjString*>(a[0].as.nesne)->deger;
+          const auto mevcut = vm.ffiKutuphaneKimlikleri_.find(yol);
+          if (mevcut != vm.ffiKutuphaneKimlikleri_.end()) {
+            kimlik = mevcut->second;
+          } else {
+            auto kutuphane = std::make_shared<runtime::DynamicLibrary>(yol);
+            std::string hata;
+            if (!kutuphane->load(&hata)) {
+              throw std::runtime_error("ffi.cagir_metin: '" + yol +
+                                       "' kutuphanesi yuklenemedi (" + hata + ")");
+            }
+            kimlik = vm.ffiSonrakiKimlik_++;
+            vm.ffiKutuphaneleri_[kimlik] = std::move(kutuphane);
+            vm.ffiKutuphaneKimlikleri_[yol] = kimlik;
+          }
+        } else {
+          throw std::runtime_error(
+              "ffi.cagir_metin icin ilk arguman tutamac(int) veya kutuphane adi(metin) olmalidir.");
+        }
+
+        const auto itKutuphane = vm.ffiKutuphaneleri_.find(kimlik);
+        if (itKutuphane == vm.ffiKutuphaneleri_.end() || !itKutuphane->second ||
+            !itKutuphane->second->isLoaded()) {
+          throw std::runtime_error("ffi.cagir_metin: gecersiz kutuphane tutamaci #" +
+                                   std::to_string(kimlik));
+        }
+
+        const std::string fonksiyonAdi = static_cast<ObjString*>(a[1].as.nesne)->deger;
+        std::string sembolHatasi;
+        const std::uintptr_t fonksiyon =
+            itKutuphane->second->getSymbol(fonksiyonAdi, &sembolHatasi);
+        if (fonksiyon == 0) {
+          throw std::runtime_error("ffi.cagir_metin: '" + fonksiyonAdi +
+                                   "' sembolu bulunamadi (" + sembolHatasi + ")");
+        }
+
+        std::vector<std::string> metinSahipligi;
+        std::vector<std::intptr_t> hamArgumanlar;
+        metinSahipligi.reserve(a.size() > 2 ? a.size() - 2 : 0);
+        hamArgumanlar.reserve(a.size() > 2 ? a.size() - 2 : 0);
+
+        for (std::size_t i = 2; i < a.size(); ++i) {
+          if (a[i].sayiMi()) {
+            if (!tamSayiMi(a[i].as.sayi)) {
+              throw std::runtime_error(
+                  "ffi.cagir_metin ondalik argumanlari desteklemiyor (arg #" +
+                  std::to_string(i - 1) + ").");
+            }
+            hamArgumanlar.push_back(
+                static_cast<std::intptr_t>(std::llround(a[i].as.sayi)));
+            continue;
+          }
+          if (a[i].mantikMi()) {
+            hamArgumanlar.push_back(a[i].as.mantik ? 1 : 0);
+            continue;
+          }
+          if (objTipiMi(a[i], ObjType::STRING)) {
+            metinSahipligi.push_back(static_cast<ObjString*>(a[i].as.nesne)->deger);
+            hamArgumanlar.push_back(
+                reinterpret_cast<std::intptr_t>(metinSahipligi.back().c_str()));
+            continue;
+          }
+          throw std::runtime_error(
+              "ffi.cagir_metin sadece int/bool/metin argumanlarini destekliyor.");
+        }
+
+        const std::intptr_t donus = ffiHamCagir(fonksiyon, hamArgumanlar);
+        if (donus == 0) {
+          return vm.yeniString("");
+        }
+        return vm.yeniString(std::string(reinterpret_cast<const char*>(donus)));
+      });
+  ffi->alanlar["sembol_var_mi"] = nativeOlustur(
+      "ffi.sembol_var_mi", 2, [](VM& vm, const std::vector<Value>& a) -> Value {
+        int kimlik = 0;
+        if (a[0].sayiMi()) {
+          if (!tamSayiMi(a[0].as.sayi)) {
+            return Value::mantik(false);
+          }
+          kimlik = static_cast<int>(std::llround(a[0].as.sayi));
+        } else if (objTipiMi(a[0], ObjType::STRING)) {
+          const std::string yol = static_cast<ObjString*>(a[0].as.nesne)->deger;
+          const auto itYol = vm.ffiKutuphaneKimlikleri_.find(yol);
+          if (itYol == vm.ffiKutuphaneKimlikleri_.end()) {
+            return Value::mantik(false);
+          }
+          kimlik = itYol->second;
+        } else {
+          return Value::mantik(false);
+        }
+        if (!objTipiMi(a[1], ObjType::STRING)) {
+          return Value::mantik(false);
+        }
+        const auto itKutuphane = vm.ffiKutuphaneleri_.find(kimlik);
+        if (itKutuphane == vm.ffiKutuphaneleri_.end() || !itKutuphane->second ||
+            !itKutuphane->second->isLoaded()) {
+          return Value::mantik(false);
+        }
+        const std::string sembol = static_cast<ObjString*>(a[1].as.nesne)->deger;
+        return Value::mantik(itKutuphane->second->getSymbol(sembol, nullptr) != 0);
+      });
+  ffi->alanlar["bosalt"] = nativeOlustur(
+      "ffi.bosalt", 1, [](VM& vm, const std::vector<Value>& a) -> Value {
+        int kimlik = 0;
+        if (a[0].sayiMi()) {
+          if (!tamSayiMi(a[0].as.sayi)) {
+            return Value::mantik(false);
+          }
+          kimlik = static_cast<int>(std::llround(a[0].as.sayi));
+        } else {
+          return Value::mantik(false);
+        }
+        const auto it = vm.ffiKutuphaneleri_.find(kimlik);
+        if (it == vm.ffiKutuphaneleri_.end()) {
+          return Value::mantik(false);
+        }
+        if (it->second) {
+          it->second->close();
+        }
+        vm.ffiKutuphaneleri_.erase(it);
+        for (auto itYol = vm.ffiKutuphaneKimlikleri_.begin();
+             itYol != vm.ffiKutuphaneKimlikleri_.end();) {
+          if (itYol->second == kimlik) {
+            itYol = vm.ffiKutuphaneKimlikleri_.erase(itYol);
+          } else {
+            ++itYol;
+          }
+        }
+        return Value::mantik(true);
+      });
+  globaller_["ffi"] = Value::nesne(ffi);
 
   ekleNative("dahil_et", 1, [](VM& vm, const std::vector<Value>& args) -> Value {
     const std::string yol = vm.metneCevir(args[0]);

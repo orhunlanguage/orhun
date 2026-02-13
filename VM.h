@@ -4,9 +4,14 @@
 #include "Memory.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+namespace runtime {
+class DynamicLibrary;
+}
 
 // Stack tabanli bytecode sanal makinesi (Faz 2 runtime + GC).
 class VM {
@@ -43,6 +48,10 @@ private:
   std::vector<TryFrame> tryYigini_;
   std::vector<Value> yigin_;
   std::unordered_map<std::string, Value> globaller_;
+  std::unordered_map<int, std::shared_ptr<runtime::DynamicLibrary>>
+      ffiKutuphaneleri_;
+  std::unordered_map<std::string, int> ffiKutuphaneKimlikleri_;
+  int ffiSonrakiKimlik_ = 1;
 
   MemoryManager memory_;
   std::size_t gcEsigi_ = 1024;
