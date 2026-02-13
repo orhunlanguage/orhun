@@ -6,6 +6,7 @@
 #include "VM.h"
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -13,6 +14,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -576,6 +578,195 @@ int komutLint(const std::string& dosyaYolu, bool strict) {
   return 0;
 }
 
+struct DepoKaydi {
+  std::string ad;
+  std::string kaynak;
+  std::string aciklama;
+};
+
+std::filesystem::path varsayilanDepoIndexYolu() {
+  namespace fs = std::filesystem;
+  if (const char* env = std::getenv("ORHUN_DEPO_INDEX")) {
+    if (*env != '\0') {
+      return fs::path(env);
+    }
+  }
+
+  const fs::path yol = fs::current_path() / "orhun_depo" / "index.txt";
+  return yol;
+}
+
+std::string solaSagaKirp(const std::string& metin) {
+  std::size_t bas = 0;
+  while (bas < metin.size() &&
+         (metin[bas] == ' ' || metin[bas] == '\t' || metin[bas] == '\r' ||
+          metin[bas] == '\n')) {
+    ++bas;
+  }
+
+  std::size_t son = metin.size();
+  while (son > bas &&
+         (metin[son - 1] == ' ' || metin[son - 1] == '\t' ||
+          metin[son - 1] == '\r' || metin[son - 1] == '\n')) {
+    --son;
+  }
+
+  return metin.substr(bas, son - bas);
+}
+
+std::string asciiKucuk(const std::string& metin) {
+  std::string sonuc = metin;
+  std::transform(sonuc.begin(), sonuc.end(), sonuc.begin(),
+                 [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+  return sonuc;
+}
+
+std::vector<DepoKaydi> depoIndexOku(const std::filesystem::path& indexYolu) {
+  std::vector<DepoKaydi> kayitlar;
+  if (!std::filesystem::exists(indexYolu)) {
+    return kayitlar;
+  }
+
+  std::istringstream akis(dosyaOku(indexYolu.string()));
+  std::string satir;
+  while (std::getline(akis, satir)) {
+    const std::string temiz = solaSagaKirp(satir);
+    if (temiz.empty() || temiz[0] == '#') {
+      continue;
+    }
+
+    const std::size_t p1 = temiz.find('|');
+    if (p1 == std::string::npos) {
+      continue;
+    }
+    const std::size_t p2 = temiz.find('|', p1 + 1);
+    if (p2 == std::string::npos) {
+      continue;
+    }
+
+    DepoKaydi kayit;
+    kayit.ad = solaSagaKirp(temiz.substr(0, p1));
+    kayit.kaynak = solaSagaKirp(temiz.substr(p1 + 1, p2 - (p1 + 1)));
+    kayit.aciklama = solaSagaKirp(temiz.substr(p2 + 1));
+    if (!kayit.ad.empty() && !kayit.kaynak.empty()) {
+      kayitlar.push_back(std::move(kayit));
+    }
+  }
+
+  return kayitlar;
+}
+
+int komutPaketDepoBaslat(const std::string& klasor) {
+  namespace fs = std::filesystem;
+  const fs::path kok = klasor.empty() ? (fs::current_path() / "orhun_depo")
+                                      : fs::path(klasor);
+  fs::create_directories(kok / "paketler");
+
+  const fs::path index = kok / "index.txt";
+  if (!fs::exists(index)) {
+    const std::string ornek =
+        "# ad | kaynak | aciklama\n"
+        "# ornek_paket | https://github.com/ornek/orhun-ornek.git | ornek aciklama\n";
+    dosyaYaz(index.string(), ornek);
+  }
+
+  const fs::path readme = kok / "README.md";
+  if (!fs::exists(readme)) {
+    dosyaYaz(readme.string(),
+             "# Orhun Paket Deposu\n\n"
+             "- Paket ekle: `orhun paket depo-ekle <ad> <kaynak> [aciklama]`\n"
+             "- Paket ara: `orhun paket ara <kelime>`\n"
+             "- Paket kur: `orhun paket kur depo:<ad>`\n");
+  }
+
+  std::cout << "Depo baslatildi: " << kok.string() << "\n";
+  std::cout << "Index: " << index.string() << "\n";
+  return 0;
+}
+
+int komutPaketDepoEkle(const std::string& ad, const std::string& kaynak,
+                       const std::string& aciklama) {
+  if (ad.empty() || kaynak.empty()) {
+    throw std::runtime_error(
+        "Hata: paket depo-ekle <ad> <kaynak> [aciklama] kullanin.");
+  }
+
+  const std::filesystem::path indexYolu = varsayilanDepoIndexYolu();
+  std::filesystem::create_directories(indexYolu.parent_path());
+  auto kayitlar = depoIndexOku(indexYolu);
+  for (const auto& kayit : kayitlar) {
+    if (kayit.ad == ad) {
+      throw std::runtime_error("Hata: '" + ad +
+                               "' kaydi zaten depoda mevcut.");
+    }
+  }
+
+  std::ofstream dosya(indexYolu, std::ios::app | std::ios::binary);
+  if (!dosya.is_open()) {
+    throw std::runtime_error("Hata: depo index dosyasina yazilamadi: " +
+                             indexYolu.string());
+  }
+  dosya << ad << " | " << kaynak << " | " << aciklama << "\n";
+
+  std::cout << "Depoya eklendi: " << ad << " -> " << kaynak << "\n";
+  return 0;
+}
+
+int komutPaketAra(const std::string& sorgu) {
+  if (sorgu.empty()) {
+    throw std::runtime_error("Hata: paket ara <kelime> kullanin.");
+  }
+
+  const std::filesystem::path indexYolu = varsayilanDepoIndexYolu();
+  const auto kayitlar = depoIndexOku(indexYolu);
+  if (kayitlar.empty()) {
+    std::cout << "Depo kaydi bulunamadi: " << indexYolu.string() << "\n";
+    return 0;
+  }
+
+  const std::string needle = asciiKucuk(sorgu);
+  std::size_t sayi = 0;
+  for (const auto& kayit : kayitlar) {
+    const std::string havuz =
+        asciiKucuk(kayit.ad + " " + kayit.kaynak + " " + kayit.aciklama);
+    if (havuz.find(needle) == std::string::npos) {
+      continue;
+    }
+    ++sayi;
+    std::cout << "- " << kayit.ad << " -> " << kayit.kaynak;
+    if (!kayit.aciklama.empty()) {
+      std::cout << " | " << kayit.aciklama;
+    }
+    std::cout << "\n";
+  }
+
+  if (sayi == 0) {
+    std::cout << "Sonuc bulunamadi.\n";
+  } else {
+    std::cout << "Toplam " << sayi << " paket bulundu.\n";
+  }
+  return 0;
+}
+
+std::optional<std::string> depodanKaynakCoz(const std::string& referans) {
+  if (referans.rfind("depo:", 0) != 0) {
+    return std::nullopt;
+  }
+
+  const std::string paketAdi = referans.substr(5);
+  if (paketAdi.empty()) {
+    return std::nullopt;
+  }
+
+  const auto kayitlar = depoIndexOku(varsayilanDepoIndexYolu());
+  for (const auto& kayit : kayitlar) {
+    if (kayit.ad == paketAdi) {
+      return kayit.kaynak;
+    }
+  }
+  return std::nullopt;
+}
+
 int komutPaketYeni(const std::string& projeAdi) {
   namespace fs = std::filesystem;
   if (projeAdi.empty()) {
@@ -663,24 +854,36 @@ int komutPaketKur(const std::string& kaynak, const std::string& hedefAdi) {
     throw std::runtime_error("Hata: paket kur icin kaynak belirtilmeli.");
   }
 
+  std::string cozulmusKaynak = kaynak;
+  if (kaynak.rfind("depo:", 0) == 0) {
+    auto cozum = depodanKaynakCoz(kaynak);
+    if (!cozum.has_value()) {
+      throw std::runtime_error(
+          "Hata: '" + kaynak +
+          "' deposunda paket bulunamadi. 'orhun paket ara <kelime>' ile arayin.");
+    }
+    cozulmusKaynak = cozum.value();
+  }
+
   fs::path libKlasoru = fs::current_path() / "lib";
   fs::create_directories(libKlasoru);
 
-  const std::string paketAdi = hedefAdi.empty() ? paketAdiCikar(kaynak) : hedefAdi;
+  const std::string paketAdi =
+      hedefAdi.empty() ? paketAdiCikar(cozulmusKaynak) : hedefAdi;
   const fs::path hedefYol = libKlasoru / paketAdi;
   if (fs::exists(hedefYol)) {
     throw std::runtime_error("Hata: '" + hedefYol.string() + "' zaten mevcut.");
   }
 
   std::error_code ec;
-  if (fs::exists(kaynak, ec) && !ec) {
-    fs::copy(kaynak, hedefYol,
+  if (fs::exists(cozulmusKaynak, ec) && !ec) {
+    fs::copy(cozulmusKaynak, hedefYol,
              fs::copy_options::recursive | fs::copy_options::copy_symlinks, ec);
     if (ec) {
       throw std::runtime_error("Hata: Yerel paket kopyalanamadi: " + ec.message());
     }
-  } else if (uzakKaynakMi(kaynak)) {
-    const std::string komut = "git clone --depth 1 \"" + kaynak + "\" \"" +
+  } else if (uzakKaynakMi(cozulmusKaynak)) {
+    const std::string komut = "git clone --depth 1 \"" + cozulmusKaynak + "\" \"" +
                               hedefYol.string() + "\"";
     const int kod = std::system(komut.c_str());
     if (kod != 0) {
@@ -895,7 +1098,7 @@ int main(int argc, char* argv[]) {
     if (komut == "paket") {
       if (argc < 3) {
         throw std::runtime_error(
-            "Hata: paket komutlari: yeni | kur | ekle | liste");
+            "Hata: paket komutlari: yeni | kur | ekle | liste | ara | depo-baslat | depo-ekle");
       }
 
       const std::string alt = argv[2];
@@ -929,8 +1132,36 @@ int main(int argc, char* argv[]) {
         return komutPaketListe();
       }
 
+      if (alt == "ara") {
+        if (argc < 4) {
+          throw std::runtime_error("Hata: paket ara <kelime> kullanin.");
+        }
+        return komutPaketAra(argv[3]);
+      }
+
+      if (alt == "depo-baslat") {
+        const std::string klasor = argc >= 4 ? argv[3] : "";
+        return komutPaketDepoBaslat(klasor);
+      }
+
+      if (alt == "depo-ekle") {
+        if (argc < 5) {
+          throw std::runtime_error(
+              "Hata: paket depo-ekle <ad> <kaynak> [aciklama] kullanin.");
+        }
+        std::string aciklama;
+        if (argc >= 6) {
+          aciklama = argv[5];
+          for (int i = 6; i < argc; ++i) {
+            aciklama += " ";
+            aciklama += argv[i];
+          }
+        }
+        return komutPaketDepoEkle(argv[3], argv[4], aciklama);
+      }
+
       throw std::runtime_error(
-          "Hata: bilinmeyen paket komutu. 'yeni', 'kur', 'ekle' veya 'liste' kullanin.");
+          "Hata: bilinmeyen paket komutu. 'yeni', 'kur', 'ekle', 'liste', 'ara', 'depo-baslat' veya 'depo-ekle' kullanin.");
     }
 
     if (komut == "vm") {

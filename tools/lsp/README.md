@@ -6,6 +6,8 @@ Bu klasör Orhun için minimal Language Server içerir:
 - Özellikler:
   - `initialize` / `shutdown` / `exit`
   - `textDocument/completion` (anahtar kelime tamamlama)
+  - `textDocument/definition` (temel tanıma git)
+  - `textDocument/documentSymbol` (belge sembolleri)
   - `didOpen` / `didChange` için temel diagnostics
     - tab karakteri uyarısı
     - satır sonu boşluk uyarısı
@@ -18,4 +20,4 @@ python tools/lsp/orhun_lsp.py
 ```
 
 VS Code tarafında bu process bir language client ile bağlanmalıdır.
-Bu sürüm MVP'dir; parse tabanlı diagnostics ve go-to-definition sonraki adımdır.
+Bu sürüm MVP+ düzeyindedir; parse tabanlı derin diagnostics sonraki adımdır.

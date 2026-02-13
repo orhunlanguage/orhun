@@ -5,19 +5,19 @@ Bu belge, "en kolay + en guclu" hedefi icin kalan buyuk isleri siralar.
 ## 1) Kalite ve Guvenilirlik
 - [x] Otomatik test altyapisi (deterministik senaryolar)
 - [x] GitHub Actions CI
-- [ ] Parser/Lexer/Interpreter icin daha genis regression test paketi (100+)
-- [ ] Fuzz test (Lexer/Parser)
-- [ ] Performans benchmark seti
+- [~] Parser/Lexer/Interpreter icin daha genis regression test paketi (genisletildi, 100+ hedefi acik)
+- [x] Fuzz test (Lexer/Parser) - smoke seviyesi
+- [x] Performans benchmark seti - hiz snapshot
 
 ## 2) Gelistirici Deneyimi
-- [ ] Orhun formatter (`orhun fmt`)
+- [x] Orhun formatter (`orhun fmt`)
 - [x] Orhun linter (`orhun lint`)
 - [x] VS Code extension (syntax highlight + snippets)
-- [~] LSP (completion + temel diagnostics var; go-to-definition sirada)
+- [x] LSP (completion + temel diagnostics + go-to-definition + document symbols)
 
 ## 3) Ekosistem
 - [x] Paket yoneticisi (`orhun paket ekle ...`)
-- [ ] Merkezi paket deposu taslagi
+- [x] Merkezi paket deposu taslagi (`paket depo-baslat`, `paket depo-ekle`, `paket ara`, `paket kur depo:<ad>`)
 - [x] Standart kutuphane genisletme (http/json/sunucu/veritabani/regex/date)
 - [ ] Dokumantasyon sitesi + 30 dk hizli baslangic
 

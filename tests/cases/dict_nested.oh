@@ -1,0 +1,4 @@
+sunucu olsun { "ad": "ana", "ayar": { "port": 8080 }, "liste": [1, 2, 3] }
+yazdır sunucu["ad"]
+yazdır sunucu.ayar.port
+yazdır sunucu["liste"][1]

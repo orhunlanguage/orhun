@@ -13,7 +13,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y g++
+        run: sudo apt-get update && sudo apt-get install -y g++ python3
 
       - name: Build and run tests
         run: bash tests/run_tests.sh
+
+      - name: Fuzz smoke (Lexer/Parser/Runtime no-crash)
+        run: python3 tests/fuzz_smoke.py ./orhun_test --count 80 --seed 2026 --timeout 2.5
+
+      - name: Bench snapshot (non-blocking)
+        run: bash tests/benchmark.sh g++ orhun_test || true

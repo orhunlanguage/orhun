@@ -19,6 +19,13 @@ cases=(
   "tests/cases/f_string"
   "tests/cases/slicing"
   "tests/cases/stdlib_modules"
+  "tests/cases/stdlib_database"
+  "tests/cases/stdlib_regex_date"
+  "tests/cases/dict_nested"
+  "tests/cases/while_float"
+  "tests/cases/module_stdlib"
+  "tests/cases/try_catch_runtime"
+  "tests/cases/f_string_escape"
 )
 
 failed=0
