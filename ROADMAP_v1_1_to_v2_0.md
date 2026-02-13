@@ -13,7 +13,7 @@ Bu belge, "en kolay + en guclu" hedefi icin kalan buyuk isleri siralar.
 - [ ] Orhun formatter (`orhun fmt`)
 - [x] Orhun linter (`orhun lint`)
 - [x] VS Code extension (syntax highlight + snippets)
-- [ ] LSP (completion, go-to-definition, diagnostics)
+- [~] LSP (completion + temel diagnostics var; go-to-definition sirada)
 
 ## 3) Ekosistem
 - [x] Paket yoneticisi (`orhun paket ekle ...`)
