@@ -1,0 +1,7 @@
+tip Selamlayici:
+    işlev selam(ad olsun "dünya"):
+        döndür "Merhaba, " + ad
+
+s olsun yeni Selamlayici()
+yazdır s.selam()
+yazdır s.selam("Orhun")

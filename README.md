@@ -89,7 +89,7 @@ g++ -std=c++17 -Wall -Wextra main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk
 Run a source file:
 
 ```bash
-orhun dosya.oh
+orhun examples/merhaba.oh
 ```
 
 Strict VM mode:
@@ -151,9 +151,9 @@ self-hosting plan.
 - Lexer/parser/AST: `Lexer.cpp`, `Parser.cpp`, `AST.h`
 - Bytecode compiler: `Compiler.cpp`
 - Standard library helpers: `Yerlesik.h`, `StdLib/`
+- Examples: `examples/`
 - Tests and fixtures: `tests/`
 - VS Code tooling: `tools/vscode-orhun`
-- LSP notes: `tools/lsp`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Release channels: `docs/RELEASE_CHANNELS.md`
 - Security policy: `SECURITY.md`

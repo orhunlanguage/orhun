@@ -1,5 +1,0 @@
-sunucu olsun { "ad": "Ana Sunucu", "portlar": [80, 443, 8080], "meta": { "aktif": 1 } }
-anahtar olsun "portlar"
-idx olsun 2
-yazdır sunucu[anahtar][idx]
-yazdır sunucu.meta.aktif

@@ -1,6 +1,0 @@
-# v0.6.5 Veri Yapıları Testi
-sunucu olsun { "ad": "Ana Sunucu", "ip": "192.168.1.1", "portlar": [80, 443, 8080], "aktif": 1 }
-
-yazdır "Sunucu Adı: " + sunucu["ad"]
-yazdır "Birinci Port: " + sunucu["portlar"][0]
-yazdır "Ikinci Port (nokta): " + sunucu.portlar[1]
