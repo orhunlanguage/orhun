@@ -155,6 +155,7 @@ self-hosting plan.
 - Tests and fixtures: `tests/`
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
+- Language specification: `docs/SPEC.md`
 - Release channels: `docs/RELEASE_CHANNELS.md`
 - Security policy: `SECURITY.md`
 
