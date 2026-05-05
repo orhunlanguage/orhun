@@ -4,6 +4,7 @@
 #include "DynamicLibrary.h"
 #include "Lexer.h"
 #include "Parser.h"
+#include "Yardimci.h"
 #include "Yerlesik.h"
 
 #include <algorithm>
@@ -401,6 +402,7 @@ void VM::sifirla() {
   ffiIslevBaglantilari_.clear();
   ffiSonrakiKimlik_ = 1;
   ffiSonrakiIslevKimlik_ = 1;
+  modulChunklari_.clear();
   gcEsigi_ = 1024;
   yerlesikNativesYukle();
 }
@@ -2022,7 +2024,13 @@ void VM::yerlesikNativesYukle() {
   ekleNative("dahil_et", 1,
              [](VM &vm, const std::vector<Value> &args) -> Value {
                const std::string yol = vm.metneCevir(args[0]);
-               std::ifstream in(yol, std::ios::binary);
+               const auto cozulmusYol = orhunDahilYolunuCoz(yol);
+               if (!cozulmusYol.has_value()) {
+                 throw std::runtime_error("dahil_et: dosya acilamadi: " + yol +
+                                          orhunDahilAramaYollariMetni());
+               }
+
+               std::ifstream in(*cozulmusYol, std::ios::binary);
                if (!in.is_open()) {
                  throw std::runtime_error("dahil_et: dosya acilamadi: " + yol);
                }
@@ -2035,7 +2043,9 @@ void VM::yerlesikNativesYukle() {
                Parser parser(std::move(tokenlar));
                std::unique_ptr<ProgramNode> program = parser.parse();
                Compiler derleyici;
-               BytecodeChunk chunk = derleyici.derle(program.get());
+               auto modulChunk =
+                   std::make_unique<BytecodeChunk>(derleyici.derle(program.get()));
+               BytecodeChunk &chunk = *modulChunk;
 
                const auto oncekiGloballer = vm.globaller_;
 
@@ -2084,6 +2094,7 @@ void VM::yerlesikNativesYukle() {
                  modul->alanlar[ad] = deger;
                }
 
+               vm.modulChunklari_.push_back(std::move(modulChunk));
                return Value::nesne(modul);
              });
 }
@@ -2283,7 +2294,9 @@ void VM::calistir(const BytecodeChunk &chunk) {
 #endif
       CASE(OP_SABIT) {
         const std::uint16_t sabitIndeks = u16Oku();
-        if (sabitIndeks < runtimeSabitCache_.size()) {
+        const bool anaChunk =
+            frameYigini_.back().function->chunk == chunk_;
+        if (anaChunk && sabitIndeks < runtimeSabitCache_.size()) {
           RuntimeSabitCacheKaydi &kayit = runtimeSabitCache_[sabitIndeks];
           if (kayit.hazir) {
             yiginPush(kayit.deger);
@@ -2324,7 +2337,9 @@ void VM::calistir(const BytecodeChunk &chunk) {
       }
       CASE(OP_GET_GLOBAL) {
         const std::uint16_t sabitIndeks = u16Oku();
-        if (sabitIndeks < globalInlineCache_.size()) {
+        const bool anaChunk =
+            frameYigini_.back().function->chunk == chunk_;
+        if (anaChunk && sabitIndeks < globalInlineCache_.size()) {
           GlobalInlineCacheKaydi &kayit = globalInlineCache_[sabitIndeks];
           if (kayit.gecerli && kayit.deger != nullptr) {
             yiginPush(*kayit.deger);
@@ -2340,7 +2355,7 @@ void VM::calistir(const BytecodeChunk &chunk) {
         if (it == globaller_.end()) {
           calismaHatasi("Tanimsiz degisken: '" + ad + "'.");
         }
-        if (sabitIndeks < globalInlineCache_.size()) {
+        if (anaChunk && sabitIndeks < globalInlineCache_.size()) {
           GlobalInlineCacheKaydi &kayit = globalInlineCache_[sabitIndeks];
           kayit.deger = const_cast<Value *>(&it->second);
           kayit.gecerli = true;
@@ -2350,6 +2365,8 @@ void VM::calistir(const BytecodeChunk &chunk) {
       }
       CASE(OP_SET_GLOBAL) {
         const std::uint16_t sabitIndeks = u16Oku();
+        const bool anaChunk =
+            frameYigini_.back().function->chunk == chunk_;
         const SabitDeger &adDegeri = sabitOku(sabitIndeks);
         if (!std::holds_alternative<std::string>(adDegeri.veri)) {
           calismaHatasi("SET_GLOBAL sabiti metin degil.");
@@ -2363,7 +2380,7 @@ void VM::calistir(const BytecodeChunk &chunk) {
         } else {
           it->second = atanan;
         }
-        if (sabitIndeks < globalInlineCache_.size()) {
+        if (anaChunk && sabitIndeks < globalInlineCache_.size()) {
           GlobalInlineCacheKaydi &kayit = globalInlineCache_[sabitIndeks];
           kayit.deger = &it->second;
           kayit.gecerli = true;

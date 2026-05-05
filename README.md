@@ -150,7 +150,7 @@ self-hosting plan.
 - Core runtime and CLI: `main.cpp`, `VM.cpp`, `Interpreter.cpp`
 - Lexer/parser/AST: `Lexer.cpp`, `Parser.cpp`, `AST.h`
 - Bytecode compiler: `Compiler.cpp`
-- Standard library helpers: `Yerlesik.h`, `StdLib/`
+- Standard library helpers: `Yerlesik.h`, `StdLib/`, `StdLib/orhun/`
 - Examples: `examples/`
 - Tests and fixtures: `tests/`
 - VS Code tooling: `tools/vscode-orhun`

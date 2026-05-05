@@ -1,0 +1,18 @@
+temel olsun dahil_et "orhun/temel.oh"
+
+yazdır temel.surum
+yazdır temel.bos_liste_mi([])
+yazdır temel.bos_liste_mi([1])
+yazdır temel.dolu_mu([1])
+yazdır temel.ilk([3, 4], 99)
+yazdır temel.ilk([], 99)
+yazdır temel.son([3, 4], 99)
+yazdır temel.son([], 99)
+yazdır temel.aralik(1, 5)
+yazdır temel.aralik(5, 1, -2)
+
+iki_kat olsun işlev(x): x * 2
+cift_mi olsun işlev(x): x % 2 eşit 0
+
+yazdır temel.haritala([1, 2, 3], iki_kat)
+yazdır temel.suz([1, 2, 3, 4], cift_mi)

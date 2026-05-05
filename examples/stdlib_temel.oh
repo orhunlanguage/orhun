@@ -1,0 +1,5 @@
+temel olsun dahil_et "orhun/temel.oh"
+
+yazdır temel.ilk([10, 20, 30], 0)
+yazdır temel.son([10, 20, 30], 0)
+yazdır temel.aralik(1, 5)

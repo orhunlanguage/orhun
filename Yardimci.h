@@ -1,10 +1,14 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdlib>
 #include <cstddef>
+#include <filesystem>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <vector>
 
 // UTF-8 metni kaba bir şekilde Unicode kod noktalarına çevirir.
@@ -118,4 +122,84 @@ enYakinOneri(std::string_view aranan, const std::vector<std::string> &adaylar,
     return enIyi;
   }
   return std::nullopt;
+}
+
+inline bool orhunNormalDosyaMi(const std::filesystem::path &yol) {
+  std::error_code ec;
+  return std::filesystem::exists(yol, ec) && !ec &&
+         std::filesystem::is_regular_file(yol, ec) && !ec;
+}
+
+inline void orhunYolListesineEkle(std::vector<std::filesystem::path> &yollar,
+                                  const std::filesystem::path &yol) {
+  if (!yol.empty()) {
+    yollar.push_back(yol);
+  }
+}
+
+inline std::vector<std::filesystem::path> orhunStdlibKokleri() {
+  namespace fs = std::filesystem;
+  std::vector<fs::path> kokler;
+
+  if (const char *env = std::getenv("ORHUN_STDLIB_PATH")) {
+#ifdef _WIN32
+    constexpr char ayirici = ';';
+#else
+    constexpr char ayirici = ':';
+#endif
+    std::stringstream ss(env);
+    std::string parca;
+    while (std::getline(ss, parca, ayirici)) {
+      if (!parca.empty()) {
+        orhunYolListesineEkle(kokler, fs::path(parca));
+      }
+    }
+  }
+
+  std::error_code ec;
+  const fs::path calismaKlasoru = fs::current_path(ec);
+  if (!ec && !calismaKlasoru.empty()) {
+    orhunYolListesineEkle(kokler, calismaKlasoru / "StdLib");
+    orhunYolListesineEkle(kokler, calismaKlasoru / "stdlib");
+  }
+
+  return kokler;
+}
+
+inline std::optional<std::filesystem::path>
+orhunDahilYolunuCoz(const std::string &dosyaAdi) {
+  namespace fs = std::filesystem;
+
+  const fs::path istenen(dosyaAdi);
+  if (orhunNormalDosyaMi(istenen)) {
+    return istenen;
+  }
+
+  if (istenen.is_absolute()) {
+    return std::nullopt;
+  }
+
+  for (const fs::path &kok : orhunStdlibKokleri()) {
+    const fs::path aday = kok / istenen;
+    if (orhunNormalDosyaMi(aday)) {
+      return aday;
+    }
+  }
+
+  return std::nullopt;
+}
+
+inline std::string orhunDahilAramaYollariMetni() {
+  std::ostringstream ss;
+  ss << " Aranan standart kutuphane kokleri:";
+  const std::vector<std::filesystem::path> kokler = orhunStdlibKokleri();
+  if (kokler.empty()) {
+    ss << " <yok>";
+    return ss.str();
+  }
+
+  for (const std::filesystem::path &kok : kokler) {
+    ss << " " << kok.string();
+  }
+  return ss.str();
 }

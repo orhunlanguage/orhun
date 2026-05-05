@@ -107,6 +107,7 @@ Basari olcutu:
 
 1. Test runner timeout ve takilan OOP/super vakalarini bitir.
 2. Repo hijyenini koru: build ve rapor dosyalari kaynak agacinda kalmasin.
-3. Saf Orhun stdlib klasorunu baslat.
+3. Saf Orhun stdlib cekirdegini genislet: `sonuc`, metin ve koleksiyon
+   yardimcilarini Orhun kaynaklarina tasi.
 4. Lexer prototipini Orhun ile yazmaya basla.
 5. Parser prototipi icin AST/ara temsil formatini sabitle.

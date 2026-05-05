@@ -310,6 +310,19 @@ Invalid non-object access still produces a runtime error.
 matematik olsun dahil_et "matematik.oh"
 ```
 
+Lookup order:
+
+1. The requested path exactly as written.
+2. Each root in `ORHUN_STDLIB_PATH`.
+3. The local development standard library roots `StdLib/` and `stdlib/`.
+
+Official Orhun-source standard modules live under `StdLib/orhun/` and are
+included by their library-relative path:
+
+```orhun
+temel olsun dahil_et "orhun/temel.oh"
+```
+
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.
 
@@ -347,6 +360,7 @@ Current built-in module surfaces include:
 - `sonuc`
 - `gorev`
 - `ffi`
+- `orhun/temel.oh`
 
 Safety-sensitive modules must keep policy checks enabled by default.
 

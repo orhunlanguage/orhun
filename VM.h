@@ -92,6 +92,7 @@ private:
   int ffiSonrakiIslevKimlik_ = 1;
   std::vector<Value> geciciArgumanBuffer_;
   std::vector<Value> geciciBirlesikArgumanBuffer_;
+  std::vector<std::unique_ptr<BytecodeChunk>> modulChunklari_;
 
   MemoryManager memory_;
   std::size_t gcEsigi_ = 1024;

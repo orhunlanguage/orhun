@@ -3720,10 +3720,18 @@ void Interpreter::calistirDahilEt(const DahilEtNode *dugum) {
 }
 
 OrhunDegeri Interpreter::dahilEtDegerlendir(const DahilEtNode *dugum) {
-  std::ifstream dosya(dugum->dosyaAdi(), std::ios::binary);
+  const std::string istenenYol = dugum->dosyaAdi();
+  const auto cozulmusYol = orhunDahilYolunuCoz(istenenYol);
+  if (!cozulmusYol.has_value()) {
+    hataFirlat(dugum->satir(),
+               "dahil_et: '" + istenenYol + "' dosyası açılamadı." +
+                   orhunDahilAramaYollariMetni());
+  }
+
+  std::ifstream dosya(*cozulmusYol, std::ios::binary);
   if (!dosya.is_open()) {
     hataFirlat(dugum->satir(),
-               "dahil_et: '" + dugum->dosyaAdi() + "' dosyası açılamadı.");
+               "dahil_et: '" + istenenYol + "' dosyası açılamadı.");
   }
 
   std::ostringstream tampon;

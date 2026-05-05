@@ -1,0 +1,57 @@
+# Orhun ile yazilmis cekirdek yardimcilar.
+
+surum olsun "0.1.0"
+
+işlev bos_liste_mi(liste):
+    döndür uzunluk(liste) eşit 0
+
+işlev dolu_mu(koleksiyon):
+    döndür uzunluk(koleksiyon) büyük 0
+
+işlev ilk(liste, yedek):
+    eğer uzunluk(liste) büyük 0 ise:
+        döndür liste[0]
+    değilse:
+        döndür yedek
+
+işlev son(liste, yedek):
+    adet olsun uzunluk(liste)
+    eğer adet büyük 0 ise:
+        döndür liste[adet - 1]
+    değilse:
+        döndür yedek
+
+işlev aralik(baslangic, bitis, adim olsun 1):
+    sonuc olsun []
+    eğer adim eşit 0 ise:
+        döndür sonuc
+
+    i olsun baslangic
+    eğer adim büyük 0 ise:
+        sürece i küçük bitis:
+            sonuc.ekle(i)
+            i olsun i + adim
+    değilse:
+        sürece i büyük bitis:
+            sonuc.ekle(i)
+            i olsun i + adim
+
+    döndür sonuc
+
+işlev haritala(liste, donusturucu):
+    sonuc olsun []
+    i olsun 0
+    sürece i küçük uzunluk(liste):
+        sonuc.ekle(donusturucu(liste[i]))
+        i olsun i + 1
+    döndür sonuc
+
+işlev suz(liste, kosul):
+    sonuc olsun []
+    i olsun 0
+    sürece i küçük uzunluk(liste):
+        oge olsun liste[i]
+        eğer kosul(oge) ise:
+            sonuc.ekle(oge)
+        i olsun i + 1
+    döndür sonuc
