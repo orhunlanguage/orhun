@@ -1,0 +1,8 @@
+sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
+
+iyi olsun sonuc_yardimci.ok(21)
+kotu olsun sonuc_yardimci.hata("ag_hatasi")
+
+yazdır sonuc_yardimci.deger_yada(iyi, 0)
+yazdır sonuc_yardimci.hata_yada(kotu, "hata_yok")
+yazdır sonuc_yardimci.haritala(iyi, işlev(x): x * 2).deger

@@ -14,6 +14,9 @@ Example:
 ```orhun
 temel olsun dahil_et "orhun/temel.oh"
 yazdır temel.ilk([1, 2, 3])
+
+sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
+yazdır sonuc_yardimci.deger_yada(sonuc_yardimci.ok(42), 0)
 ```
 
 Module lookup checks the requested path first, then searches the standard

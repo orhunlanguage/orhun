@@ -1,0 +1,42 @@
+# Orhun ile yazilmis sonuc yardimcilari.
+
+surum olsun "0.1.0"
+
+işlev ok(deger):
+    döndür {"ok": doğru, "deger": deger, "hata": 0}
+
+işlev hata(mesaj):
+    döndür {"ok": yanlış, "deger": 0, "hata": mesaj}
+
+işlev ok_mu(kayit):
+    döndür kayit.ok
+
+işlev hata_mi(kayit):
+    eğer kayit.ok ise:
+        döndür yanlış
+    değilse:
+        döndür doğru
+
+işlev deger_yada(kayit, yedek):
+    eğer kayit.ok ise:
+        döndür kayit.deger
+    değilse:
+        döndür yedek
+
+işlev hata_yada(kayit, yedek):
+    eğer kayit.ok ise:
+        döndür yedek
+    değilse:
+        döndür kayit.hata
+
+işlev haritala(kayit, donusturucu):
+    eğer kayit.ok ise:
+        döndür ok(donusturucu(kayit.deger))
+    değilse:
+        döndür kayit
+
+işlev zincirle(kayit, donusturucu):
+    eğer kayit.ok ise:
+        döndür donusturucu(kayit.deger)
+    değilse:
+        döndür kayit

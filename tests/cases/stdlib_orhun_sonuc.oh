@@ -1,0 +1,22 @@
+sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
+
+iyi olsun sonuc_yardimci.ok(21)
+kotu olsun sonuc_yardimci.hata("ag_hatasi")
+
+yazdır sonuc_yardimci.surum
+yazdır sonuc_yardimci.ok_mu(iyi)
+yazdır sonuc_yardimci.hata_mi(iyi)
+yazdır sonuc_yardimci.ok_mu(kotu)
+yazdır sonuc_yardimci.hata_mi(kotu)
+yazdır sonuc_yardimci.deger_yada(iyi, 99)
+yazdır sonuc_yardimci.deger_yada(kotu, 99)
+yazdır sonuc_yardimci.hata_yada(iyi, "hata_yok")
+yazdır sonuc_yardimci.hata_yada(kotu, "hata_yok")
+
+iki_kat olsun işlev(x): x * 2
+buyut olsun işlev(x): sonuc_yardimci.ok(x + 10)
+
+yazdır sonuc_yardimci.haritala(iyi, iki_kat).deger
+yazdır sonuc_yardimci.haritala(kotu, iki_kat).hata
+yazdır sonuc_yardimci.zincirle(iyi, buyut).deger
+yazdır sonuc_yardimci.zincirle(kotu, buyut).hata
