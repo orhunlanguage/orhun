@@ -165,7 +165,9 @@ self-hosting plan.
 Contributions are welcome, especially around tests, documentation, examples,
 language semantics, VM parity, and tooling. Because Orhun is pre-1.0, please keep
 changes small, tested, and aligned with the Turkish-first identity of the
-language.
+language. See [CONTRIBUTING.md](CONTRIBUTING.md) and
+[docs/OPEN_SOURCE_POLICY.md](docs/OPEN_SOURCE_POLICY.md) for what belongs in
+the public repository.
 
 Before opening a pull request:
 

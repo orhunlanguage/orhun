@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest an Orhun feature or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What should become easier, safer, or faster?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the behavior or API you want.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example Orhun Code
+      render: orhun
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Nice to have
+        - Important for learning/DX
+        - Important for self-hosting
+        - Important for VM/runtime reliability
