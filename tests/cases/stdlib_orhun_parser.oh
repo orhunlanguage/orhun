@@ -18,3 +18,23 @@ yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")
 baslik_hata olsun parser.ozetle("eğer doğru\n")
 yazdır baslik_hata.ok
 yazdır metin.icerir(baslik_hata.hata.mesaj, "ise")
+
+surece_hata olsun parser.ozetle("sürece doğru\n")
+yazdır surece_hata.ok
+yazdır metin.icerir(surece_hata.hata.mesaj, ":")
+
+tekrarla_hata olsun parser.ozetle("tekrarla 3\n")
+yazdır tekrarla_hata.ok
+yazdır metin.icerir(tekrarla_hata.hata.mesaj, "kez")
+
+islev_hata olsun parser.ozetle("işlev ana()\n")
+yazdır islev_hata.ok
+yazdır metin.icerir(islev_hata.hata.mesaj, ":")
+
+tip_hata olsun parser.ozetle("tip Kutu\n")
+yazdır tip_hata.ok
+yazdır metin.icerir(tip_hata.hata.mesaj, ":")
+
+deneme_hata olsun parser.ozetle("deneme\n")
+yazdır deneme_hata.ok
+yazdır metin.icerir(deneme_hata.hata.mesaj, ":")

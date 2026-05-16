@@ -130,4 +130,5 @@
 - `orhun/parser.oh`, Orhun ile yazılan ilk parser prototipidir.
 - Şimdilik üst seviye komut türlerini ve satırlarını özetler; `parse --json`
   AST çıktısıyla fixture bazında karşılaştırılır.
-- İlk temel hata eşleşmesi olarak `eğer` başlığında eksik `ise` yakalanır.
+- İlk temel hata eşleşmeleri olarak `eğer`, `sürece`, `tekrarla`, `işlev`,
+  `tip` ve `deneme` başlıklarındaki eksikler yakalanır.

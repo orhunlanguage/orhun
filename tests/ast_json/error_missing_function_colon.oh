@@ -1,0 +1,3 @@
+# ast-error
+işlev ana()
+    yazdır "eksik iki nokta"

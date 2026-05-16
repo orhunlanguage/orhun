@@ -59,6 +59,17 @@ işlev satirda_anahtar_mi(tokenlar, konum, deger):
         i olsun i + 1
     döndür yanlış
 
+işlev satirda_islem_mi(tokenlar, konum, deger):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür yanlış
+        eğer token.tur eşit "ISLEM" ve token.deger eşit deger ise:
+            döndür doğru
+        i olsun i + 1
+    döndür yanlış
+
 işlev satirda_coklu_atama_mi(tokenlar, konum):
     i olsun konum
     virgul olsun yanlış
@@ -125,6 +136,24 @@ işlev baslik_hatasi(tokenlar, konum):
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
         eğer değil satirda_anahtar_mi(tokenlar, konum, "ise") ise:
             döndür "'eğer' komutunda koşuldan sonra 'ise' bekleniyor"
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "sürece" ise:
+        eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
+            döndür "'sürece' komutunda koşuldan sonra ':' bekleniyor"
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ise:
+        eğer değil satirda_anahtar_mi(tokenlar, konum, "kez") ise:
+            döndür "'tekrarla' komutunda tekrar sayısından sonra 'kez' bekleniyor"
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "işlev" ise:
+        ad_token olsun guvenli_token(tokenlar, konum + 1)
+        eğer ad_token.tur eşit_değil "KIMLIK" ise:
+            döndür "'işlev' başlığında işlev adı bekleniyor"
+        eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
+            döndür "'işlev' başlığından sonra ':' bekleniyor"
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tip" ise:
+        eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
+            döndür "'tip' başlığından sonra ':' bekleniyor"
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "deneme" ise:
+        eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
+            döndür "'deneme' başlığından sonra ':' bekleniyor"
     döndür ""
 
 işlev turleri(sonuc):

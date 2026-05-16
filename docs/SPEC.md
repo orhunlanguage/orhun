@@ -409,8 +409,8 @@ sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 The current prototype summarizes top-level command node kinds and line numbers,
 then compares them against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. It also recognizes the first basic parser
-error fixture for a missing `ise` in an `eğer` header. It is not yet the
-production parser.
+error fixtures for missing `ise`, missing `kez`, and required header colons.
+It is not yet the production parser.
 
 ## CLI Contract
 
