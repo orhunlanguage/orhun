@@ -48,6 +48,17 @@ işlev satirda_atama_mi(tokenlar, konum):
         i olsun i + 1
     döndür yanlış
 
+işlev satirda_anahtar_mi(tokenlar, konum, deger):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür yanlış
+        eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit deger ise:
+            döndür doğru
+        i olsun i + 1
+    döndür yanlış
+
 işlev satirda_coklu_atama_mi(tokenlar, konum):
     i olsun konum
     virgul olsun yanlış
@@ -109,6 +120,13 @@ işlev komut_turu(tokenlar, konum):
 
     döndür ""
 
+işlev baslik_hatasi(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
+        eğer değil satirda_anahtar_mi(tokenlar, konum, "ise") ise:
+            döndür "'eğer' komutunda koşuldan sonra 'ise' bekleniyor"
+    döndür ""
+
 işlev turleri(sonuc):
     liste olsun []
     i olsun 0
@@ -148,6 +166,9 @@ işlev ozetle_tokenlar(tokenlar):
                         eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "değilse" veya token.deger eşit "yakala") ise:
                             i olsun satir_sonuna_git(tokenlar, i)
                         değilse:
+                            baslik_hata olsun baslik_hatasi(tokenlar, i)
+                            eğer uzunluk(baslik_hata) büyük 0 ise:
+                                döndür sonuc_hata(baslik_hata, token)
                             tur olsun komut_turu(tokenlar, i)
                             eğer uzunluk(tur) eşit 0 ise:
                                 döndür sonuc_hata("Komut turu taninamadi: " + token.deger, token)
