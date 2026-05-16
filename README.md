@@ -111,6 +111,7 @@ Useful commands:
 orhun fmt dosya.oh
 orhun lint dosya.oh
 orhun lex dosya.oh --json
+orhun parse dosya.oh --json
 orhun hiz dosya.oh --json
 orhun lsp --stdio
 orhun paket dogrula
@@ -157,6 +158,7 @@ self-hosting plan.
 - Examples: `examples/`
 - Tests and fixtures: `tests/`
 - Lexer parity fixtures: `tests/lexer_parity/`
+- Parser AST JSON smoke: `tests/ast_json_smoke.py`
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Language specification: `docs/SPEC.md`

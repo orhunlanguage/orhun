@@ -119,3 +119,9 @@
 - `orhun lex <dosya.oh> --json`, C++ lexer token akışını JSON olarak verir.
 - Bu çıktı, Orhun ile yazılan `orhun/lexer.oh` prototipiyle parity testlerinde
   kullanılır.
+
+## 11. Self-hosting: `parse --json`
+- `orhun parse <dosya.oh> --json`, C++ parser AST'sini JSON olarak verir.
+- Başarılı çıktıda `durum: "ok"`, `hata_sayisi: 0` ve `ast` alanı bulunur.
+- Parser hatalarında komut `1` ile çıkar, `durum: "fail"` döndürür ve `ast`
+  alanını `null` yapar.

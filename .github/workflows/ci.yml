@@ -145,6 +145,19 @@ jobs:
         if: runner.os == 'macOS'
         run: python3 tests/lexer_parity_smoke.py ./build/orhun_test
 
+      - name: AST JSON smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/ast_json_smoke.py .\build\orhun_test.exe
+
+      - name: AST JSON smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/ast_json_smoke.py ./build/orhun_test
+
+      - name: AST JSON smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/ast_json_smoke.py ./build/orhun_test
+
       - name: Lock v3 smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

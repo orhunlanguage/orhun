@@ -60,6 +60,7 @@ Hedefler:
 - C++ lexer/parser ile Orhun lexer/parser ciktisi ayni testlerde
   karsilastirilir.
 - C++ lexer token akisi `orhun lex --json` ile makine-okur hale gelir.
+- C++ parser AST akisi `orhun parse --json` ile makine-okur hale gelir.
 - Lexer parity fixture'lari `tests/lexer_parity/` altinda genisler.
 
 Basari olcutu:

@@ -529,6 +529,304 @@ std::string tokenlarJson(const std::vector<OrhunToken> &tokenlar) {
   return ss.str();
 }
 
+std::string astDugumJson(const ASTNode *dugum);
+
+std::string astDugumVeyaNullJson(const ASTNode *dugum) {
+  return dugum == nullptr ? "null" : astDugumJson(dugum);
+}
+
+std::string astKomutlarJson(
+    const std::vector<std::unique_ptr<ASTNode>> &komutlar) {
+  std::ostringstream ss;
+  ss << "[";
+  for (std::size_t i = 0; i < komutlar.size(); ++i) {
+    if (i > 0) {
+      ss << ",";
+    }
+    ss << astDugumJson(komutlar[i].get());
+  }
+  ss << "]";
+  return ss.str();
+}
+
+std::string astDugumDizisiJson(
+    const std::vector<std::unique_ptr<ASTNode>> &dugumler) {
+  std::ostringstream ss;
+  ss << "[";
+  for (std::size_t i = 0; i < dugumler.size(); ++i) {
+    if (i > 0) {
+      ss << ",";
+    }
+    ss << astDugumVeyaNullJson(dugumler[i].get());
+  }
+  ss << "]";
+  return ss.str();
+}
+
+std::string metinDizisiJson(const std::vector<std::string> &degerler) {
+  std::ostringstream ss;
+  ss << "[";
+  for (std::size_t i = 0; i < degerler.size(); ++i) {
+    if (i > 0) {
+      ss << ",";
+    }
+    ss << "\"" << jsonKacis(degerler[i]) << "\"";
+  }
+  ss << "]";
+  return ss.str();
+}
+
+void astJsonBaslat(std::ostringstream &ss, const ASTNode *dugum,
+                   const std::string &tur) {
+  ss << "{\"tur\":\"" << tur << "\",\"satir\":" << dugum->satir();
+}
+
+std::string astDugumJson(const ASTNode *dugum) {
+  if (dugum == nullptr) {
+    return "null";
+  }
+
+  std::ostringstream ss;
+
+  if (const auto *sayi = dynamic_cast<const SayiNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Sayi");
+    ss << ",\"deger\":\"" << jsonKacis(sayi->deger()) << "\"}";
+    return ss.str();
+  }
+  if (const auto *metin = dynamic_cast<const MetinNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Metin");
+    ss << ",\"deger\":\"" << jsonKacis(metin->deger()) << "\"}";
+    return ss.str();
+  }
+  if (const auto *mantik = dynamic_cast<const MantikNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Mantik");
+    ss << ",\"deger\":" << (mantik->deger() ? "true" : "false") << "}";
+    return ss.str();
+  }
+  if (const auto *kimlik = dynamic_cast<const KimlikNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Kimlik");
+    ss << ",\"ad\":\"" << jsonKacis(kimlik->ad()) << "\"}";
+    return ss.str();
+  }
+  if (const auto *tekli = dynamic_cast<const TekliIslemNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "TekliIslem");
+    ss << ",\"op\":\"" << jsonKacis(tekli->op()) << "\",\"ifade\":"
+       << astDugumJson(tekli->ifade()) << "}";
+    return ss.str();
+  }
+  if (const auto *ikili = dynamic_cast<const IkiliIslemNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "IkiliIslem");
+    ss << ",\"op\":\"" << jsonKacis(ikili->op()) << "\",\"sol\":"
+       << astDugumJson(ikili->sol()) << ",\"sag\":"
+       << astDugumJson(ikili->sag()) << "}";
+    return ss.str();
+  }
+  if (const auto *sor = dynamic_cast<const SorNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Sor");
+    ss << ",\"ifade\":" << astDugumJson(sor->soruIfadesi()) << "}";
+    return ss.str();
+  }
+  if (const auto *liste = dynamic_cast<const ListeNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Liste");
+    ss << ",\"ogeler\":" << astDugumDizisiJson(liste->ogeler()) << "}";
+    return ss.str();
+  }
+  if (const auto *sozluk = dynamic_cast<const SozlukNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Sozluk");
+    ss << ",\"ogeler\":[";
+    const auto &ogeler = sozluk->ogeler();
+    for (std::size_t i = 0; i < ogeler.size(); ++i) {
+      if (i > 0) {
+        ss << ",";
+      }
+      ss << "{\"anahtar\":\"" << jsonKacis(ogeler[i].first)
+         << "\",\"deger\":" << astDugumJson(ogeler[i].second.get()) << "}";
+    }
+    ss << "]}";
+    return ss.str();
+  }
+  if (const auto *indeks = dynamic_cast<const IndeksErisimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "IndeksErisim");
+    ss << ",\"hedef\":" << astDugumJson(indeks->hedef())
+       << ",\"indeks\":" << astDugumJson(indeks->indeks()) << "}";
+    return ss.str();
+  }
+  if (const auto *dilim = dynamic_cast<const DilimErisimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "DilimErisim");
+    ss << ",\"hedef\":" << astDugumJson(dilim->hedef())
+       << ",\"baslangic\":" << astDugumVeyaNullJson(dilim->baslangic())
+       << ",\"bitis\":" << astDugumVeyaNullJson(dilim->bitis()) << "}";
+    return ss.str();
+  }
+  if (const auto *alan = dynamic_cast<const AlanErisimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "AlanErisim");
+    ss << ",\"alan\":\"" << jsonKacis(alan->alanAdi())
+       << "\",\"hedef\":" << astDugumJson(alan->hedef()) << "}";
+    return ss.str();
+  }
+  if (const auto *alan =
+          dynamic_cast<const GuvenliAlanErisimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "GuvenliAlanErisim");
+    ss << ",\"alan\":\"" << jsonKacis(alan->alanAdi())
+       << "\",\"hedef\":" << astDugumJson(alan->hedef()) << "}";
+    return ss.str();
+  }
+  if (const auto *benim = dynamic_cast<const BenimErisimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "BenimErisim");
+    ss << ",\"alan\":\"" << jsonKacis(benim->alanAdi()) << "\"}";
+    return ss.str();
+  }
+  if (const auto *ust = dynamic_cast<const UstErisimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "UstErisim");
+    ss << ",\"metod\":\"" << jsonKacis(ust->metodAdi()) << "\"}";
+    return ss.str();
+  }
+  if (const auto *cagri = dynamic_cast<const IslevCagriNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "IslevCagri");
+    ss << ",\"ad\":\"" << jsonKacis(cagri->ad())
+       << "\",\"argumanlar\":" << astDugumDizisiJson(cagri->argumanlar())
+       << "}";
+    return ss.str();
+  }
+  if (const auto *yeni = dynamic_cast<const YeniNesneNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "YeniNesne");
+    ss << ",\"sinif\":\"" << jsonKacis(yeni->sinifAdi())
+       << "\",\"argumanlar\":" << astDugumDizisiJson(yeni->argumanlar())
+       << "}";
+    return ss.str();
+  }
+  if (const auto *uretec = dynamic_cast<const ListeUretecNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "ListeUretec");
+    ss << ",\"degisken\":\"" << jsonKacis(uretec->donguDegiskeni())
+       << "\",\"ifade\":" << astDugumJson(uretec->ifade())
+       << ",\"kaynak\":" << astDugumJson(uretec->kaynakListe())
+       << ",\"kosul\":" << astDugumVeyaNullJson(uretec->kosul()) << "}";
+    return ss.str();
+  }
+  if (const auto *blok = dynamic_cast<const BlockNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Block");
+    ss << ",\"komutlar\":" << astKomutlarJson(blok->komutlar()) << "}";
+    return ss.str();
+  }
+  if (const auto *program = dynamic_cast<const ProgramNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Program");
+    ss << ",\"komutlar\":" << astKomutlarJson(program->komutlar()) << "}";
+    return ss.str();
+  }
+  if (const auto *atama = dynamic_cast<const AtamaNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Atama");
+    ss << ",\"hedef\":" << astDugumJson(atama->hedef())
+       << ",\"ifade\":" << astDugumJson(atama->ifade()) << "}";
+    return ss.str();
+  }
+  if (const auto *atama = dynamic_cast<const CokluAtamaNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "CokluAtama");
+    ss << ",\"hedefler\":" << metinDizisiJson(atama->hedefler())
+       << ",\"ifade\":" << astDugumJson(atama->ifade()) << "}";
+    return ss.str();
+  }
+  if (const auto *yazdir = dynamic_cast<const YazdirNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Yazdir");
+    ss << ",\"ifade\":" << astDugumJson(yazdir->ifade()) << "}";
+    return ss.str();
+  }
+  if (const auto *eger = dynamic_cast<const EgerNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Eger");
+    ss << ",\"kosul\":" << astDugumJson(eger->kosul())
+       << ",\"dogru_blok\":" << astDugumJson(eger->dogruBlok())
+       << ",\"yanlis_blok\":" << astDugumVeyaNullJson(eger->yanlisBlok())
+       << "}";
+    return ss.str();
+  }
+  if (const auto *tekrarla = dynamic_cast<const TekrarlaNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Tekrarla");
+    ss << ",\"kac_kez\":" << astDugumJson(tekrarla->kacKezIfadesi())
+       << ",\"govde\":" << astDugumJson(tekrarla->govde()) << "}";
+    return ss.str();
+  }
+  if (const auto *surece = dynamic_cast<const SureceNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Surece");
+    ss << ",\"kosul\":" << astDugumJson(surece->kosul())
+       << ",\"govde\":" << astDugumJson(surece->govde()) << "}";
+    return ss.str();
+  }
+  if (const auto *islev = dynamic_cast<const IslevTanimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "IslevTanim");
+    ss << ",\"ad\":\"" << jsonKacis(islev->ad())
+       << "\",\"parametreler\":" << metinDizisiJson(islev->parametreler())
+       << ",\"varsayilanlar\":"
+       << astDugumDizisiJson(islev->varsayilanlar())
+       << ",\"govde\":" << astDugumJson(islev->govde()) << "}";
+    return ss.str();
+  }
+  if (const auto *islev = dynamic_cast<const IsimsizIslevNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "IsimsizIslev");
+    ss << ",\"parametreler\":" << metinDizisiJson(islev->parametreler())
+       << ",\"varsayilanlar\":"
+       << astDugumDizisiJson(islev->varsayilanlar())
+       << ",\"govde\":" << astDugumJson(islev->govde()) << "}";
+    return ss.str();
+  }
+  if (const auto *paralel = dynamic_cast<const ParalelYapNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "ParalelYap");
+    ss << ",\"govde\":" << astDugumJson(paralel->govde()) << "}";
+    return ss.str();
+  }
+  if (const auto *dis = dynamic_cast<const DisIslevTanimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "DisIslevTanim");
+    ss << ",\"ad\":\"" << jsonKacis(dis->ad())
+       << "\",\"kutuphane\":\"" << jsonKacis(dis->kutuphaneYolu())
+       << "\",\"parametre_adlari\":"
+       << metinDizisiJson(dis->parametreAdlari())
+       << ",\"parametre_tipleri\":" << metinDizisiJson(dis->parametreTipleri())
+       << ",\"donus_tipi\":\"" << jsonKacis(dis->donusTipi()) << "\"}";
+    return ss.str();
+  }
+  if (const auto *dondur = dynamic_cast<const DondurNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "Dondur");
+    ss << ",\"ifade\":" << astDugumJson(dondur->ifade()) << "}";
+    return ss.str();
+  }
+  if (const auto *dahil = dynamic_cast<const DahilEtNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "DahilEt");
+    ss << ",\"dosya\":\"" << jsonKacis(dahil->dosyaAdi()) << "\"}";
+    return ss.str();
+  }
+  if (const auto *sinif = dynamic_cast<const SinifTanimNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "SinifTanim");
+    ss << ",\"ad\":\"" << jsonKacis(sinif->ad())
+       << "\",\"ebeveyn\":\"" << jsonKacis(sinif->ebeveynAdi())
+       << "\",\"govde\":" << astDugumJson(sinif->govde()) << "}";
+    return ss.str();
+  }
+  if (const auto *deneme = dynamic_cast<const DenemeYakalaNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "DenemeYakala");
+    ss << ",\"deneme\":" << astDugumJson(deneme->denemeBlogu())
+       << ",\"hata_degiskeni\":\"" << jsonKacis(deneme->hataDegiskeni())
+       << "\",\"yakala\":" << astDugumJson(deneme->yakalaBlogu()) << "}";
+    return ss.str();
+  }
+  if (dynamic_cast<const KirNode *>(dugum) != nullptr) {
+    astJsonBaslat(ss, dugum, "Kir");
+    ss << "}";
+    return ss.str();
+  }
+  if (dynamic_cast<const DevamNode *>(dugum) != nullptr) {
+    astJsonBaslat(ss, dugum, "Devam");
+    ss << "}";
+    return ss.str();
+  }
+  if (const auto *ifade = dynamic_cast<const IfadeKomutNode *>(dugum)) {
+    astJsonBaslat(ss, dugum, "IfadeKomut");
+    ss << ",\"ifade\":" << astDugumJson(ifade->ifade()) << "}";
+    return ss.str();
+  }
+
+  astJsonBaslat(ss, dugum, "Bilinmeyen");
+  ss << "}";
+  return ss.str();
+}
+
 int komutLex(const std::string &dosyaYolu, bool jsonCikti) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error("Hata: lex komutu icin .oh dosyasi bekleniyor.");
@@ -561,6 +859,40 @@ int komutLex(const std::string &dosyaYolu, bool jsonCikti) {
     std::cout << "\n";
   }
   return hataSayisi == 0 ? 0 : 1;
+}
+
+int komutParse(const std::string &dosyaYolu, bool jsonCikti) {
+  if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
+    throw std::runtime_error("Hata: parse komutu icin .oh dosyasi bekleniyor.");
+  }
+
+  const std::string kaynakKod = dosyaOku(dosyaYolu);
+  try {
+    std::unique_ptr<ProgramNode> program = parseEt(kaynakKod);
+    if (jsonCikti) {
+      std::cout << "{"
+                << "\"dosya\":\"" << jsonKacis(dosyaYolu) << "\","
+                << "\"durum\":\"ok\","
+                << "\"hata_sayisi\":0,"
+                << "\"ast\":" << astDugumJson(program.get()) << "}\n";
+    } else {
+      program->yazdir_agac(std::cout);
+    }
+    return 0;
+  } catch (const std::exception &ex) {
+    if (!jsonCikti) {
+      throw;
+    }
+    std::cout << "{"
+              << "\"dosya\":\"" << jsonKacis(dosyaYolu) << "\","
+              << "\"durum\":\"fail\","
+              << "\"hata_sayisi\":1,"
+              << "\"hata\":{\"mesaj\":\"" << jsonKacis(ex.what())
+              << "\"},"
+              << "\"ast\":null"
+              << "}\n";
+    return 1;
+  }
 }
 
 int komutFmt(const std::string &dosyaYolu, bool checkModu, bool jsonCikti) {
@@ -3883,6 +4215,7 @@ int main(int argc, char *argv[]) {
 
     auto dahiliKomutMu = [](const std::string &deger) {
       return deger == "fmt" || deger == "lex" || deger == "tokenler" ||
+             deger == "parse" || deger == "ast" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
              deger == "lint" || deger == "lsp" || deger == "doctor" ||
@@ -3912,6 +4245,24 @@ int main(int argc, char *argv[]) {
             "Hata: lex secenekleri yalnizca '--json' olabilir.");
       }
       return komutLex(argv[2], jsonCikti);
+    }
+
+    if (komut == "parse" || komut == "ast") {
+      if (argc < 3) {
+        throw std::runtime_error(
+            "Hata: parse komutu icin dosya adi bekleniyor.");
+      }
+      bool jsonCikti = false;
+      for (int i = 3; i < argc; ++i) {
+        const std::string secenek = argv[i];
+        if (secenek == "--json") {
+          jsonCikti = true;
+          continue;
+        }
+        throw std::runtime_error(
+            "Hata: parse secenekleri yalnizca '--json' olabilir.");
+      }
+      return komutParse(argv[2], jsonCikti);
     }
 
     if (komut == "fmt") {
