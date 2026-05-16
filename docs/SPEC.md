@@ -406,9 +406,9 @@ parser olsun dahil_et "orhun/parser.oh"
 sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 ```
 
-The current prototype summarizes top-level command node kinds and compares them
-against the C++ parser AST through `tests/parser_prototype_smoke.py`. It is not
-yet the production parser.
+The current prototype summarizes top-level command node kinds and line numbers,
+then compares them against the C++ parser AST through
+`tests/parser_prototype_smoke.py`. It is not yet the production parser.
 
 ## CLI Contract
 

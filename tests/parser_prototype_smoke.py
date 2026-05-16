@@ -43,7 +43,7 @@ def is_error_fixture(path: Path) -> bool:
         return False
 
 
-def cxx_top_level_kinds(binary: Path, repo: Path, source_file: Path) -> list[str]:
+def cxx_top_level_nodes(binary: Path, repo: Path, source_file: Path) -> list[dict]:
     proc = run_cmd([str(binary), "parse", str(source_file), "--json"], repo)
     require(
         proc.returncode == 0,
@@ -54,10 +54,10 @@ def cxx_top_level_kinds(binary: Path, repo: Path, source_file: Path) -> list[str
     require(isinstance(ast, dict), f"C++ parse payload missing ast for {source_file}")
     commands = ast.get("komutlar")
     require(isinstance(commands, list), f"C++ AST missing komutlar for {source_file}")
-    return [command.get("tur") for command in commands]
+    return [{"tur": command.get("tur"), "satir": command.get("satir")} for command in commands]
 
 
-def orhun_parser_kinds(binary: Path, repo: Path, source_file: Path) -> list[str]:
+def orhun_parser_nodes(binary: Path, repo: Path, source_file: Path) -> list[dict]:
     with tempfile.TemporaryDirectory(prefix="orhun_parser_proto_") as tmp:
         driver = Path(tmp) / "driver.oh"
         source_path = source_file.resolve().as_posix()
@@ -79,7 +79,7 @@ def orhun_parser_kinds(binary: Path, repo: Path, source_file: Path) -> list[str]
         require(payload.get("ok") is True, f"prototype returned error for {source_file}: {payload}")
         commands = payload.get("komutlar")
         require(isinstance(commands, list), f"prototype payload missing komutlar for {source_file}")
-        return [command.get("tur") for command in commands]
+        return [{"tur": command.get("tur"), "satir": command.get("satir")} for command in commands]
 
 
 def main() -> int:
@@ -104,11 +104,11 @@ def main() -> int:
     require(cases, f"No parser prototype fixtures found under {fixture_dir}")
 
     for case in cases:
-        cxx = cxx_top_level_kinds(binary, repo, case)
-        proto = orhun_parser_kinds(binary, repo, case)
+        cxx = cxx_top_level_nodes(binary, repo, case)
+        proto = orhun_parser_nodes(binary, repo, case)
         require(
             cxx == proto,
-            f"Parser prototype mismatch for {case}\nC++: {cxx}\nOrhun: {proto}",
+            f"Parser prototype node mismatch for {case}\nC++: {cxx}\nOrhun: {proto}",
         )
 
     print(f"Parser prototype smoke passed ({len(cases)} fixture cases).")
