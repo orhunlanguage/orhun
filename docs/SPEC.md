@@ -407,8 +407,8 @@ sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 ```
 
 The current prototype summarizes top-level command node kinds, line numbers,
-immediate child block command counts, and shallow child command summaries, then
-compares them against the C++ parser AST through
+primary expression node kinds, immediate child block command counts, and shallow
+child command summaries, then compares them against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. It also recognizes the first basic parser
 error fixtures for missing `ise`, missing `kez`, and required header colons.
 It is not yet the production parser.

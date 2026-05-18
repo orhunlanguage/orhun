@@ -1,15 +1,15 @@
 # Orhun ile yazilmis parser prototipi.
 #
 # Bu modul simdilik C++ parser AST'sinin ust seviye komut turlerini,
-# satirlarini ve dogrudan alt blok komutlarini ozetler.
+# satirlarini, ana ifade turlerini ve dogrudan alt blok komutlarini ozetler.
 # Hedef, self-hosting yolunda Orhun kaynakli parseri kademeli olarak buyutmek.
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
 surum olsun "0.1.0"
 
-işlev kisa_dugum(tur, satir):
-    döndür {"tur": tur, "satir": satir}
+işlev kisa_dugum(tur, satir, ifade_turu):
+    döndür {"tur": tur, "satir": satir, "ifade_turu": ifade_turu}
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -19,8 +19,8 @@ işlev blok_sayilari_uret(bloklar):
         i olsun i + 1
     döndür sayilar
 
-işlev dugum(tur, satir, bloklar):
-    döndür {"tur": tur, "satir": satir, "blok_sayilari": blok_sayilari_uret(bloklar), "bloklar": bloklar}
+işlev dugum(tur, satir, ifade_turu, bloklar):
+    döndür {"tur": tur, "satir": satir, "ifade_turu": ifade_turu, "blok_sayilari": blok_sayilari_uret(bloklar), "bloklar": bloklar}
 
 işlev sonuc_ok(komutlar):
     döndür {"ok": doğru, "hata": "", "komutlar": komutlar}
@@ -44,6 +44,14 @@ işlev satir_sonuna_git(tokenlar, konum):
     sürece i küçük uzunluk(tokenlar):
         eğer satir_sonu_mu(tokenlar[i]) ise:
             döndür i + 1
+        i olsun i + 1
+    döndür i
+
+işlev satir_sonu_indeksi(tokenlar, konum):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        eğer satir_sonu_mu(tokenlar[i]) ise:
+            döndür i
         i olsun i + 1
     döndür i
 
@@ -149,6 +157,126 @@ işlev komut_turu(tokenlar, konum):
 
     döndür ""
 
+işlev deger_konumu(tokenlar, konum, deger):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür -1
+        eğer token.deger eşit deger ise:
+            döndür i
+        i olsun i + 1
+    döndür -1
+
+işlev atama_ifade_baslangici(tokenlar, konum):
+    i olsun konum
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür -1
+        eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "olsun" ise:
+            döndür i + 1
+        eğer token.tur eşit "ISLEM" ve token.deger eşit "=" ise:
+            döndür i + 1
+        i olsun i + 1
+    döndür -1
+
+işlev aralikta_deger_var_mi(tokenlar, baslangic, son, deger):
+    i olsun baslangic
+    sürece i küçük son:
+        eğer tokenlar[i].deger eşit deger ise:
+            döndür doğru
+        i olsun i + 1
+    döndür yanlış
+
+işlev ikili_operator_mu(token):
+    eğer token.tur eşit "ISLEM" ve (token.deger eşit "+" veya token.deger eşit "-" veya token.deger eşit "*" veya token.deger eşit "/" veya token.deger eşit "%") ise:
+        döndür doğru
+    eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "küçük" veya token.deger eşit "büyük" veya token.deger eşit "eşit" veya token.deger eşit "eşit_değil" veya token.deger eşit "ve" veya token.deger eşit "veya") ise:
+        döndür doğru
+    döndür yanlış
+
+işlev aralikta_ikili_operator_var_mi(tokenlar, baslangic, son):
+    i olsun baslangic
+    sürece i küçük son:
+        eğer ikili_operator_mu(tokenlar[i]) ise:
+            döndür doğru
+        i olsun i + 1
+    döndür yanlış
+
+işlev ifade_turu(tokenlar, baslangic, son):
+    eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
+        döndür ""
+
+    ilk olsun guvenli_token(tokenlar, baslangic)
+
+    eğer ilk.tur eşit "ISLEM" ve ilk.deger eşit "[" ise:
+        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "için") ise:
+            döndür "ListeUretec"
+        döndür "Liste"
+
+    eğer ilk.tur eşit "ISLEM" ve ilk.deger eşit "{" ise:
+        döndür "Sozluk"
+
+    eğer aralikta_ikili_operator_var_mi(tokenlar, baslangic, son) ise:
+        döndür "IkiliIslem"
+
+    eğer ilk.tur eşit "SAYI" ise:
+        döndür "Sayi"
+    eğer ilk.tur eşit "ONDALIK" ise:
+        döndür "Ondalik"
+    eğer ilk.tur eşit "METIN" ise:
+        döndür "Metin"
+    eğer ilk.tur eşit "ANAHTAR_KELIME" ve (ilk.deger eşit "doğru" veya ilk.deger eşit "yanlış") ise:
+        döndür "Mantik"
+    eğer ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "yeni" ise:
+        döndür "YeniNesne"
+    eğer ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "benim" ise:
+        döndür "BenimErisim"
+    eğer ilk.tur eşit "KIMLIK" ise:
+        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "?") ise:
+            döndür "GuvenliAlanErisim"
+        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "[") ise:
+            döndür "IndeksErisim"
+        döndür "Kimlik"
+
+    döndür ""
+
+işlev komut_ifade_turu(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    satir_sonu olsun satir_sonu_indeksi(tokenlar, konum)
+
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "yazdır" ise:
+        döndür ifade_turu(tokenlar, konum + 1, satir_sonu)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "döndür" ise:
+        döndür ifade_turu(tokenlar, konum + 1, satir_sonu)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
+        son olsun deger_konumu(tokenlar, konum + 1, "ise")
+        eğer son küçük 0 ise:
+            son olsun satir_sonu
+        döndür ifade_turu(tokenlar, konum + 1, son)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "sürece" ise:
+        son olsun deger_konumu(tokenlar, konum + 1, ":")
+        eğer son küçük 0 ise:
+            son olsun satir_sonu
+        döndür ifade_turu(tokenlar, konum + 1, son)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ise:
+        son olsun deger_konumu(tokenlar, konum + 1, "kez")
+        eğer son küçük 0 ise:
+            son olsun satir_sonu
+        döndür ifade_turu(tokenlar, konum + 1, son)
+
+    eğer token.tur eşit "KIMLIK" ise:
+        baslangic olsun atama_ifade_baslangici(tokenlar, konum)
+        eğer baslangic büyük 0 veya baslangic eşit 0 ise:
+            döndür ifade_turu(tokenlar, baslangic, satir_sonu)
+        döndür ifade_turu(tokenlar, konum, satir_sonu)
+
+    eğer token.tur eşit "SAYI" veya token.tur eşit "ONDALIK" veya token.tur eşit "METIN" ise:
+        döndür ifade_turu(tokenlar, konum, satir_sonu)
+
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
@@ -205,7 +333,7 @@ işlev blok_ozeti(tokenlar, konum):
                     değilse:
                         eğer derinlik eşit 1 ise:
                             tur olsun komut_turu(tokenlar, i)
-                            komutlar.ekle(kisa_dugum(tur, token.satir))
+                            komutlar.ekle(kisa_dugum(tur, token.satir, komut_ifade_turu(tokenlar, i)))
                             sayi olsun sayi + 1
                             i olsun satir_sonuna_git(tokenlar, i)
                         değilse:
@@ -279,7 +407,7 @@ işlev ozetle_tokenlar(tokenlar):
                             tur olsun komut_turu(tokenlar, i)
                             eğer uzunluk(tur) eşit 0 ise:
                                 döndür sonuc_hata("Komut turu taninamadi: " + token.deger, token)
-                            komutlar.ekle(dugum(tur, token.satir, bloklari(tokenlar, i)))
+                            komutlar.ekle(dugum(tur, token.satir, komut_ifade_turu(tokenlar, i), bloklari(tokenlar, i)))
                             i olsun satir_sonuna_git(tokenlar, i)
 
     döndür sonuc_ok(komutlar)

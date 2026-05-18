@@ -73,13 +73,28 @@ def cxx_node_summary(command: dict) -> dict:
     return {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
+        "ifade_turu": cxx_command_expression_kind(command),
         "blok_sayilari": block_counts(blocks),
         "bloklar": blocks,
     }
 
 
 def cxx_shallow_node(command: dict) -> dict:
-    return {"tur": command.get("tur"), "satir": command.get("satir")}
+    return {
+        "tur": command.get("tur"),
+        "satir": command.get("satir"),
+        "ifade_turu": cxx_command_expression_kind(command),
+    }
+
+
+def cxx_command_expression_kind(command: dict) -> str:
+    for key in ("ifade", "kosul", "kac_kez"):
+        expression = command.get(key)
+        if isinstance(expression, dict):
+            kind = expression.get("tur")
+            if isinstance(kind, str):
+                return kind
+    return ""
 
 
 def cxx_block_summaries(command: dict) -> list[dict]:
@@ -133,6 +148,7 @@ def orhun_node_summary(command: dict, source_file: Path) -> dict:
     return {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
+        "ifade_turu": command.get("ifade_turu", ""),
         "blok_sayilari": counts,
         "bloklar": blocks,
     }
@@ -148,7 +164,11 @@ def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
         normalized.append(
             {
                 "komutlar": [
-                    {"tur": command.get("tur"), "satir": command.get("satir")}
+                    {
+                        "tur": command.get("tur"),
+                        "satir": command.get("satir"),
+                        "ifade_turu": command.get("ifade_turu", ""),
+                    }
                     for command in commands
                 ]
             }
@@ -158,7 +178,7 @@ def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Compare Orhun parser prototype against C++ AST top-level nodes"
+        description="Compare Orhun parser prototype summaries against C++ AST"
     )
     parser.add_argument("binary", help="Orhun executable path")
     parser.add_argument(
