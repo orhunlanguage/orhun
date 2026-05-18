@@ -15,6 +15,9 @@ kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
 yazdır json.yaz(kontrol.komutlar[0].bloklar)
 
+ifade_kontrol olsun parser.ozetle("yazdır a + b * 2\n")
+yazdır json.yaz(ifade_kontrol.komutlar[0].ifade_ozeti)
+
 hata olsun parser.ozetle("@\n")
 yazdır hata.ok
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")

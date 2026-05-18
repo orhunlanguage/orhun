@@ -70,31 +70,35 @@ def cxx_top_level_nodes(payload: dict, source_file: Path) -> list[dict]:
 
 def cxx_node_summary(command: dict) -> dict:
     blocks = cxx_block_summaries(command)
+    expression = cxx_command_expression_summary(command)
     return {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
-        "ifade_turu": cxx_command_expression_kind(command),
+        "ifade_turu": expression["tur"],
+        "ifade_ozeti": expression,
         "blok_sayilari": block_counts(blocks),
         "bloklar": blocks,
     }
 
 
 def cxx_shallow_node(command: dict) -> dict:
+    expression = cxx_command_expression_summary(command)
     return {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
-        "ifade_turu": cxx_command_expression_kind(command),
+        "ifade_turu": expression["tur"],
+        "ifade_ozeti": expression,
     }
 
 
-def cxx_command_expression_kind(command: dict) -> str:
+def cxx_command_expression_summary(command: dict) -> dict:
     for key in ("ifade", "kosul", "kac_kez"):
         expression = command.get(key)
         if isinstance(expression, dict):
             kind = expression.get("tur")
             if isinstance(kind, str):
-                return kind
-    return ""
+                return {"tur": kind, "op": expression.get("op", "")}
+    return {"tur": "", "op": ""}
 
 
 def cxx_block_summaries(command: dict) -> list[dict]:
@@ -145,13 +149,23 @@ def orhun_node_summary(command: dict, source_file: Path) -> dict:
     blocks = orhun_block_summaries(command.get("bloklar", []), source_file)
     counts = command.get("blok_sayilari", [])
     require(counts == block_counts(blocks), f"prototype block counts mismatch for {source_file}")
+    expression = orhun_expression_summary(command, source_file)
     return {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
-        "ifade_turu": command.get("ifade_turu", ""),
+        "ifade_turu": expression["tur"],
+        "ifade_ozeti": expression,
         "blok_sayilari": counts,
         "bloklar": blocks,
     }
+
+
+def orhun_expression_summary(command: dict, source_file: Path) -> dict:
+    expression = command.get("ifade_ozeti")
+    require(isinstance(expression, dict), f"prototype expression summary missing for {source_file}")
+    kind = expression.get("tur", "")
+    require(command.get("ifade_turu", "") == kind, f"prototype expression kind mismatch for {source_file}")
+    return {"tur": kind, "op": expression.get("op", "")}
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
@@ -164,16 +178,22 @@ def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
         normalized.append(
             {
                 "komutlar": [
-                    {
-                        "tur": command.get("tur"),
-                        "satir": command.get("satir"),
-                        "ifade_turu": command.get("ifade_turu", ""),
-                    }
+                    orhun_shallow_node(command, source_file)
                     for command in commands
                 ]
             }
         )
     return normalized
+
+
+def orhun_shallow_node(command: dict, source_file: Path) -> dict:
+    expression = orhun_expression_summary(command, source_file)
+    return {
+        "tur": command.get("tur"),
+        "satir": command.get("satir"),
+        "ifade_turu": expression["tur"],
+        "ifade_ozeti": expression,
+    }
 
 
 def main() -> int:

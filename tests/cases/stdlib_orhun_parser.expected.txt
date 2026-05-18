@@ -4,7 +4,8 @@
 IslevTanim|Atama|Yazdir
 CokluAtama|Yazdir
 [1,1]
-[{"komutlar":[{"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}]},{"komutlar":[{"ifade_turu":"Metin","satir":4,"tur":"Yazdir"}]}]
+[{"komutlar":[{"ifade_ozeti":{"op":"","tur":"Metin"},"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}]},{"komutlar":[{"ifade_ozeti":{"op":"","tur":"Metin"},"ifade_turu":"Metin","satir":4,"tur":"Yazdir"}]}]
+{"op":"+","tur":"IkiliIslem"}
 0
 1
 0
