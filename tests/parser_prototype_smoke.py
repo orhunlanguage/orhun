@@ -65,7 +65,25 @@ def cxx_top_level_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(isinstance(ast, dict), f"C++ parse payload missing ast for {source_file}")
     commands = ast.get("komutlar")
     require(isinstance(commands, list), f"C++ AST missing komutlar for {source_file}")
-    return [{"tur": command.get("tur"), "satir": command.get("satir")} for command in commands]
+    return [
+        {
+            "tur": command.get("tur"),
+            "satir": command.get("satir"),
+            "blok_sayilari": cxx_block_counts(command),
+        }
+        for command in commands
+    ]
+
+
+def cxx_block_counts(command: dict) -> list[int]:
+    counts = []
+    for key in ("dogru_blok", "yanlis_blok", "govde", "deneme", "yakala"):
+        block = command.get(key)
+        if isinstance(block, dict):
+            commands = block.get("komutlar")
+            if isinstance(commands, list):
+                counts.append(len(commands))
+    return counts
 
 
 def orhun_parser_payload(binary: Path, repo: Path, source_file: Path) -> dict:
@@ -94,7 +112,14 @@ def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(payload.get("ok") is True, f"prototype returned error for {source_file}: {payload}")
     commands = payload.get("komutlar")
     require(isinstance(commands, list), f"prototype payload missing komutlar for {source_file}")
-    return [{"tur": command.get("tur"), "satir": command.get("satir")} for command in commands]
+    return [
+        {
+            "tur": command.get("tur"),
+            "satir": command.get("satir"),
+            "blok_sayilari": command.get("blok_sayilari", []),
+        }
+        for command in commands
+    ]
 
 
 def main() -> int:
