@@ -216,8 +216,15 @@ işlev kapanis_islemi_mi(token):
     döndür token.tur eşit "ISLEM" ve (token.deger eşit ")" veya token.deger eşit "]" veya token.deger eşit "}")
 
 işlev operatoru_grupta_bul(tokenlar, baslangic, son, grup):
+    konum olsun operator_konumu_grupta_bul(tokenlar, baslangic, son, grup)
+    eğer konum küçük 0 ise:
+        döndür ""
+    döndür tokenlar[konum].deger
+
+işlev operator_konumu_grupta_bul(tokenlar, baslangic, son, grup):
     i olsun baslangic
     derinlik olsun 0
+    bulunan olsun -1
     sürece i küçük son:
         token olsun tokenlar[i]
         eğer acilis_islemi_mi(token) ise:
@@ -229,18 +236,24 @@ işlev operatoru_grupta_bul(tokenlar, baslangic, son, grup):
                     derinlik olsun 0
             değilse:
                 eğer derinlik eşit 0 ve operator_grubunda_mi(token, grup) ise:
-                    döndür token.deger
+                    bulunan olsun i
         i olsun i + 1
-    döndür ""
+    döndür bulunan
 
 işlev kok_operatoru(tokenlar, baslangic, son):
+    konum olsun kok_operator_konumu(tokenlar, baslangic, son)
+    eğer konum küçük 0 ise:
+        döndür ""
+    döndür tokenlar[konum].deger
+
+işlev kok_operator_konumu(tokenlar, baslangic, son):
     grup olsun 1
     sürece grup küçük 6:
-        op olsun operatoru_grupta_bul(tokenlar, baslangic, son, grup)
-        eğer uzunluk(op) büyük 0 ise:
-            döndür op
+        konum olsun operator_konumu_grupta_bul(tokenlar, baslangic, son, grup)
+        eğer konum büyük 0 veya konum eşit 0 ise:
+            döndür konum
         grup olsun grup + 1
-    döndür ""
+    döndür -1
 
 işlev aralikta_ikili_operator_var_mi(tokenlar, baslangic, son):
     i olsun baslangic
@@ -325,12 +338,28 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
 
     döndür ""
 
+işlev sig_ifade_ozeti(tokenlar, baslangic, son):
+    tur olsun ifade_turu(tokenlar, baslangic, son)
+    op olsun ""
+    eğer tur eşit "IkiliIslem" ise:
+        op olsun kok_operatoru(tokenlar, baslangic, son)
+    döndür {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": []}
+
+işlev ifade_altlari(tokenlar, baslangic, son, tur):
+    altlar olsun []
+    eğer tur eşit "IkiliIslem" ise:
+        op_konum olsun kok_operator_konumu(tokenlar, baslangic, son)
+        eğer op_konum büyük 0 veya op_konum eşit 0 ise:
+            altlar.ekle(sig_ifade_ozeti(tokenlar, baslangic, op_konum))
+            altlar.ekle(sig_ifade_ozeti(tokenlar, op_konum + 1, son))
+    döndür altlar
+
 işlev ifade_ozeti(tokenlar, baslangic, son):
     tur olsun ifade_turu(tokenlar, baslangic, son)
     op olsun ""
     eğer tur eşit "IkiliIslem" ise:
         op olsun kok_operatoru(tokenlar, baslangic, son)
-    döndür {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur)}
+    döndür {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": ifade_altlari(tokenlar, baslangic, son, tur)}
 
 işlev komut_ifade_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
@@ -401,7 +430,7 @@ işlev komut_ifade_ozeti(tokenlar, konum):
     eğer token.tur eşit "SAYI" veya token.tur eşit "ONDALIK" veya token.tur eşit "METIN" ise:
         döndür ifade_ozeti(tokenlar, konum, satir_sonu)
 
-    döndür {"tur": tur, "op": ""}
+    döndür {"tur": tur, "op": "", "ayrinti": "", "altlar": []}
 
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)

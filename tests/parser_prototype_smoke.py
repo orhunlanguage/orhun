@@ -95,14 +95,46 @@ def cxx_command_expression_summary(command: dict) -> dict:
     for key in ("ifade", "kosul", "kac_kez"):
         expression = command.get(key)
         if isinstance(expression, dict):
-            kind = expression.get("tur")
-            if isinstance(kind, str):
-                return {
-                    "tur": kind,
-                    "op": expression.get("op", ""),
-                    "ayrinti": cxx_expression_detail(expression),
-                }
-    return {"tur": "", "op": "", "ayrinti": ""}
+            return cxx_expression_summary(expression)
+    return empty_expression_summary()
+
+
+def empty_expression_summary() -> dict:
+    return {"tur": "", "op": "", "ayrinti": "", "altlar": []}
+
+
+def cxx_expression_summary(expression: dict) -> dict:
+    kind = expression.get("tur")
+    if not isinstance(kind, str):
+        return empty_expression_summary()
+    return {
+        "tur": kind,
+        "op": expression.get("op", ""),
+        "ayrinti": cxx_expression_detail(expression),
+        "altlar": cxx_expression_children(expression),
+    }
+
+
+def cxx_expression_shallow_summary(expression: dict) -> dict:
+    kind = expression.get("tur")
+    if not isinstance(kind, str):
+        return empty_expression_summary()
+    return {
+        "tur": kind,
+        "op": expression.get("op", ""),
+        "ayrinti": cxx_expression_detail(expression),
+        "altlar": [],
+    }
+
+
+def cxx_expression_children(expression: dict) -> list[dict]:
+    if expression.get("tur") == "IkiliIslem":
+        return [
+            cxx_expression_shallow_summary(child)
+            for child in (expression.get("sol"), expression.get("sag"))
+            if isinstance(child, dict)
+        ]
+    return []
 
 
 def cxx_expression_detail(expression: dict) -> str:
@@ -195,7 +227,26 @@ def orhun_expression_summary(command: dict, source_file: Path) -> dict:
     require(isinstance(expression, dict), f"prototype expression summary missing for {source_file}")
     kind = expression.get("tur", "")
     require(command.get("ifade_turu", "") == kind, f"prototype expression kind mismatch for {source_file}")
-    return {"tur": kind, "op": expression.get("op", ""), "ayrinti": expression.get("ayrinti", "")}
+    children = expression.get("altlar", [])
+    require(isinstance(children, list), f"prototype expression children invalid for {source_file}")
+    return {
+        "tur": kind,
+        "op": expression.get("op", ""),
+        "ayrinti": expression.get("ayrinti", ""),
+        "altlar": [orhun_expression_payload(child, source_file) for child in children],
+    }
+
+
+def orhun_expression_payload(expression: object, source_file: Path) -> dict:
+    require(isinstance(expression, dict), f"prototype child expression invalid for {source_file}")
+    children = expression.get("altlar", [])
+    require(isinstance(children, list), f"prototype child expression children invalid for {source_file}")
+    return {
+        "tur": expression.get("tur", ""),
+        "op": expression.get("op", ""),
+        "ayrinti": expression.get("ayrinti", ""),
+        "altlar": children,
+    }
 
 
 def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:

@@ -64,7 +64,7 @@ Hedefler:
 - Lexer parity fixture'lari `tests/lexer_parity/` altinda genisler.
 - Parser AST fixture'lari `tests/ast_json/` altinda genisler.
 - Orhun parser prototipi once ust seviye komut turlerinde C++ AST ile
-  eslenir, sonra blok komut ozetlerine, ana ifade ayrintilarina ve daha derin
+  eslenir, sonra blok komut ozetlerine, ana ifade cocuklarina ve daha derin
   blok/ifade agaci detaylarina genisler.
 
 Basari olcutu:
