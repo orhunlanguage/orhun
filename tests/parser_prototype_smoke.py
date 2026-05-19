@@ -208,6 +208,8 @@ def cxx_expression_detail(expression: dict) -> str:
         return str(expression.get("ad", ""))
     if kind in ("GuvenliAlanErisim", "BenimErisim"):
         return str(expression.get("alan", ""))
+    if kind == "UstErisim":
+        return str(expression.get("metod", ""))
     if kind == "IndeksErisim":
         target = expression.get("hedef")
         if isinstance(target, dict):

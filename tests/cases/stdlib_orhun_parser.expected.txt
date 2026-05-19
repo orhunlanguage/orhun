@@ -16,6 +16,10 @@ CokluAtama|Yazdir
 {"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"liste","op":"","tur":"DilimErisim"}
 {"altlar":[{"altlar":[],"ayrinti":"nesne","op":"","tur":"Kimlik"}],"ayrinti":"deger","op":"","tur":"AlanErisim"}
 {"altlar":[],"ayrinti":"nesne.oku","op":"","tur":"IslevCagri"}
+{"altlar":[],"ayrinti":"deger","op":"","tur":"BenimErisim"}
+{"altlar":[],"ayrinti":"benim.oku","op":"","tur":"IslevCagri"}
+{"altlar":[],"ayrinti":"kur","op":"","tur":"UstErisim"}
+{"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"ust.kur","op":"","tur":"IslevCagri"}
 {"altlar":[{"altlar":[],"ayrinti":"4","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"+","op":"+","tur":"IkiliIslem"}],"ayrinti":"topla","op":"","tur":"IslevCagri"}
 {"altlar":[],"ayrinti":"","op":"","tur":"IsimsizIslev"}
 {"altlar":[{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"-","op":"-","tur":"TekliIslem"}

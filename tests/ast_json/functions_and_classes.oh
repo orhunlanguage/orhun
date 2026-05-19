@@ -1,4 +1,4 @@
-# ast: IslevTanim,SinifTanim,Atama,Atama,Atama,Atama,Atama
+# ast: IslevTanim,SinifTanim,Atama,Atama,Atama,Atama,Atama,Atama,Atama,Atama,Atama
 işlev topla(a olsun 1, b olsun 2):
     döndür a + b
 
@@ -13,3 +13,7 @@ sonuc olsun topla(4, 5)
 ikiyle olsun işlev(x): x * 2
 alan olsun nesne.deger
 okuma olsun nesne.oku()
+benimalan olsun benim.deger
+benimokuma olsun benim.oku()
+ustalan olsun ust.kur
+ustokuma olsun ust.kur(1)

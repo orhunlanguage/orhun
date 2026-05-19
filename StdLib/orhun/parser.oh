@@ -355,7 +355,13 @@ işlev ifade_turu(tokenlar, baslangic, son):
     eğer ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "yeni" ise:
         döndür "YeniNesne"
     eğer ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "benim" ise:
+        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "(") ise:
+            döndür "IslevCagri"
         döndür "BenimErisim"
+    eğer ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "ust" ise:
+        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "(") ise:
+            döndür "IslevCagri"
+        döndür "UstErisim"
     eğer ilk.tur eşit "KIMLIK" ise:
         eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "?") ise:
             döndür "GuvenliAlanErisim"
@@ -385,7 +391,7 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
         döndür ilk.deger
     eğer tur eşit "Mantik" ise:
         döndür ilk.deger
-    eğer tur eşit "AlanErisim" veya tur eşit "GuvenliAlanErisim" veya tur eşit "BenimErisim" ise:
+    eğer tur eşit "AlanErisim" veya tur eşit "GuvenliAlanErisim" veya tur eşit "BenimErisim" veya tur eşit "UstErisim" ise:
         döndür noktadan_sonraki_kimlik(tokenlar, baslangic, son)
     eğer tur eşit "IndeksErisim" ise:
         döndür ilk.deger

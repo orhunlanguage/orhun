@@ -36,6 +36,12 @@ alan_kontrol olsun parser.ozetle("alan olsun nesne.deger\nokuma olsun nesne.oku(
 yazdır json.yaz(alan_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(alan_kontrol.komutlar[1].ifade_ozeti)
 
+ozel_alan_kontrol olsun parser.ozetle("benimalan olsun benim.deger\nbenimokuma olsun benim.oku()\nustalan olsun ust.kur\nustokuma olsun ust.kur(1)\n")
+yazdır json.yaz(ozel_alan_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(ozel_alan_kontrol.komutlar[1].ifade_ozeti)
+yazdır json.yaz(ozel_alan_kontrol.komutlar[2].ifade_ozeti)
+yazdır json.yaz(ozel_alan_kontrol.komutlar[3].ifade_ozeti)
+
 cagri_kontrol olsun parser.ozetle("sonuc olsun topla(4, a + 1)\nikiyle olsun işlev(x): x * 2\n")
 yazdır json.yaz(cagri_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(cagri_kontrol.komutlar[1].ifade_ozeti)
