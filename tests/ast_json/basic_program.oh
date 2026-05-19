@@ -1,4 +1,6 @@
-# ast: Atama,Atama,Yazdir
+# ast: Atama,Atama,Atama,Atama,Yazdir
 a olsun 7
 b olsun 5
+negatif olsun -a
+ters olsun değil yanlış
 yazdır a + b * 2

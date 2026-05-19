@@ -31,6 +31,10 @@ cagri_kontrol olsun parser.ozetle("sonuc olsun topla(4, a + 1)\nikiyle olsun iş
 yazdır json.yaz(cagri_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(cagri_kontrol.komutlar[1].ifade_ozeti)
 
+tekli_kontrol olsun parser.ozetle("negatif olsun -5\nters olsun değil yanlış\n")
+yazdır json.yaz(tekli_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(tekli_kontrol.komutlar[1].ifade_ozeti)
+
 hata olsun parser.ozetle("@\n")
 yazdır hata.ok
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")
