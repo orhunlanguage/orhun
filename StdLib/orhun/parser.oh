@@ -189,6 +189,24 @@ işlev aralikta_deger_var_mi(tokenlar, baslangic, son, deger):
         i olsun i + 1
     döndür yanlış
 
+işlev aralikta_deger_konumu(tokenlar, baslangic, son, deger):
+    i olsun baslangic
+    derinlik olsun 0
+    sürece i küçük son:
+        token olsun tokenlar[i]
+        eğer acilis_islemi_mi(token) ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer kapanis_islemi_mi(token) ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik küçük 0 ise:
+                    derinlik olsun 0
+            değilse:
+                eğer derinlik eşit 0 ve token.deger eşit deger ise:
+                    döndür i
+        i olsun i + 1
+    döndür -1
+
 işlev ikili_operator_mu(token):
     eğer token.tur eşit "ISLEM" ve (token.deger eşit "+" veya token.deger eşit "-" veya token.deger eşit "*" veya token.deger eşit "/" veya token.deger eşit "%") ise:
         döndür doğru
@@ -345,6 +363,82 @@ işlev sig_ifade_ozeti(tokenlar, baslangic, son):
         op olsun kok_operatoru(tokenlar, baslangic, son)
     döndür {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": []}
 
+işlev aralik_altlari(tokenlar, baslangic, son, ayirici):
+    altlar olsun []
+    parca_baslangic olsun baslangic
+    i olsun baslangic
+    derinlik olsun 0
+    sürece i küçük son:
+        token olsun tokenlar[i]
+        eğer acilis_islemi_mi(token) ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer kapanis_islemi_mi(token) ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik küçük 0 ise:
+                    derinlik olsun 0
+            değilse:
+                eğer derinlik eşit 0 ve token.deger eşit ayirici ise:
+                    eğer parca_baslangic küçük i ise:
+                        altlar.ekle(sig_ifade_ozeti(tokenlar, parca_baslangic, i))
+                    parca_baslangic olsun i + 1
+        i olsun i + 1
+
+    eğer parca_baslangic küçük son ise:
+        altlar.ekle(sig_ifade_ozeti(tokenlar, parca_baslangic, son))
+    döndür altlar
+
+işlev liste_altlari(tokenlar, baslangic, son):
+    döndür aralik_altlari(tokenlar, baslangic + 1, son - 1, ",")
+
+işlev sozluk_altlari(tokenlar, baslangic, son):
+    altlar olsun []
+    # Deger ozetleri icin token araligini yeniden boluyoruz; anahtarlar simdilik disarida kalir.
+    parca_baslangic olsun baslangic + 1
+    i olsun baslangic + 1
+    derinlik olsun 0
+    sürece i küçük son - 1:
+        token olsun tokenlar[i]
+        eğer acilis_islemi_mi(token) ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer kapanis_islemi_mi(token) ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik küçük 0 ise:
+                    derinlik olsun 0
+            değilse:
+                eğer derinlik eşit 0 ve token.deger eşit "," ise:
+                    iki_nokta olsun aralikta_deger_konumu(tokenlar, parca_baslangic, i, ":")
+                    eğer iki_nokta büyük 0 veya iki_nokta eşit 0 ise:
+                        altlar.ekle(sig_ifade_ozeti(tokenlar, iki_nokta + 1, i))
+                    parca_baslangic olsun i + 1
+        i olsun i + 1
+
+    eğer parca_baslangic küçük son - 1 ise:
+        iki_nokta olsun aralikta_deger_konumu(tokenlar, parca_baslangic, son - 1, ":")
+        eğer iki_nokta büyük 0 veya iki_nokta eşit 0 ise:
+            altlar.ekle(sig_ifade_ozeti(tokenlar, iki_nokta + 1, son - 1))
+    döndür altlar
+
+işlev liste_uretec_altlari(tokenlar, baslangic, son):
+    altlar olsun []
+    ic_baslangic olsun baslangic + 1
+    ic_son olsun son - 1
+    icin_konum olsun aralikta_deger_konumu(tokenlar, ic_baslangic, ic_son, "için")
+    icinde_konum olsun aralikta_deger_konumu(tokenlar, ic_baslangic, ic_son, "içinde")
+    eger_konum olsun aralikta_deger_konumu(tokenlar, ic_baslangic, ic_son, "eğer")
+
+    eğer icin_konum büyük 0 veya icin_konum eşit 0 ise:
+        altlar.ekle(sig_ifade_ozeti(tokenlar, ic_baslangic, icin_konum))
+    eğer icinde_konum büyük 0 veya icinde_konum eşit 0 ise:
+        kaynak_son olsun ic_son
+        eğer eger_konum büyük icinde_konum ise:
+            kaynak_son olsun eger_konum
+        altlar.ekle(sig_ifade_ozeti(tokenlar, icinde_konum + 1, kaynak_son))
+    eğer eger_konum büyük 0 veya eger_konum eşit 0 ise:
+        altlar.ekle(sig_ifade_ozeti(tokenlar, eger_konum + 1, ic_son))
+    döndür altlar
+
 işlev ifade_altlari(tokenlar, baslangic, son, tur):
     altlar olsun []
     eğer tur eşit "IkiliIslem" ise:
@@ -352,6 +446,12 @@ işlev ifade_altlari(tokenlar, baslangic, son, tur):
         eğer op_konum büyük 0 veya op_konum eşit 0 ise:
             altlar.ekle(sig_ifade_ozeti(tokenlar, baslangic, op_konum))
             altlar.ekle(sig_ifade_ozeti(tokenlar, op_konum + 1, son))
+    eğer tur eşit "Liste" ise:
+        altlar olsun liste_altlari(tokenlar, baslangic, son)
+    eğer tur eşit "Sozluk" ise:
+        altlar olsun sozluk_altlari(tokenlar, baslangic, son)
+    eğer tur eşit "ListeUretec" ise:
+        altlar olsun liste_uretec_altlari(tokenlar, baslangic, son)
     döndür altlar
 
 işlev ifade_ozeti(tokenlar, baslangic, son):

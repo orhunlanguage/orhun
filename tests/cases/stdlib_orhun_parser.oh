@@ -18,6 +18,10 @@ yazdır json.yaz(kontrol.komutlar[0].bloklar)
 ifade_kontrol olsun parser.ozetle("yazdır a + b * 2\n")
 yazdır json.yaz(ifade_kontrol.komutlar[0].ifade_ozeti)
 
+koleksiyon_kontrol olsun parser.ozetle("liste olsun [1, 2, 3]\nyazdır [x * 2 için x içinde liste eğer x büyük 1]\n")
+yazdır json.yaz(koleksiyon_kontrol.komutlar[0].ifade_ozeti.altlar)
+yazdır json.yaz(koleksiyon_kontrol.komutlar[1].ifade_ozeti.altlar)
+
 hata olsun parser.ozetle("@\n")
 yazdır hata.ok
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")

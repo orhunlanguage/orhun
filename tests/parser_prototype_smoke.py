@@ -134,6 +134,24 @@ def cxx_expression_children(expression: dict) -> list[dict]:
             for child in (expression.get("sol"), expression.get("sag"))
             if isinstance(child, dict)
         ]
+    if expression.get("tur") == "Liste":
+        items = expression.get("ogeler")
+        if isinstance(items, list):
+            return [cxx_expression_shallow_summary(item) for item in items if isinstance(item, dict)]
+    if expression.get("tur") == "Sozluk":
+        items = expression.get("ogeler")
+        if isinstance(items, list):
+            return [
+                cxx_expression_shallow_summary(item.get("deger"))
+                for item in items
+                if isinstance(item, dict) and isinstance(item.get("deger"), dict)
+            ]
+    if expression.get("tur") == "ListeUretec":
+        return [
+            cxx_expression_shallow_summary(child)
+            for child in (expression.get("ifade"), expression.get("kaynak"), expression.get("kosul"))
+            if isinstance(child, dict)
+        ]
     return []
 
 
