@@ -1,4 +1,4 @@
-# ast: IslevTanim,SinifTanim,Atama
+# ast: IslevTanim,SinifTanim,Atama,Atama,Atama
 işlev topla(a olsun 1, b olsun 2):
     döndür a + b
 
@@ -9,3 +9,5 @@ tip Kutu:
         döndür benim.deger
 
 nesne olsun yeni Kutu(3)
+sonuc olsun topla(4, 5)
+ikiyle olsun işlev(x): x * 2

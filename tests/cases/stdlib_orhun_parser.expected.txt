@@ -11,6 +11,8 @@ CokluAtama|Yazdir
 [{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"0","op":"","tur":"Sayi"}]
 [{"altlar":[],"ayrinti":"sozluk","op":"","tur":"Kimlik"}]
 [{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}]
+{"altlar":[{"altlar":[],"ayrinti":"4","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"+","op":"+","tur":"IkiliIslem"}],"ayrinti":"topla","op":"","tur":"IslevCagri"}
+{"altlar":[],"ayrinti":"","op":"","tur":"IsimsizIslev"}
 0
 1
 0

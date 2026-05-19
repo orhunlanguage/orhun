@@ -166,6 +166,10 @@ def cxx_expression_children(expression: dict) -> list[dict]:
         args = expression.get("argumanlar")
         if isinstance(args, list):
             return [cxx_expression_shallow_summary(arg) for arg in args if isinstance(arg, dict)]
+    if expression.get("tur") == "IslevCagri":
+        args = expression.get("argumanlar")
+        if isinstance(args, list):
+            return [cxx_expression_shallow_summary(arg) for arg in args if isinstance(arg, dict)]
     return []
 
 
@@ -192,6 +196,8 @@ def cxx_expression_detail(expression: dict) -> str:
             return str(target.get("ad", ""))
     if kind == "YeniNesne":
         return str(expression.get("sinif", ""))
+    if kind == "IslevCagri":
+        return str(expression.get("ad", ""))
     return ""
 
 
