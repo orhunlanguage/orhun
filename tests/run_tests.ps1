@@ -36,6 +36,8 @@ function Run-Orhun($exe, $argsList, [hashtable]$EnvVars = @{}) {
     $p = New-Object System.Diagnostics.Process
     $p.StartInfo = $pinfo
     $p.Start() | Out-Null
+    $stdoutTask = $p.StandardOutput.ReadToEndAsync()
+    $stderrTask = $p.StandardError.ReadToEndAsync()
 
     $timeoutMs = [Math]::Max(1, $TimeoutSeconds) * 1000
     if (-not $p.WaitForExit($timeoutMs)) {
@@ -45,13 +47,13 @@ function Run-Orhun($exe, $argsList, [hashtable]$EnvVars = @{}) {
         }
         catch {
         }
-        $stdout = $p.StandardOutput.ReadToEnd()
-        $stderr = $p.StandardError.ReadToEnd()
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
         return ($stdout + $stderr + "Hata: test zaman asimi (${TimeoutSeconds}s)")
     }
 
-    $stdout = $p.StandardOutput.ReadToEnd()
-    $stderr = $p.StandardError.ReadToEnd()
+    $stdout = $stdoutTask.GetAwaiter().GetResult()
+    $stderr = $stderrTask.GetAwaiter().GetResult()
 
     $combined = $stdout + $stderr
     if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 1) {
