@@ -67,6 +67,13 @@ yazdır json.yaz(ifade_komut_kontrol.komutlar[4].ifade_ozeti)
 yazdır json.yaz(ifade_komut_kontrol.komutlar[5].ifade_ozeti)
 yazdır json.yaz(ifade_komut_kontrol.komutlar[6].ifade_ozeti)
 
+islem_ifade_komut_kontrol olsun parser.ozetle("-5\n[1, 2]\n{\"ad\": \"orhun\"}\n(1 + 2)\n")
+yazdır metin.birlestir(parser.turleri(islem_ifade_komut_kontrol), "|")
+yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[1].ifade_ozeti)
+yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[2].ifade_ozeti)
+yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[3].ifade_ozeti)
+
 hata olsun parser.ozetle("@\n")
 yazdır hata.ok
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")

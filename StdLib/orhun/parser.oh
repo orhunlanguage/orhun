@@ -142,6 +142,9 @@ işlev anahtar_komut_turu(deger):
 işlev anahtar_ifade_baslangici_mi(deger):
     döndür deger eşit "sor" veya deger eşit "doğru" veya deger eşit "yanlış" veya deger eşit "değil" veya deger eşit "yeni" veya deger eşit "benim" veya deger eşit "ust" veya deger eşit "paralel"
 
+işlev islem_ifade_baslangici_mi(deger):
+    döndür deger eşit "-" veya deger eşit "[" veya deger eşit "{" veya deger eşit "("
+
 işlev komut_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
 
@@ -161,6 +164,9 @@ işlev komut_turu(tokenlar, konum):
         döndür "IfadeKomut"
 
     eğer token.tur eşit "SAYI" veya token.tur eşit "ONDALIK" veya token.tur eşit "METIN" ise:
+        döndür "IfadeKomut"
+
+    eğer token.tur eşit "ISLEM" ve islem_ifade_baslangici_mi(token.deger) ise:
         döndür "IfadeKomut"
 
     döndür ""
@@ -293,6 +299,27 @@ işlev aralikta_ikili_operator_var_mi(tokenlar, baslangic, son):
     konum olsun kok_operator_konumu(tokenlar, baslangic, son)
     döndür konum büyük baslangic
 
+işlev dis_parantezle_sarili_mi(tokenlar, baslangic, son):
+    eğer son küçük baslangic + 2 ise:
+        döndür yanlış
+    eğer guvenli_token(tokenlar, baslangic).deger eşit_değil "(" veya guvenli_token(tokenlar, son - 1).deger eşit_değil ")" ise:
+        döndür yanlış
+
+    derinlik olsun 0
+    i olsun baslangic
+    sürece i küçük son:
+        token olsun tokenlar[i]
+        eğer token.tur eşit "ISLEM" ve token.deger eşit "(" ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik eşit 0 ve i küçük son - 1 ise:
+                    döndür yanlış
+        i olsun i + 1
+
+    döndür derinlik eşit 0
+
 işlev noktadan_sonraki_kimlik(tokenlar, baslangic, son):
     i olsun baslangic
     sürece i küçük son - 1:
@@ -338,6 +365,9 @@ işlev dilim_erisimi_mi(tokenlar, baslangic, son):
 işlev ifade_turu(tokenlar, baslangic, son):
     eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
         döndür ""
+
+    eğer dis_parantezle_sarili_mi(tokenlar, baslangic, son) ise:
+        döndür ifade_turu(tokenlar, baslangic + 1, son - 1)
 
     ilk olsun guvenli_token(tokenlar, baslangic)
 
@@ -402,6 +432,9 @@ işlev ifade_turu(tokenlar, baslangic, son):
 işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
     eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
         döndür ""
+
+    eğer dis_parantezle_sarili_mi(tokenlar, baslangic, son) ise:
+        döndür ifade_ayrintisi(tokenlar, baslangic + 1, son - 1, tur)
 
     ilk olsun guvenli_token(tokenlar, baslangic)
 
@@ -573,6 +606,9 @@ işlev sor_altlari(tokenlar, baslangic, son):
     döndür altlar
 
 işlev ifade_altlari(tokenlar, baslangic, son, tur):
+    eğer dis_parantezle_sarili_mi(tokenlar, baslangic, son) ise:
+        döndür ifade_altlari(tokenlar, baslangic + 1, son - 1, tur)
+
     altlar olsun []
     eğer tur eşit "IkiliIslem" ise:
         op_konum olsun kok_operator_konumu(tokenlar, baslangic, son)
@@ -644,6 +680,8 @@ işlev komut_ifade_turu(tokenlar, konum):
 
     eğer token.tur eşit "SAYI" veya token.tur eşit "ONDALIK" veya token.tur eşit "METIN" ise:
         döndür ifade_turu(tokenlar, konum, satir_sonu)
+    eğer token.tur eşit "ISLEM" ve islem_ifade_baslangici_mi(token.deger) ise:
+        döndür ifade_turu(tokenlar, konum, satir_sonu)
 
     döndür ""
 
@@ -681,6 +719,8 @@ işlev komut_ifade_ozeti(tokenlar, konum):
         döndür ifade_ozeti(tokenlar, konum, satir_sonu)
 
     eğer token.tur eşit "SAYI" veya token.tur eşit "ONDALIK" veya token.tur eşit "METIN" ise:
+        döndür ifade_ozeti(tokenlar, konum, satir_sonu)
+    eğer token.tur eşit "ISLEM" ve islem_ifade_baslangici_mi(token.deger) ise:
         döndür ifade_ozeti(tokenlar, konum, satir_sonu)
 
     döndür {"tur": tur, "op": "", "ayrinti": "", "altlar": []}

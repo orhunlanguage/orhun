@@ -35,6 +35,11 @@ IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
 {"altlar":[],"ayrinti":"deger","op":"","tur":"BenimErisim"}
 {"altlar":[],"ayrinti":"kur","op":"","tur":"UstErisim"}
 {"altlar":[],"ayrinti":"","op":"","tur":"ParalelYap"}
+IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
+{"altlar":[{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"-","op":"-","tur":"TekliIslem"}
+{"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"","op":"","tur":"Liste"}
+{"altlar":[{"altlar":[],"ayrinti":"orhun","op":"","tur":"Metin"}],"ayrinti":"","op":"","tur":"Sozluk"}
+{"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}
 0
 1
 0
