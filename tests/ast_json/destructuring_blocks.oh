@@ -1,0 +1,9 @@
+# ast: CokluAtama,Atama,Surece,Yazdir
+a, b olsun [1, 3]
+toplam olsun 0
+
+sürece a küçük b:
+    a, b olsun [a + 1, b]
+    toplam olsun toplam + a
+
+yazdır toplam
