@@ -93,10 +93,16 @@ def compare_file(binary: Path, repo: Path, source_file: Path, include_position: 
         )
 
 
-def compare_source(binary: Path, repo: Path, source: str, include_position: bool) -> None:
+def compare_source(
+    binary: Path,
+    repo: Path,
+    source: str,
+    include_position: bool,
+    newline: str = "\n",
+) -> None:
     with tempfile.TemporaryDirectory(prefix="orhun_lexer_parity_src_") as tmp:
         source_file = Path(tmp) / "case.oh"
-        source_file.write_text(source, encoding="utf-8", newline="\n")
+        source_file.write_text(source, encoding="utf-8", newline=newline)
         compare_file(binary, repo, source_file, include_position)
 
 
@@ -135,13 +141,30 @@ def main() -> int:
             "    yazdır \"Merhaba\"\n",
             include_position=False,
         )
-        print("Lexer parity smoke passed (2 inline cases).")
+        compare_source(
+            binary,
+            repo,
+            "a olsun 1\n"
+            "b olsun 2\n",
+            include_position=False,
+            newline="\r\n",
+        )
+        print("Lexer parity smoke passed (3 inline cases).")
         return 0
 
     for case in cases:
         compare_file(binary, repo, case, fixture_include_position(case))
 
-    print(f"Lexer parity smoke passed ({len(cases)} fixture cases).")
+    compare_source(
+        binary,
+        repo,
+        "a olsun 1\n"
+        "b olsun 2\n",
+        include_position=False,
+        newline="\r\n",
+    )
+
+    print(f"Lexer parity smoke passed ({len(cases)} fixture cases, 1 CRLF inline case).")
     return 0
 
 

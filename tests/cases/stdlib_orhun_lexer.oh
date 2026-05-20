@@ -16,6 +16,14 @@ yorumlu olsun lexer.tokenlestir("# yorum\nx olsun 1\n")
 yazdır yorumlu[0].tur + ":" + yorumlu[0].deger
 yazdır yorumlu[1].tur + ":" + yorumlu[1].deger
 
+satir_donusu olsun json.coz("\"\\r\"")
+crlf_kaynak olsun "a olsun 1" + satir_donusu + "\nb olsun 2" + satir_donusu + "\n"
+crlf olsun lexer.tokenlestir(crlf_kaynak)
+yazdır uzunluk(crlf)
+yazdır metin.birlestir(lexer.turleri(crlf), "|")
+yazdır crlf[3].tur + ":" + crlf[3].deger
+yazdır crlf[4].tur + ":" + crlf[4].deger
+
 girinti_hata olsun lexer.tokenlestir("eğer doğru ise:\n  yazdır 1\n yazdır 2\n")
 yazdır lexer.hata_var_mi(girinti_hata)
 yazdır metin.icerir(lexer.ilk_hata(girinti_hata).deger, "girinti")

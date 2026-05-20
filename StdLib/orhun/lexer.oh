@@ -5,6 +5,7 @@
 # modelini kullanir; token degerleri yine kaynak metindeki UTF-8'i korur.
 
 surum olsun "0.1.0"
+satir_donusu olsun json.coz("\"\\r\"")
 
 anahtarlar olsun []
 anahtarlar.ekle("yazdır")
@@ -63,7 +64,7 @@ işlev bosluk_mi(k):
     döndür k eşit " " veya k eşit "\t"
 
 işlev satir_sonu_mi(k):
-    döndür k eşit "\n"
+    döndür k eşit "\n" veya k eşit satir_donusu
 
 işlev islem_mi(k):
     eğer k eşit "" ise:
@@ -263,9 +264,12 @@ işlev tokenlestir(kaynak):
                 konum olsun yorum_sonuc.konum
                 sutun olsun yorum_sonuc.sutun
             değilse:
-                eğer k eşit "\n" ise:
+                eğer satir_sonu_mi(k) ise:
                     tokenlar.ekle(token("YENI_SATIR", "\\n", satir, sutun))
-                    konum olsun konum + 1
+                    eğer k eşit satir_donusu ve karakter(kaynak, konum + 1) eşit "\n" ise:
+                        konum olsun konum + 2
+                    değilse:
+                        konum olsun konum + 1
                     satir olsun satir + 1
                     sutun olsun 1
                     satir_basi olsun doğru

@@ -1,6 +1,7 @@
 # Orhun ile yazilmis metin yardimcilari.
 
 surum olsun "0.1.0"
+satir_donusu olsun json.coz("\"\\r\"")
 
 işlev bos_mu(kaynak):
     döndür uzunluk(kaynak) eşit 0
@@ -52,7 +53,7 @@ işlev kelimelere_ayir(kaynak):
     döndür parcala(kaynak, " ")
 
 işlev bosluk_mu(karakter):
-    döndür karakter eşit " " veya karakter eşit "\n" veya karakter eşit "\t" veya karakter eşit "\r"
+    döndür karakter eşit " " veya karakter eşit "\n" veya karakter eşit "\t" veya karakter eşit satir_donusu
 
 işlev sol_kirp(kaynak):
     i olsun 0
