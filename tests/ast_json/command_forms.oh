@@ -1,0 +1,8 @@
+# ast: DahilEt,DisIslevTanim,DenemeYakala
+dahil_et "orhun/temel.oh"
+dış_işlev lstrlenA "kernel32.dll" (metin: string) -> int
+
+deneme:
+    kır
+yakala hata:
+    devam
