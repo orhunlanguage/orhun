@@ -51,8 +51,8 @@ Basari olcutu:
 
 ## Faz 2: Orhun Ile Lexer ve Parser
 
-Durum: aktif; 50 fixture esigi gecildi ve recursive block summary parity
-basladi.
+Durum: aktif; 50 fixture esigi gecildi, recursive block summary parity ve
+recursive expression child parity basladi.
 
 Hedefler:
 

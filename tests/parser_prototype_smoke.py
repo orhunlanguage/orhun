@@ -115,60 +115,48 @@ def cxx_expression_summary(expression: dict) -> dict:
     }
 
 
-def cxx_expression_shallow_summary(expression: dict) -> dict:
-    kind = expression.get("tur")
-    if not isinstance(kind, str):
-        return empty_expression_summary()
-    return {
-        "tur": kind,
-        "op": expression.get("op", ""),
-        "ayrinti": cxx_expression_detail(expression),
-        "altlar": [],
-    }
-
-
 def cxx_expression_children(expression: dict) -> list[dict]:
     if expression.get("tur") == "Sor":
         child = expression.get("ifade")
         if isinstance(child, dict):
-            return [cxx_expression_shallow_summary(child)]
+            return [cxx_expression_summary(child)]
     if expression.get("tur") == "TekliIslem":
         child = expression.get("ifade")
         if isinstance(child, dict):
-            return [cxx_expression_shallow_summary(child)]
+            return [cxx_expression_summary(child)]
     if expression.get("tur") == "IkiliIslem":
         return [
-            cxx_expression_shallow_summary(child)
+            cxx_expression_summary(child)
             for child in (expression.get("sol"), expression.get("sag"))
             if isinstance(child, dict)
         ]
     if expression.get("tur") == "Liste":
         items = expression.get("ogeler")
         if isinstance(items, list):
-            return [cxx_expression_shallow_summary(item) for item in items if isinstance(item, dict)]
+            return [cxx_expression_summary(item) for item in items if isinstance(item, dict)]
     if expression.get("tur") == "Sozluk":
         items = expression.get("ogeler")
         if isinstance(items, list):
             return [
-                cxx_expression_shallow_summary(item.get("deger"))
+                cxx_expression_summary(item.get("deger"))
                 for item in items
                 if isinstance(item, dict) and isinstance(item.get("deger"), dict)
             ]
     if expression.get("tur") == "ListeUretec":
         return [
-            cxx_expression_shallow_summary(child)
+            cxx_expression_summary(child)
             for child in (expression.get("ifade"), expression.get("kaynak"), expression.get("kosul"))
             if isinstance(child, dict)
         ]
     if expression.get("tur") == "IndeksErisim":
         return [
-            cxx_expression_shallow_summary(child)
+            cxx_expression_summary(child)
             for child in (expression.get("hedef"), expression.get("indeks"))
             if isinstance(child, dict)
         ]
     if expression.get("tur") == "DilimErisim":
         return [
-            cxx_expression_shallow_summary(child)
+            cxx_expression_summary(child)
             for child in (
                 expression.get("hedef"),
                 expression.get("baslangic"),
@@ -179,19 +167,19 @@ def cxx_expression_children(expression: dict) -> list[dict]:
     if expression.get("tur") == "AlanErisim":
         target = expression.get("hedef")
         if isinstance(target, dict):
-            return [cxx_expression_shallow_summary(target)]
+            return [cxx_expression_summary(target)]
     if expression.get("tur") == "GuvenliAlanErisim":
         target = expression.get("hedef")
         if isinstance(target, dict):
-            return [cxx_expression_shallow_summary(target)]
+            return [cxx_expression_summary(target)]
     if expression.get("tur") == "YeniNesne":
         args = expression.get("argumanlar")
         if isinstance(args, list):
-            return [cxx_expression_shallow_summary(arg) for arg in args if isinstance(arg, dict)]
+            return [cxx_expression_summary(arg) for arg in args if isinstance(arg, dict)]
     if expression.get("tur") == "IslevCagri":
         args = expression.get("argumanlar")
         if isinstance(args, list):
-            return [cxx_expression_shallow_summary(arg) for arg in args if isinstance(arg, dict)]
+            return [cxx_expression_summary(arg) for arg in args if isinstance(arg, dict)]
     return []
 
 
@@ -315,7 +303,7 @@ def orhun_expression_payload(expression: object, source_file: Path) -> dict:
         "tur": expression.get("tur", ""),
         "op": expression.get("op", ""),
         "ayrinti": expression.get("ayrinti", ""),
-        "altlar": children,
+        "altlar": [orhun_expression_payload(child, source_file) for child in children],
     }
 
 
