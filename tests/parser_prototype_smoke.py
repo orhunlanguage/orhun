@@ -89,6 +89,20 @@ def expected_hint(message: str) -> str:
     return ""
 
 
+def unknown_command(message: str) -> str:
+    match = re.search(r"Tanınmayan komut:\s+'([^']+)'", message)
+    if match is not None:
+        return match.group(1)
+    return ""
+
+
+def suggested_command(message: str) -> str:
+    match = re.search(r"Bunu mu demek istediniz:\s+'([^']+)'", message)
+    if match is not None:
+        return match.group(1)
+    return ""
+
+
 def validate_error_parity(
     cxx_payload: dict, proto_payload: dict, source_file: Path
 ) -> None:
@@ -114,6 +128,23 @@ def validate_error_parity(
         cxx_hint == proto_hint,
         f"Parser error hint mismatch for {source_file}\n"
         f"C++: {cxx_hint}\nOrhun: {proto_hint}",
+    )
+
+    cxx_message = error_message(cxx_payload, source_file)
+    cxx_unknown = unknown_command(cxx_message)
+    proto_unknown = unknown_command(proto_message)
+    require(
+        cxx_unknown == proto_unknown,
+        f"Parser unknown command mismatch for {source_file}\n"
+        f"C++: {cxx_unknown}\nOrhun: {proto_unknown}",
+    )
+
+    cxx_suggestion = suggested_command(cxx_message)
+    proto_suggestion = suggested_command(proto_message)
+    require(
+        cxx_suggestion == proto_suggestion,
+        f"Parser suggestion mismatch for {source_file}\n"
+        f"C++: {cxx_suggestion}\nOrhun: {proto_suggestion}",
     )
 
 
