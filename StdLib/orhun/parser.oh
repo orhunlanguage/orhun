@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.0"
+surum olsun "0.3.1"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -741,8 +741,31 @@ işlev komut_ifade_ozeti(tokenlar, konum):
 
     döndür {"tur": tur, "op": "", "ayrinti": "", "altlar": []}
 
+işlev taninmayan_komut_hatasi(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    eğer token.tur eşit_değil "KIMLIK" ise:
+        döndür ""
+    eğer satirda_coklu_atama_mi(tokenlar, konum) veya satirda_atama_mi(tokenlar, konum) ise:
+        döndür ""
+
+    sonraki olsun guvenli_token(tokenlar, konum + 1)
+    eğer satir_sonu_mu(sonraki) ise:
+        döndür ""
+    eğer sonraki.tur eşit "ISLEM" ve (sonraki.deger eşit "(" veya sonraki.deger eşit "." veya sonraki.deger eşit "[" veya sonraki.deger eşit "?") ise:
+        döndür ""
+    eğer ikili_operator_mu(sonraki) ise:
+        döndür ""
+    eğer sonraki.tur eşit "SAYI" veya sonraki.tur eşit "ONDALIK" veya sonraki.tur eşit "METIN" veya sonraki.tur eşit "ANAHTAR_KELIME" veya sonraki.tur eşit "KIMLIK" ise:
+        eğer token.deger eşit "yzdır" ise:
+            döndür "Tanınmayan komut: '" + token.deger + "'. Bunu mu demek istediniz: 'yazdır'?"
+        döndür "Tanınmayan komut: '" + token.deger + "'"
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
+    taninmayan_hata olsun taninmayan_komut_hatasi(tokenlar, konum)
+    eğer uzunluk(taninmayan_hata) büyük 0 ise:
+        döndür taninmayan_hata
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
         eğer değil satirda_anahtar_mi(tokenlar, konum, "ise") ise:
             döndür "'eğer' komutunda koşuldan sonra 'ise' bekleniyor"

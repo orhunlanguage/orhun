@@ -82,6 +82,10 @@ hata olsun parser.ozetle("@\n")
 yazdır hata.ok
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")
 
+yazim_hata olsun parser.ozetle("yzdır 1\n")
+yazdır yazim_hata.ok
+yazdır metin.icerir(yazim_hata.hata.mesaj, "yazdır")
+
 baslik_hata olsun parser.ozetle("eğer doğru\n")
 yazdır baslik_hata.ok
 yazdır metin.icerir(baslik_hata.hata.mesaj, "ise")

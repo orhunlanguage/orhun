@@ -67,8 +67,8 @@ Hedefler:
 - Orhun parser prototipi once ust seviye komut turlerinde C++ AST ile
   eslenir, sonra blok komut ozetlerine, ana ifade cocuklarina ve daha derin
   blok/ifade agaci detaylarina genisler.
-- Hata fixture'lari satir ve beklenen-token ipucu seviyesinde C++ parser ile
-  eslenir.
+- Hata fixture'lari satir, beklenen-token ipucu ve taninmayan komut vakalari
+  seviyesinde C++ parser ile eslenir.
 
 Basari olcutu:
 

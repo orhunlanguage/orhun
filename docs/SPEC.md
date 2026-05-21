@@ -411,9 +411,10 @@ expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
 children, child block command counts, and recursive child block command
 summaries, then compares them against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. It also recognizes the first basic parser
-error fixtures for missing `ise`, missing `kez`, and required header colons.
-Those error fixtures also compare the reported line and expected-token hint
-against the C++ parser. It is not yet the production parser.
+error fixtures for missing `ise`, missing `kez`, required header colons, and
+unknown command typos such as `yzdır 1`. Those error fixtures also compare the
+reported line and expected-token hint against the C++ parser. It is not yet the
+production parser.
 
 ## CLI Contract
 
