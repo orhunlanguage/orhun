@@ -240,7 +240,7 @@ def cxx_block_summaries(command: dict) -> list[dict]:
         if isinstance(block, dict):
             commands = block.get("komutlar")
             if isinstance(commands, list):
-                blocks.append({"komutlar": [cxx_shallow_node(child) for child in commands]})
+                blocks.append({"komutlar": [cxx_node_summary(child) for child in commands]})
     return blocks
 
 
@@ -329,7 +329,7 @@ def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
         normalized.append(
             {
                 "komutlar": [
-                    orhun_shallow_node(command, source_file)
+                    orhun_node_summary(command, source_file)
                     for command in commands
                 ]
             }

@@ -6,10 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.1.0"
-
-işlev kisa_dugum(tur, satir, ifade_ozeti):
-    döndür {"tur": tur, "satir": satir, "ifade_turu": ifade_ozeti.tur, "ifade_ozeti": ifade_ozeti}
+surum olsun "0.2.0"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -21,6 +18,11 @@ işlev blok_sayilari_uret(bloklar):
 
 işlev dugum(tur, satir, ifade_ozeti, bloklar):
     döndür {"tur": tur, "satir": satir, "ifade_turu": ifade_ozeti.tur, "ifade_ozeti": ifade_ozeti, "blok_sayilari": blok_sayilari_uret(bloklar), "bloklar": bloklar}
+
+işlev komut_dugumu(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    tur olsun komut_turu(tokenlar, konum)
+    döndür dugum(tur, token.satir, komut_ifade_ozeti(tokenlar, konum), bloklari(tokenlar, konum))
 
 işlev sonuc_ok(komutlar):
     döndür {"ok": doğru, "hata": "", "komutlar": komutlar}
@@ -157,6 +159,8 @@ işlev komut_turu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
 
     eğer token.tur eşit "ANAHTAR_KELIME" ise:
+        eğer (token.deger eşit "benim" veya token.deger eşit "ust") ve satirda_atama_mi(tokenlar, konum) ise:
+            döndür "Atama"
         tur olsun anahtar_komut_turu(token.deger)
         eğer uzunluk(tur) büyük 0 ise:
             döndür tur
@@ -677,6 +681,10 @@ işlev komut_ifade_turu(tokenlar, konum):
         eğer son küçük 0 ise:
             son olsun satir_sonu
         döndür ifade_turu(tokenlar, konum + 1, son)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "benim" veya token.deger eşit "ust") ve satirda_atama_mi(tokenlar, konum) ise:
+        baslangic olsun atama_ifade_baslangici(tokenlar, konum)
+        eğer baslangic büyük 0 veya baslangic eşit 0 ise:
+            döndür ifade_turu(tokenlar, baslangic, satir_sonu)
     eğer token.tur eşit "ANAHTAR_KELIME" ve anahtar_ifade_baslangici_mi(token.deger) ise:
         döndür ifade_turu(tokenlar, konum, satir_sonu)
 
@@ -717,6 +725,10 @@ işlev komut_ifade_ozeti(tokenlar, konum):
         eğer son küçük 0 ise:
             son olsun satir_sonu
         döndür ifade_ozeti(tokenlar, konum + 1, son)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "benim" veya token.deger eşit "ust") ve satirda_atama_mi(tokenlar, konum) ise:
+        baslangic olsun atama_ifade_baslangici(tokenlar, konum)
+        eğer baslangic büyük 0 veya baslangic eşit 0 ise:
+            döndür ifade_ozeti(tokenlar, baslangic, satir_sonu)
     eğer token.tur eşit "ANAHTAR_KELIME" ve anahtar_ifade_baslangici_mi(token.deger) ise:
         döndür ifade_ozeti(tokenlar, konum, satir_sonu)
 
@@ -791,8 +803,7 @@ işlev blok_ozeti(tokenlar, konum):
                             eğer yapi_devami_mi(token) ise:
                                 i olsun satir_sonuna_git(tokenlar, i)
                             değilse:
-                                tur olsun komut_turu(tokenlar, i)
-                                komutlar.ekle(kisa_dugum(tur, token.satir, komut_ifade_ozeti(tokenlar, i)))
+                                komutlar.ekle(komut_dugumu(tokenlar, i))
                                 sayi olsun sayi + 1
                                 i olsun satir_sonuna_git(tokenlar, i)
                         değilse:
@@ -813,8 +824,7 @@ işlev bloklari(tokenlar, konum):
         eğer guvenli_token(tokenlar, i).tur eşit "ANAHTAR_KELIME" ve guvenli_token(tokenlar, i).deger eşit "değilse" ise:
             eğer degilse_eger_mi(tokenlar, i) ise:
                 eger_konum olsun i + 1
-                eger_token olsun guvenli_token(tokenlar, eger_konum)
-                bloklar.ekle({"komutlar": [kisa_dugum("Eger", eger_token.satir, komut_ifade_ozeti(tokenlar, eger_konum))]})
+                bloklar.ekle({"komutlar": [komut_dugumu(tokenlar, eger_konum)]})
             değilse:
                 yanlis_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, i))
                 bloklar.ekle({"komutlar": yanlis_blok.komutlar})
@@ -871,7 +881,7 @@ işlev ozetle_tokenlar(tokenlar):
                             tur olsun komut_turu(tokenlar, i)
                             eğer uzunluk(tur) eşit 0 ise:
                                 döndür sonuc_hata("Komut turu taninamadi: " + token.deger, token)
-                            komutlar.ekle(dugum(tur, token.satir, komut_ifade_ozeti(tokenlar, i), bloklari(tokenlar, i)))
+                            komutlar.ekle(komut_dugumu(tokenlar, i))
                             i olsun satir_sonuna_git(tokenlar, i)
 
     döndür sonuc_ok(komutlar)
