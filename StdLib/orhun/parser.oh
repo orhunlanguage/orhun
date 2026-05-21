@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.2"
+surum olsun "0.3.3"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -425,10 +425,8 @@ işlev ifade_turu(tokenlar, baslangic, son):
     eğer ilk.tur eşit "ISLEM" ve ilk.deger eşit "-" ise:
         döndür "TekliIslem"
 
-    eğer ilk.tur eşit "SAYI" ise:
+    eğer ilk.tur eşit "SAYI" veya ilk.tur eşit "ONDALIK" ise:
         döndür "Sayi"
-    eğer ilk.tur eşit "ONDALIK" ise:
-        döndür "Ondalik"
     eğer ilk.tur eşit "METIN" ise:
         döndür "Metin"
     eğer ilk.tur eşit "ANAHTAR_KELIME" ve (ilk.deger eşit "doğru" veya ilk.deger eşit "yanlış") ise:
@@ -444,15 +442,19 @@ işlev ifade_turu(tokenlar, baslangic, son):
             döndür "IslevCagri"
         döndür "UstErisim"
     eğer ilk.tur eşit "KIMLIK" ise:
-        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "?") ise:
+        soru_konum olsun aralikta_deger_konumu(tokenlar, baslangic, son, "?")
+        eğer soru_konum büyük 0 veya soru_konum eşit 0 ise:
             döndür "GuvenliAlanErisim"
-        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "[") ise:
+        koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
+        eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
             eğer dilim_erisimi_mi(tokenlar, baslangic, son) ise:
                 döndür "DilimErisim"
             döndür "IndeksErisim"
-        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "(") ise:
+        parantez_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "(")
+        eğer parantez_konum büyük 0 veya parantez_konum eşit 0 ise:
             döndür "IslevCagri"
-        eğer aralikta_deger_var_mi(tokenlar, baslangic, son, ".") ise:
+        nokta_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, ".")
+        eğer nokta_konum büyük 0 veya nokta_konum eşit 0 ise:
             döndür "AlanErisim"
         döndür "Kimlik"
 
@@ -471,7 +473,7 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
         döndür kok_operatoru(tokenlar, baslangic, son)
     eğer tur eşit "TekliIslem" ise:
         döndür ilk.deger
-    eğer tur eşit "Sayi" veya tur eşit "Ondalik" veya tur eşit "Metin" veya tur eşit "Kimlik" ise:
+    eğer tur eşit "Sayi" veya tur eşit "Metin" veya tur eşit "Kimlik" ise:
         döndür ilk.deger
     eğer tur eşit "Mantik" ise:
         döndür ilk.deger

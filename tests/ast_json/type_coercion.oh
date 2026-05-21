@@ -1,0 +1,6 @@
+# ast: Yazdir,Yazdir,Yazdir,Yazdir
+# Tip donusumu testi
+yazdır "Sayi: " + 42
+yazdır "Ondalik: " + 3.14
+yazdır "Mantik: " + doğru
+yazdır "Topla: " + (10 + 5)

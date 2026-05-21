@@ -1,0 +1,7 @@
+# ast: Atama,Atama,Yazdir,Yazdir,Yazdir
+# Metin birlestirme ve tip donusumu testi
+isim olsun "Orhun"
+surum olsun 0.8
+yazdır isim + " v" + surum
+yazdır "2 + 3 = " + (2 + 3)
+yazdır "Liste: " + [1, 2, 3]

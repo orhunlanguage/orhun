@@ -1,0 +1,9 @@
+# ast: Atama,Atama,Surece,Yazdir
+x = 0.0
+sayac = 0
+
+sürece x küçük 1.0:
+    x = x + 0.25
+    sayac = sayac + 1
+
+yazdır sayac

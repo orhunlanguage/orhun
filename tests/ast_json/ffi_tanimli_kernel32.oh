@@ -1,0 +1,5 @@
+# ast: Atama,Atama,Yazdir,IfadeKomut
+kutuphane olsun ffi.yukle("kernel32.dll")
+islev olsun ffi.tanimla(kutuphane, "lstrlenA", "int", ["string"])
+yazdır ffi.cagir_tanimli(islev, "Orhun")
+ffi.bosalt(kutuphane)

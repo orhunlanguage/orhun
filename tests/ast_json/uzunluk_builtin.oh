@@ -1,0 +1,7 @@
+# ast: Yazdir,Yazdir,Yazdir,Yazdir,Yazdir
+# Uzunluk islevi cesitli tipler testi
+yazdır uzunluk("merhaba")
+yazdır uzunluk([1, 2, 3, 4])
+yazdır uzunluk({ "a": 1, "b": 2 })
+yazdır uzunluk("")
+yazdır uzunluk([])
