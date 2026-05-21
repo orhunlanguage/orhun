@@ -1,0 +1,4 @@
+# ast: Atama,Atama,Yazdir
+f olsun işlev(x): x * 2
+g olsun işlev(x): f(x) + 1
+yazdır g(5)

@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.1"
+surum olsun "0.3.2"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -233,6 +233,24 @@ işlev aralikta_deger_konumu(tokenlar, baslangic, son, deger):
         i olsun i + 1
     döndür -1
 
+işlev son_aralikta_deger_konumu(tokenlar, baslangic, son, deger):
+    i olsun baslangic
+    derinlik olsun 0
+    bulunan olsun -1
+    sürece i küçük son:
+        token olsun tokenlar[i]
+        eğer derinlik eşit 0 ve token.deger eşit deger ise:
+            bulunan olsun i
+        eğer acilis_islemi_mi(token) ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer kapanis_islemi_mi(token) ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik küçük 0 ise:
+                    derinlik olsun 0
+        i olsun i + 1
+    döndür bulunan
+
 işlev ilk_deger_konumu(tokenlar, baslangic, son, deger):
     i olsun baslangic
     sürece i küçük son:
@@ -333,11 +351,10 @@ işlev dis_parantezle_sarili_mi(tokenlar, baslangic, son):
     döndür derinlik eşit 0
 
 işlev noktadan_sonraki_kimlik(tokenlar, baslangic, son):
-    i olsun baslangic
-    sürece i küçük son - 1:
-        eğer tokenlar[i].deger eşit "." ve tokenlar[i + 1].tur eşit "KIMLIK" ise:
+    i olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, ".")
+    eğer i büyük 0 veya i eşit 0 ise:
+        eğer i küçük son - 1 ve tokenlar[i + 1].tur eşit "KIMLIK" ise:
             döndür tokenlar[i + 1].deger
-        i olsun i + 1
     döndür ""
 
 işlev cagri_adi(tokenlar, baslangic, son):
@@ -368,7 +385,7 @@ işlev dahil_et_dosyasi(tokenlar, baslangic, son):
     döndür ""
 
 işlev dilim_erisimi_mi(tokenlar, baslangic, son):
-    koseli_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "[")
+    koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
     eğer koseli_konum küçük 0 ise:
         döndür yanlış
     iki_nokta olsun aralikta_deger_konumu(tokenlar, koseli_konum + 1, son - 1, ":")
@@ -461,8 +478,18 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
     eğer tur eşit "AlanErisim" veya tur eşit "GuvenliAlanErisim" veya tur eşit "BenimErisim" veya tur eşit "UstErisim" ise:
         döndür noktadan_sonraki_kimlik(tokenlar, baslangic, son)
     eğer tur eşit "IndeksErisim" ise:
+        koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
+        eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
+            eğer ifade_turu(tokenlar, baslangic, koseli_konum) eşit "Kimlik" ise:
+                döndür ilk.deger
+            döndür ""
         döndür ilk.deger
     eğer tur eşit "DilimErisim" ise:
+        koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
+        eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
+            eğer ifade_turu(tokenlar, baslangic, koseli_konum) eşit "Kimlik" ise:
+                döndür ilk.deger
+            döndür ""
         döndür ilk.deger
     eğer tur eşit "YeniNesne" ise:
         döndür yeni_sinif_adi(tokenlar, baslangic, son)
@@ -554,7 +581,7 @@ işlev liste_uretec_altlari(tokenlar, baslangic, son):
 
 işlev indeks_altlari(tokenlar, baslangic, son):
     altlar olsun []
-    koseli_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "[")
+    koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
     eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
         altlar.ekle(alt_ifade_ozeti(tokenlar, baslangic, koseli_konum))
         altlar.ekle(alt_ifade_ozeti(tokenlar, koseli_konum + 1, son - 1))
@@ -562,7 +589,7 @@ işlev indeks_altlari(tokenlar, baslangic, son):
 
 işlev dilim_altlari(tokenlar, baslangic, son):
     altlar olsun []
-    koseli_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "[")
+    koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
     eğer koseli_konum küçük 0 ise:
         döndür altlar
     iki_nokta olsun aralikta_deger_konumu(tokenlar, koseli_konum + 1, son - 1, ":")
@@ -584,7 +611,7 @@ işlev guvenli_alan_altlari(tokenlar, baslangic, son):
 
 işlev alan_altlari(tokenlar, baslangic, son):
     altlar olsun []
-    nokta_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, ".")
+    nokta_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, ".")
     eğer nokta_konum büyük 0 veya nokta_konum eşit 0 ise:
         altlar.ekle(alt_ifade_ozeti(tokenlar, baslangic, nokta_konum))
     döndür altlar
@@ -830,15 +857,43 @@ işlev blok_ozeti(tokenlar, konum):
 
     döndür {"sayi": sayi, "komutlar": komutlar, "son": i}
 
+işlev satir_ici_blok_konumu(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    baslangic olsun -1
+
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
+        baslangic olsun deger_konumu(tokenlar, konum + 1, "ise")
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ise:
+        baslangic olsun deger_konumu(tokenlar, konum + 1, "kez")
+    eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "sürece" veya token.deger eşit "işlev" veya token.deger eşit "tip" veya token.deger eşit "deneme" veya token.deger eşit "yakala") ise:
+        baslangic olsun deger_konumu(tokenlar, konum + 1, ":")
+
+    eğer baslangic küçük 0 ise:
+        döndür -1
+    aday olsun baslangic + 1
+    eğer satir_sonu_mu(guvenli_token(tokenlar, aday)) ise:
+        döndür -1
+    eğer uzunluk(komut_turu(tokenlar, aday)) eşit 0 ise:
+        döndür -1
+    döndür aday
+
 işlev bloklari(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     bloklar olsun []
-    ilk_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, konum))
+    sonraki_konum olsun 0
+    satir_ici_konum olsun satir_ici_blok_konumu(tokenlar, konum)
 
-    eğer ilk_blok.sayi büyük 0 ise:
-        bloklar.ekle({"komutlar": ilk_blok.komutlar})
+    eğer satir_ici_konum büyük 0 veya satir_ici_konum eşit 0 ise:
+        bloklar.ekle({"komutlar": [komut_dugumu(tokenlar, satir_ici_konum)]})
+        sonraki_konum olsun satir_sonuna_git(tokenlar, konum)
+    değilse:
+        ilk_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, konum))
 
-    i olsun yeni_satirlari_atla(tokenlar, ilk_blok.son)
+        eğer ilk_blok.sayi büyük 0 ise:
+            bloklar.ekle({"komutlar": ilk_blok.komutlar})
+        sonraki_konum olsun ilk_blok.son
+
+    i olsun yeni_satirlari_atla(tokenlar, sonraki_konum)
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ise:
         eğer guvenli_token(tokenlar, i).tur eşit "ANAHTAR_KELIME" ve guvenli_token(tokenlar, i).deger eşit "değilse" ise:
             eğer degilse_eger_mi(tokenlar, i) ise:

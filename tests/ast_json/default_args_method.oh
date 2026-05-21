@@ -1,0 +1,8 @@
+# ast: SinifTanim,Atama,Yazdir,Yazdir
+tip Kutu:
+    işlev carp(x, y olsun 4):
+        döndür x * y
+
+k olsun yeni Kutu()
+yazdır k.carp(3)
+yazdır k.carp(3, 5)

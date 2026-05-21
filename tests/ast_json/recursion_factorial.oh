@@ -1,0 +1,11 @@
+# ast: IslevTanim,Yazdir,Yazdir,Yazdir,Yazdir
+# Ozyineleme testi: faktoriyel
+işlev faktoriyel(n):
+    eğer n küçük 2 ise:
+        döndür 1
+    döndür n * faktoriyel(n - 1)
+
+yazdır faktoriyel(0)
+yazdır faktoriyel(1)
+yazdır faktoriyel(5)
+yazdır faktoriyel(10)

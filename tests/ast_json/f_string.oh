@@ -1,0 +1,9 @@
+# ast: Atama,Atama,Atama,Yazdir,Yazdir,Yazdir
+# v1.1 f-string benzeri metin gömme testi
+isim = "Orhun"
+puan = 99
+profil = { ad: "Bilge", seviye: 3 }
+
+yazdır "Merhaba {isim}! Puanın {puan}."
+yazdır "Profil: {profil.ad} / {profil.seviye}"
+yazdır "Düz metin JSON: {\"ad\":\"X\"}"

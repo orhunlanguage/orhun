@@ -1,0 +1,3 @@
+# ast: Atama,Tekrarla
+f olsun işlev(x): x + 1
+tekrarla 3 kez yazdır f(2)
