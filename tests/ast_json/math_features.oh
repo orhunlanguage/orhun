@@ -1,0 +1,18 @@
+# ast: IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut,IfadeKomut
+yazdir("--- Modulo Operator Tests ---")
+yazdir(10 % 3)
+yazdir(5.5 % 2.0)
+yazdir(10 % 2)
+yazdir(-10 % 3)
+
+yazdir("--- tam() Function Tests ---")
+yazdir(tam(3.14))
+yazdir(tam(-3.14))
+yazdir(tam(10))
+yazdir(tam(0.999))
+
+yazdir("--- taban() Function Tests ---")
+yazdir(taban(3.14))
+yazdir(taban(-3.14))
+yazdir(taban(10))
+yazdir(taban(0.999))

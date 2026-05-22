@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.5"
+surum olsun "0.3.6"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -285,6 +285,19 @@ işlev operator_grubunda_mi(token, grup):
         döndür token.tur eşit "ISLEM" ve (token.deger eşit "*" veya token.deger eşit "/" veya token.deger eşit "%")
     döndür yanlış
 
+işlev unary_eksi_konumu_mu(tokenlar, konum, baslangic):
+    token olsun guvenli_token(tokenlar, konum)
+    eğer token.tur eşit_değil "ISLEM" veya token.deger eşit_değil "-" ise:
+        döndür yanlış
+    eğer konum küçük baslangic + 1 ise:
+        döndür doğru
+    onceki olsun guvenli_token(tokenlar, konum - 1)
+    eğer onceki.tur eşit "ISLEM" ve onceki.deger eşit_değil ")" ve onceki.deger eşit_değil "]" ve onceki.deger eşit_değil "}" ise:
+        döndür doğru
+    eğer ikili_operator_mu(onceki) ise:
+        döndür doğru
+    döndür yanlış
+
 işlev acilis_islemi_mi(token):
     döndür token.tur eşit "ISLEM" ve (token.deger eşit "(" veya token.deger eşit "[" veya token.deger eşit "{")
 
@@ -311,7 +324,7 @@ işlev operator_konumu_grupta_bul(tokenlar, baslangic, son, grup):
                 eğer derinlik küçük 0 ise:
                     derinlik olsun 0
             değilse:
-                eğer derinlik eşit 0 ve operator_grubunda_mi(token, grup) ise:
+                eğer derinlik eşit 0 ve operator_grubunda_mi(token, grup) ve değil unary_eksi_konumu_mu(tokenlar, i, baslangic) ise:
                     bulunan olsun i
         i olsun i + 1
     döndür bulunan
