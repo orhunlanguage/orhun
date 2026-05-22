@@ -1,0 +1,18 @@
+# ast: IfadeKomut,IfadeKomut,Atama,Yazdir,Atama,Atama,Yazdir,Atama,Atama,Yazdir,Atama,Yazdir,Yazdir,IfadeKomut,Yazdir
+dosya.yaz("_tmp_stdlib_modul.txt", "ilk")
+dosya.ekle_satir("_tmp_stdlib_modul.txt", "ikinci")
+icerik olsun dosya.oku("_tmp_stdlib_modul.txt")
+yazdır metin.icerir(icerik, "ikinci")
+
+veri olsun { "ad": "Orhun", "surum": 2, "liste": [1, 2] }
+json_metin olsun json.yaz(veri)
+yazdır metin.icerir(json_metin, "\"ad\"")
+json_guzel olsun json.guzel_yaz(veri, 2)
+satirlar olsun parcala(json_guzel, "\n")
+yazdır uzunluk(satirlar) büyük 1
+dosya_listesi olsun dosya.listele(".")
+yazdır metin.icerir(metin.birlestir(dosya_listesi, ","), "_tmp_stdlib_modul.txt")
+
+yazdır dosya.var_mi("_tmp_stdlib_modul.txt")
+dosya.sil("_tmp_stdlib_modul.txt")
+yazdır dosya.var_mi("_tmp_stdlib_modul.txt")

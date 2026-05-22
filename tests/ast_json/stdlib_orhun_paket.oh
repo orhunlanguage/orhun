@@ -1,0 +1,33 @@
+# ast: Atama,Atama,Atama,Atama,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir,Atama,Yazdir,Yazdir
+paket_yardimci olsun dahil_et "orhun/paket.oh"
+
+manifest_metin olsun "{\"ad\":\"ornek\",\"surum\":\"0.1.0\",\"giris\":\"ana.oh\",\"bagimliliklar\":[\"temel\",\"sonuc\"]}"
+cozum olsun paket_yardimci.coz(manifest_metin)
+manifest olsun cozum.deger
+
+yazdır paket_yardimci.surum
+yazdır cozum.ok
+yazdır paket_yardimci.ad(manifest)
+yazdır paket_yardimci.surum_al(manifest)
+yazdır paket_yardimci.giris(manifest)
+yazdır paket_yardimci.ozet(manifest)
+yazdır paket_yardimci.bagimli_mi(manifest, "sonuc")
+yazdır paket_yardimci.bagimli_mi(manifest, "metin")
+yazdır paket_yardimci.dogrula(manifest).ok
+
+varsayilanli olsun json.coz("{\"ad\":\"yalin\",\"surum\":\"1.0.0\"}")
+yazdır paket_yardimci.giris(varsayilanli)
+yazdır uzunluk(paket_yardimci.bagimliliklar(varsayilanli))
+yazdır paket_yardimci.coz_ve_dogrula(json.yaz(varsayilanli)).ok
+
+eksik olsun json.coz("{\"ad\":\"eksik\"}")
+yazdır paket_yardimci.dogrula(eksik).ok
+yazdır metin.icerir(paket_yardimci.dogrula(eksik).hata, "surum")
+
+yanlis_bagimlilik olsun json.coz("{\"ad\":\"yanlis\",\"surum\":\"1.0.0\",\"bagimliliklar\":\"temel\"}")
+yazdır paket_yardimci.dogrula(yanlis_bagimlilik).ok
+yazdır metin.icerir(paket_yardimci.dogrula(yanlis_bagimlilik).hata, "liste")
+
+bozuk olsun paket_yardimci.coz("{bozuk")
+yazdır bozuk.ok
+yazdır metin.icerir(bozuk.hata, "json.coz")

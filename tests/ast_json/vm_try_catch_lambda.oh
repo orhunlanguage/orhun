@@ -1,0 +1,9 @@
+# ast: IslevTanim,Atama,Yazdir
+işlev dene(islem):
+    deneme:
+        döndür {"ok": doğru, "deger": islem(), "hata": 0}
+    yakala hata:
+        döndür {"ok": yanlış, "deger": 0, "hata": hata}
+
+hata_uret olsun işlev(): [1][5]
+yazdır metin.icerir(dene(hata_uret).hata, "Liste indeksi")

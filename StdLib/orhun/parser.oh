@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.6"
+surum olsun "0.3.7"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -466,14 +466,20 @@ işlev ifade_turu(tokenlar, baslangic, son):
         döndür "UstErisim"
     eğer ilk.tur eşit "KIMLIK" ise:
         koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
+        parantez_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "(")
+        nokta_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, ".")
+        eğer koseli_konum büyük parantez_konum ve koseli_konum büyük nokta_konum ise:
+            eğer dilim_erisimi_mi(tokenlar, baslangic, son) ise:
+                döndür "DilimErisim"
+            döndür "IndeksErisim"
+        eğer nokta_konum büyük parantez_konum ve nokta_konum büyük koseli_konum ise:
+            döndür "AlanErisim"
+        eğer parantez_konum büyük 0 veya parantez_konum eşit 0 ise:
+            döndür "IslevCagri"
         eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
             eğer dilim_erisimi_mi(tokenlar, baslangic, son) ise:
                 döndür "DilimErisim"
             döndür "IndeksErisim"
-        parantez_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "(")
-        eğer parantez_konum büyük 0 veya parantez_konum eşit 0 ise:
-            döndür "IslevCagri"
-        nokta_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, ".")
         eğer nokta_konum büyük 0 veya nokta_konum eşit 0 ise:
             döndür "AlanErisim"
         döndür "Kimlik"
@@ -502,15 +508,21 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
     eğer tur eşit "IndeksErisim" ise:
         koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
         eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
-            eğer ifade_turu(tokenlar, baslangic, koseli_konum) eşit "Kimlik" ise:
+            hedef_turu olsun ifade_turu(tokenlar, baslangic, koseli_konum)
+            eğer hedef_turu eşit "Kimlik" ise:
                 döndür ilk.deger
+            eğer hedef_turu eşit "IslevCagri" ise:
+                döndür cagri_adi(tokenlar, baslangic, koseli_konum)
             döndür ""
         döndür ilk.deger
     eğer tur eşit "DilimErisim" ise:
         koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
         eğer koseli_konum büyük 0 veya koseli_konum eşit 0 ise:
-            eğer ifade_turu(tokenlar, baslangic, koseli_konum) eşit "Kimlik" ise:
+            hedef_turu olsun ifade_turu(tokenlar, baslangic, koseli_konum)
+            eğer hedef_turu eşit "Kimlik" ise:
                 döndür ilk.deger
+            eğer hedef_turu eşit "IslevCagri" ise:
+                döndür cagri_adi(tokenlar, baslangic, koseli_konum)
             döndür ""
         döndür ilk.deger
     eğer tur eşit "YeniNesne" ise:
@@ -540,7 +552,7 @@ işlev aralik_altlari(tokenlar, baslangic, son, ayirici):
                 eğer derinlik küçük 0 ise:
                     derinlik olsun 0
             değilse:
-                eğer derinlik eşit 0 ve token.deger eşit ayirici ise:
+                eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ayirici ise:
                     eğer parca_baslangic küçük i ise:
                         altlar.ekle(alt_ifade_ozeti(tokenlar, parca_baslangic, i))
                     parca_baslangic olsun i + 1
