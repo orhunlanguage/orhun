@@ -114,6 +114,11 @@ def main() -> int:
         default=str(DEFAULT_FIXTURE_DIR),
         help="Directory containing lexer parity .oh fixtures",
     )
+    parser.add_argument(
+        "--tokens-only",
+        action="store_true",
+        help="Compare only token types and values, ignoring line/column positions",
+    )
     args = parser.parse_args()
 
     binary = Path(args.binary).resolve()
@@ -153,7 +158,8 @@ def main() -> int:
         return 0
 
     for case in cases:
-        compare_file(binary, repo, case, fixture_include_position(case))
+        include_position = False if args.tokens_only else fixture_include_position(case)
+        compare_file(binary, repo, case, include_position)
 
     compare_source(
         binary,
@@ -164,7 +170,8 @@ def main() -> int:
         newline="\r\n",
     )
 
-    print(f"Lexer parity smoke passed ({len(cases)} fixture cases, 1 CRLF inline case).")
+    mode = " token-only" if args.tokens_only else ""
+    print(f"Lexer parity smoke passed ({len(cases)}{mode} fixture cases, 1 CRLF inline case).")
     return 0
 
 

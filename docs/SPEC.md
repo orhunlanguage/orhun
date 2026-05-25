@@ -394,7 +394,9 @@ error tokens. It is a parity target for the C++ lexer, not yet the production
 lexer.
 
 Lexer parity fixtures live in `tests/lexer_parity/` and are compared against the
-C++ lexer through `tests/lexer_parity_smoke.py`.
+C++ lexer through `tests/lexer_parity_smoke.py`. The same smoke can sweep the
+runtime case suite with `--fixtures tests/cases --tokens-only` to guard token
+type/value parity across broader language examples.
 
 ## Orhun-Source Parser Prototype
 

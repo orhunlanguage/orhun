@@ -137,13 +137,26 @@ jobs:
         shell: pwsh
         run: py -3 tests/lexer_parity_smoke.py .\build\orhun_test.exe
 
+      - name: Lexer case token parity (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/lexer_parity_smoke.py .\build\orhun_test.exe --fixtures tests/cases --tokens-only
+
       - name: Lexer parity smoke (Linux)
         if: runner.os == 'Linux'
         run: python3 tests/lexer_parity_smoke.py ./build/orhun_test
 
+      - name: Lexer case token parity (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/lexer_parity_smoke.py ./build/orhun_test --fixtures tests/cases --tokens-only
+
       - name: Lexer parity smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/lexer_parity_smoke.py ./build/orhun_test
+
+      - name: Lexer case token parity (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/lexer_parity_smoke.py ./build/orhun_test --fixtures tests/cases --tokens-only
 
       - name: AST JSON smoke (Windows)
         if: runner.os == 'Windows'
