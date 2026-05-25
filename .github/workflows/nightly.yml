@@ -101,6 +101,12 @@ jobs:
         run: |
           py -3 tests/version_consistency_smoke.py .\build\orhun_test.exe
 
+      - name: Case manifest smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tests/case_manifest_smoke.py
+
       - name: Doctor JSON smoke (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -111,6 +117,11 @@ jobs:
         run: |
           python3 tests/version_consistency_smoke.py ./build/orhun_test
 
+      - name: Case manifest smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 tests/case_manifest_smoke.py
+
       - name: Doctor JSON smoke (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -120,6 +131,11 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           python3 tests/version_consistency_smoke.py ./build/orhun_test
+
+      - name: Case manifest smoke (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python3 tests/case_manifest_smoke.py
 
       - name: Fallback ORH-COMP smoke (Windows)
         if: runner.os == 'Windows'
