@@ -413,7 +413,8 @@ expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
 children, child block command counts, and recursive child block command
 summaries, then compares them against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. Current coverage includes 134 successful AST
-fixtures and 10 parser error fixtures. Error parity covers missing `ise`,
+fixtures and 10 parser error fixtures. Anonymous function summaries include
+their parameter names in `ayrinti`. Error parity covers missing `ise`,
 missing `kez`, required header colons, unknown command typos such as `yzdır 1`,
 non-trailing required parameters after default values, and multiline dictionary
 key errors. Those error fixtures also compare the reported line, expected-token

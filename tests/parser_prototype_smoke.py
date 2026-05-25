@@ -306,6 +306,10 @@ def cxx_expression_detail(expression: dict) -> str:
         return str(expression.get("ad", ""))
     if kind == "DahilEt":
         return str(expression.get("dosya", ""))
+    if kind == "IsimsizIslev":
+        params = expression.get("parametreler")
+        if isinstance(params, list):
+            return ",".join(str(param) for param in params)
     return ""
 
 

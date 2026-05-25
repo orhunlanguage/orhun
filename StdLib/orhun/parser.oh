@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.8"
+surum olsun "0.3.9"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -403,6 +403,39 @@ işlev dahil_et_dosyasi(tokenlar, baslangic, son):
         i olsun i + 1
     döndür ""
 
+işlev isimsiz_islev_parametreleri(tokenlar, baslangic, son):
+    parantez_konum olsun ilk_deger_konumu(tokenlar, baslangic, son, "(")
+    eğer parantez_konum küçük 0 ise:
+        döndür ""
+
+    sonuc olsun ""
+    i olsun parantez_konum + 1
+    derinlik olsun 0
+    parametre_basinda olsun doğru
+
+    sürece i küçük son:
+        token olsun tokenlar[i]
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
+            döndür sonuc
+
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit "," ise:
+            parametre_basinda olsun doğru
+        değilse:
+            eğer derinlik eşit 0 ve parametre_basinda ve token.tur eşit "KIMLIK" ise:
+                eğer uzunluk(sonuc) büyük 0 ise:
+                    sonuc olsun sonuc + ","
+                sonuc olsun sonuc + token.deger
+                parametre_basinda olsun yanlış
+
+            eğer acilis_islemi_mi(token) ise:
+                derinlik olsun derinlik + 1
+            değilse:
+                eğer kapanis_islemi_mi(token) ve derinlik büyük 0 ise:
+                    derinlik olsun derinlik - 1
+        i olsun i + 1
+
+    döndür sonuc
+
 işlev dilim_erisimi_mi(tokenlar, baslangic, son):
     koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
     eğer koseli_konum küçük 0 ise:
@@ -531,6 +564,8 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
         döndür cagri_adi(tokenlar, baslangic, son)
     eğer tur eşit "DahilEt" ise:
         döndür dahil_et_dosyasi(tokenlar, baslangic, son)
+    eğer tur eşit "IsimsizIslev" ise:
+        döndür isimsiz_islev_parametreleri(tokenlar, baslangic, son)
 
     döndür ""
 
