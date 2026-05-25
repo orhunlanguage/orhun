@@ -51,6 +51,16 @@ This target implies:
 - Loop-local copies such as `x olsun i` should produce independent values for
   returned closures.
 
+## Existing Behavior To Migrate
+
+`tests/cases/lambda_capture_shadow.oh` currently documents the pre-capture
+behavior where a returned lambda resolves `x` through the global scope after the
+outer function has returned. Full closure capture will change that expectation:
+the returned lambda should see the outer function's captured local instead.
+
+When closure capture lands, update that fixture and document the migration in
+`docs/MIGRATION_GUIDE.md`.
+
 ## Implementation Slices
 
 1. Define capture semantics in `docs/SPEC.md`.
