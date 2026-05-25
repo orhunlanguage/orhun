@@ -48,6 +48,7 @@ python tests/parser_prototype_smoke.py ./build/orhun_test
 python tests/ast_json_smoke.py ./build/orhun_test
 python tests/case_manifest_smoke.py
 python tests/version_consistency_smoke.py ./build/orhun_test
+python tests/stdlib_version_smoke.py
 python tests/known_gap_smoke.py ./build/orhun_test
 ```
 

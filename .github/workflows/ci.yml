@@ -77,6 +77,11 @@ jobs:
         shell: pwsh
         run: py -3 tests/version_consistency_smoke.py .\build\orhun_test.exe
 
+      - name: Stdlib version smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/stdlib_version_smoke.py
+
       - name: Case manifest smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -90,6 +95,10 @@ jobs:
         if: runner.os == 'Linux'
         run: python3 tests/version_consistency_smoke.py ./build/orhun_test
 
+      - name: Stdlib version smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/stdlib_version_smoke.py
+
       - name: Case manifest smoke (Linux)
         if: runner.os == 'Linux'
         run: python3 tests/case_manifest_smoke.py
@@ -101,6 +110,10 @@ jobs:
       - name: Version consistency smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/version_consistency_smoke.py ./build/orhun_test
+
+      - name: Stdlib version smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/stdlib_version_smoke.py
 
       - name: Case manifest smoke (macOS)
         if: runner.os == 'macOS'
