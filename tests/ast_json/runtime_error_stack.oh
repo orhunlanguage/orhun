@@ -1,0 +1,13 @@
+
+işlev hataYap():
+    # Liste indeksi hatasi (runtime error)
+    l olsun [1, 2]
+    yazdır l[5]
+
+işlev derinlik2():
+    hataYap()
+
+işlev derinlik1():
+    derinlik2()
+
+derinlik1()

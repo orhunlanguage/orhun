@@ -1,0 +1,52 @@
+
+# Tip Donusum Sinirlari Testi
+
+yazdır "--- String + Sayi ---"
+yazdır "Sayi: " + 123
+yazdır 123 + " (metin)"
+yazdır "Sonuc: " + (5 + 10)
+
+yazdır "--- Boolean Coercion (if) ---"
+eğer 1 ise:
+    yazdır "1 dogrudur"
+değilse:
+    yazdır "1 yanlistir"
+
+eğer 0 ise:
+    yazdır "0 dogrudur"
+değilse:
+    yazdır "0 yanlistir"
+
+eğer "dolu" ise:
+    yazdır "dolu string dogrudur"
+değilse:
+    yazdır "dolu string yanlistir"
+
+eğer "" ise:
+    yazdır "bos string dogrudur"
+değilse:
+    yazdır "bos string yanlistir"
+
+eğer [1] ise:
+    yazdır "dolu liste dogrudur"
+değilse:
+    yazdır "dolu liste yanlistir"
+
+eğer [] ise:
+    yazdır "bos liste dogrudur"
+değilse:
+    yazdır "bos liste yanlistir"
+
+yazdır "--- Null/Yok Coercion (Varsa) ---"
+# '0' null yerine kullaniliyordu gc_stress'te.
+# Ancak tip kontrolü yoksa 0 her zaman false'tur.
+# Nesne referansi 0 degilse true olmali.
+
+tip Kutu:
+    deger olsun 0
+
+k olsun yeni Kutu()
+eğer k ise:
+    yazdır "Nesne dogrudur"
+değilse:
+    yazdır "Nesne yanlistir"

@@ -1,0 +1,4 @@
+işlev topla(a, b olsun 2):
+    döndür a + b
+
+yazdır topla()

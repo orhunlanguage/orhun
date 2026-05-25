@@ -1,0 +1,7 @@
+# Liste islemleri testi (VM uyumlu)
+liste olsun [1, 2, 3]
+liste.ekle(4)
+yazdır liste
+yazdır uzunluk(liste)
+yazdır liste[0]
+yazdır liste[3]

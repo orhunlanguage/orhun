@@ -1,0 +1,10 @@
+ciftler olsun [[1, 10], [2, 20], [3, 30]]
+i olsun 0
+toplam olsun 0
+
+sürece i küçük ciftler.uzunluk():
+    a, b olsun ciftler[i]
+    toplam = toplam + a + b
+    i = i + 1
+
+yazdır toplam

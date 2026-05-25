@@ -1,0 +1,11 @@
+işlev f(n):
+    döndür doğru
+
+sayac olsun 0
+i olsun 0
+sürece i küçük 100:
+    eğer f(i) ise:
+        sayac = sayac + 1
+    i = i + 1
+
+yazdır sayac

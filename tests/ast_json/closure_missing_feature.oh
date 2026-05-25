@@ -1,0 +1,84 @@
+
+# Closure ve Scope Edge Case Testleri
+
+yazdır "--- Test 1: Basit Closure ---"
+işlev sayac_uret():
+    adet olsun 0
+    işlev artir():
+        adet = adet + 1
+        döndür adet
+    döndür artir
+
+s1 olsun sayac_uret()
+yazdır s1() # 1
+yazdır s1() # 2
+
+s2 olsun sayac_uret()
+yazdır s2() # 1 (Ayri scope)
+yazdır s1() # 3 (s1 etkilenmemeli)
+
+
+yazdır "--- Test 2: Ic Ice Closure ve Golgeleme ---"
+global_x olsun "global"
+
+işlev dis_fonksiyon(param):
+    dis_x olsun "dis"
+
+    işlev ic_fonksiyon():
+        ic_x olsun "ic"
+        yazdır global_x
+        yazdır dis_x
+        yazdır ic_x
+        yazdır param # Parametreyi yakalama
+
+    döndür ic_fonksiyon
+
+fn olsun dis_fonksiyon("parametre")
+fn()
+
+
+yazdır "--- Test 3: Closure ile Degisken Degistirme ---"
+işlev banka_hesabi(bakiye):
+    işlev para_yatir(miktar):
+        bakiye = bakiye + miktar
+        döndür bakiye
+
+    işlev para_cek(miktar):
+        bakiye = bakiye - miktar
+        döndür bakiye
+
+    döndür [para_yatir, para_cek]
+
+hesap olsun banka_hesabi(100)
+yatir olsun hesap[0]
+cek olsun hesap[1]
+
+yazdır yatir(50) # 150
+yazdır cek(20)   # 130
+yazdır yatir(10) # 140
+
+yazdır "--- Test 4: Dongu Icinde Closure ---"
+işlev fonksiyon_listesi_uret():
+    liste olsun []
+    i olsun 0
+    sürece i küçük 3:
+        # Not: Orhun'da blok scope yoksa veya dongu degiskeni capture sorunluysa hepsi son degeri yazabilir
+        # Bu test dilin davranisini belgeleyecek.
+        # Beklenen: Eger 'capture by reference' ise hepsi 3 yazar.
+        # 'capture by value' veya her iterasyonda yeni scope ise 0, 1, 2 yazar.
+
+        # Simdilik mevcut davranisi gorelim.
+        x olsun i # Yerel kopyalama
+        işlev yazdir_func():
+            yazdır x
+        liste.ekle(yazdir_func)
+        i = i + 1
+    döndür liste
+
+fl olsun fonksiyon_listesi_uret()
+f0 olsun fl[0]
+f0() # 0
+f1 olsun fl[1]
+f1() # 1
+f2 olsun fl[2]
+f2() # 2

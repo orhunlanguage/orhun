@@ -1,0 +1,15 @@
+
+oklu olsun sonuc.ok(42)
+hatali olsun sonuc.hata("ag_hatasi")
+yazdır oklu.ok
+yazdır oklu.deger
+yazdır hatali.ok
+yazdır hatali.hata
+eğer oklu.ok ise:
+    yazdır "tamam"
+değilse:
+    yazdır "yanlis"
+eğer hatali.ok ise:
+    yazdır "yanlis"
+değilse:
+    yazdır "hata"

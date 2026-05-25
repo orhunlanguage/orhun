@@ -1,0 +1,5 @@
+# Metin kacis dizileri testi
+yazdır "satir1\nsatir2"
+yazdır "tab\tboşluk"
+yazdır "tirnak: \""
+yazdır "ters: \\"

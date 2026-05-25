@@ -1,0 +1,5 @@
+veri olsun {"ad": "orhun", "ayar": {"port": 9000}}
+yazdır veri["ad"]
+yazdır veri.ayar["port"]
+veri.ayar.port = 9001
+yazdır veri["ayar"]["port"]

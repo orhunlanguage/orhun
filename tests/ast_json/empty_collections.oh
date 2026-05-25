@@ -1,0 +1,7 @@
+# Bos koleksiyonlar testi
+bos_liste olsun []
+yazdır uzunluk(bos_liste)
+yazdır bos_liste
+
+bos_sozluk olsun {}
+yazdır uzunluk(bos_sozluk)

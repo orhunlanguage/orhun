@@ -1,0 +1,7 @@
+# Sozluk islemleri testi
+kisi olsun { "ad": "Ali", "yas": 25 }
+yazdır kisi["ad"]
+yazdır kisi.yas
+kisi["sehir"] = "Ankara"
+yazdır kisi["sehir"]
+yazdır uzunluk(kisi)

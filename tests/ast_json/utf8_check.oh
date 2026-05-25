@@ -1,0 +1,30 @@
+
+# UTF-8 ve Turkce Karakter Testi
+
+yazdır "--- Uzunluk Testi ---"
+s1 olsun "merhaba"
+s2 olsun "merhaba dünya" # u + nohta
+s3 olsun "ÇŞĞİÖÜçşğüöı" # 12 karakter
+
+yazdır s1 + ": " + uzunluk(s1)
+yazdır s2 + ": " + uzunluk(s2)
+yazdır s3 + ": " + uzunluk(s3)
+
+yazdır "--- Dilimleme (Slicing) Testi ---"
+# UTF-8 slicing: Bayt degil karakter bazli olmali
+yazdır s3[0:2] # ÇŞ
+yazdır s3[2:5] # ĞİÖ
+yazdır s2[8:13] # dünya
+
+yazdır "--- Buyuk/Kucuk Harf Testi ---"
+# Not: Yerlesik stdlib veya string methodlari varsa test edelim.
+# 'sabitMetinMetodAdaylari' icinde "buyuk", "kucuk" vardi.
+m1 olsun "merhaba"
+yazdır m1.buyuk()
+m2 olsun "DÜNYA"
+yazdır m2.kucuk()
+# Turkce karakter destegi var mi gorelim (genelde locale bagli veya ozel impl gerekir)
+m3 olsun "istanbul"
+yazdır m3.buyuk()
+m4 olsun "İSTANBUL"
+yazdır m4.kucuk()

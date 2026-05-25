@@ -1,0 +1,10 @@
+tip Ust:
+    işlev carp(x olsun 2):
+        döndür x * 2
+
+tip Alt(Ust):
+    işlev carp(x olsun 3):
+        döndür ust.carp(x) + 1
+
+n olsun yeni Alt()
+yazdır n.carp()

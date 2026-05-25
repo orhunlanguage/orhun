@@ -1,0 +1,4 @@
+f olsun işlev(x): x * 3
+liste olsun [f(i) için i içinde [1, 2, 3, 4] eğer i büyük 2]
+yazdır liste[0]
+yazdır liste[1]

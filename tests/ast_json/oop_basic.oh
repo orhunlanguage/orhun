@@ -1,0 +1,14 @@
+# OOP temel testi: tip, yeni, benim
+tip Hayvan:
+    ad olsun ""
+    yas olsun 0
+    işlev kur(isim, y):
+        benim.ad olsun isim
+        benim.yas olsun y
+    işlev tanitim():
+        yazdır benim.ad + " (" + benim.yas + " yaşında)"
+
+kedi olsun yeni Hayvan("Pamuk", 3)
+kedi.tanitim()
+yazdır kedi.ad
+yazdır kedi.yas

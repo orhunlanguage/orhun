@@ -1,0 +1,2 @@
+dış_işlev lstrlenA "kernel32.dll" (metin: string) -> int
+yazdır lstrlenA("Orhun")

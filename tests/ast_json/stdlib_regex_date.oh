@@ -1,0 +1,8 @@
+yazdır regex.eslesir("ali-veli-42", "[a-z]+-[a-z]+-[0-9]+")
+yazdır regex.ilk("kodu=90210", "[0-9]+")
+tumler olsun regex.tum("a1 b2 c3", "[a-z][0-9]")
+yazdır uzunluk(tumler)
+yazdır regex.degistir("orhun dili", "dili", "gucu")
+yazdır metin.icerir(tarih.simdi(), "-")
+yazdır metin.icerir(tarih.bugun(), "-")
+yazdır tarih.unix() büyük 0

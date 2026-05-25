@@ -1,0 +1,15 @@
+# Islev dondur testi
+işlev maks(a, b):
+    eğer a büyük b ise:
+        döndür a
+    döndür b
+
+işlev mutlak(x):
+    eğer x küçük 0 ise:
+        döndür 0 - x
+    döndür x
+
+yazdır maks(7, 12)
+yazdır maks(20, 5)
+yazdır mutlak(-8)
+yazdır mutlak(3)

@@ -1,0 +1,13 @@
+dosya.sil("_tmp_orhun_db.json")
+
+veritabani.kaydet("kullanici", { ad: "Ali", seviye: 3 }, "_tmp_orhun_db.json")
+kayit olsun veritabani.oku("kullanici", "_tmp_orhun_db.json")
+yazdır kayit.ad
+yazdır kayit.seviye
+
+anahtarlar olsun veritabani.listele("_tmp_orhun_db.json")
+yazdır uzunluk(anahtarlar)
+yazdır veritabani.sil("kullanici", "_tmp_orhun_db.json")
+yazdır uzunluk(veritabani.listele("_tmp_orhun_db.json"))
+
+dosya.sil("_tmp_orhun_db.json")

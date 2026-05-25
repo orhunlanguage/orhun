@@ -51,8 +51,9 @@ Basari olcutu:
 
 ## Faz 2: Orhun Ile Lexer ve Parser
 
-Durum: aktif; 50 fixture esigi gecildi, recursive block summary parity ve
-recursive expression child parity basladi.
+Durum: aktif; parser prototipi 134 basarili AST fixture ve 10 hata fixture
+seviyesine tasindi. Recursive block summary parity ve recursive expression
+child parity basladi.
 
 Hedefler:
 
@@ -72,7 +73,7 @@ Hedefler:
 
 Basari olcutu:
 
-- En az 50 dil fixture'i iki parser yolunda ayni ara temsili uretir.
+- En az 100 dil fixture'i iki parser yolunda ayni ara temsili uretir.
 - Hata mesajlari Turkce ve ogretici kalir.
 
 ## Faz 3: Orhun Ile Bytecode Derleyici

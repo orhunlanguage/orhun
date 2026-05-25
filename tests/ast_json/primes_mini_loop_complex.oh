@@ -1,0 +1,10 @@
+işlev f(n):
+    i olsun 2
+    sürece (i * i küçük n) veya (i * i eşit n):
+        eğer n % i eşit 0 ise:
+            döndür yanlış
+        i = i + 1
+    döndür doğru
+
+yazdır f(10)
+yazdır f(7)

@@ -1,0 +1,5 @@
+işlev uygula(f, deger):
+    döndür f(deger)
+
+kare olsun işlev(x, k olsun 2): x * k
+yazdır uygula(kare, 5)

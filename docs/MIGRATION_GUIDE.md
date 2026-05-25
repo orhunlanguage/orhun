@@ -129,8 +129,10 @@
 ## 12. Self-hosting: `orhun/parser.oh`
 - `orhun/parser.oh`, Orhun ile yazılan ilk parser prototipidir.
 - Şimdilik üst seviye komut türlerini, satırlarını, ana ifade özetlerini
-  (`tur`, `op`, `ayrinti`, `altlar`), doğrudan alt blok komut sayılarını ve
-  bloklardaki doğrudan çocuk komut özetlerini üretir; `parse --json` AST
-  çıktısıyla fixture bazında karşılaştırılır.
-- İlk temel hata eşleşmeleri olarak `eğer`, `sürece`, `tekrarla`, `işlev`,
-  `tip` ve `deneme` başlıklarındaki eksikler yakalanır.
+  (`tur`, `op`, `ayrinti`, `altlar`), recursive ifade çocuklarını, alt blok
+  komut sayılarını ve recursive çocuk blok komut özetlerini üretir;
+  `parse --json` AST çıktısıyla fixture bazında karşılaştırılır.
+- Hata eşleşmeleri olarak `eğer`, `sürece`, `tekrarla`, `işlev`, `tip` ve
+  `deneme` başlıklarındaki eksikler, tanınmayan komutlar, varsayılan
+  parametreden sonra gelen zorunlu parametreler ve çok satırlı sözlük anahtarı
+  hataları yakalanır.

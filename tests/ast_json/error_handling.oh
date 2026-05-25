@@ -1,0 +1,9 @@
+# Cok satirli deneme/yakala + coklu hata turu
+işlev bolme(a, b):
+    eğer b eşit 0 ise:
+        döndür "hata: sıfıra bölme"
+    döndür a / b
+
+yazdır bolme(10, 2)
+yazdır bolme(10, 0)
+yazdır bolme(15, 3)

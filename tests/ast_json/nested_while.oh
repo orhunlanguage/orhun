@@ -1,0 +1,11 @@
+# Ic ice dongu testi
+toplam olsun 0
+i olsun 0
+sürece i küçük 3:
+    j olsun 0
+    sürece j küçük 3:
+        toplam = toplam + 1
+        j = j + 1
+    i = i + 1
+
+yazdır toplam

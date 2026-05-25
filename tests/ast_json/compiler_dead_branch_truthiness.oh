@@ -1,0 +1,22 @@
+eğer 0 ise:
+    yazdır "hata"
+değilse:
+    yazdır "sayi_falsy"
+
+eğer "" ise:
+    yazdır "hata"
+değilse:
+    yazdır "metin_falsy"
+
+eğer [] ise:
+    yazdır "hata"
+değilse:
+    yazdır "liste_falsy"
+
+sayac olsun 0
+sürece doğru:
+    sayac = sayac + 1
+    eğer sayac büyük 3 ise:
+        kır
+
+yazdır sayac

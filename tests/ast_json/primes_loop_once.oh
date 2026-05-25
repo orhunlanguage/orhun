@@ -1,0 +1,5 @@
+işlev f(n):
+    döndür doğru
+
+eğer f(0) ise:
+    yazdır "ok"

@@ -1,0 +1,9 @@
+# Ozyineleme testi: fibonacci
+işlev fib(n):
+    eğer n küçük 2 ise:
+        döndür n
+    döndür fib(n - 1) + fib(n - 2)
+
+yazdır fib(0)
+yazdır fib(1)
+yazdır fib(10)

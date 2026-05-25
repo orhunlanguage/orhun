@@ -1,0 +1,18 @@
+# OOP metod zinciri testi
+tip Sayac:
+    deger olsun 0
+    işlev kur(baslangic):
+        benim.deger olsun baslangic
+    işlev artir():
+        benim.deger = benim.deger + 1
+    işlev azalt():
+        benim.deger = benim.deger - 1
+    işlev goster():
+        yazdır benim.deger
+
+s olsun yeni Sayac(10)
+s.artir()
+s.artir()
+s.artir()
+s.azalt()
+s.goster()

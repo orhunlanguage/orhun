@@ -1,0 +1,7 @@
+işlev f(n):
+    eğer n küçük 2 ise:
+        döndür yanlış
+    döndür doğru
+
+yazdır f(10)
+yazdır f(1)

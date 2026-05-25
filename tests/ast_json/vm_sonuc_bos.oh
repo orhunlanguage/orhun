@@ -1,0 +1,4 @@
+a olsun sonuc.ok(5)
+b olsun sonuc.hata("x")
+yazdır a.hata
+yazdır b.deger

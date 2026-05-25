@@ -1,0 +1,5 @@
+işlev al():
+    döndür [7, 8]
+
+x, y olsun al()
+yazdır x + y

@@ -1,0 +1,4 @@
+k olsun ffi.yukle("kernel32.dll")
+yazdır ffi.sembol_var_mi(k, "GetCurrentProcessId")
+yazdır ffi.sembol_var_mi(k, "OrhunBoyleFonksiyonYok")
+ffi.bosalt(k)

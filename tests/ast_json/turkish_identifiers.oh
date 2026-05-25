@@ -1,0 +1,10 @@
+# Turkce degisken adi testi
+öğrenciSayısı olsun 42
+sınıfAdı olsun "Matematik"
+yazdır "Sınıf: " + sınıfAdı
+yazdır "Öğrenci: " + öğrenciSayısı
+
+işlev değerHesapla(çarpan, toplanan):
+    döndür çarpan * 10 + toplanan
+
+yazdır değerHesapla(3, 7)

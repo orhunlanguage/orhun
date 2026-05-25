@@ -1,0 +1,17 @@
+# OOP alan degisken testi
+tip Kutu:
+    en olsun 0
+    boy olsun 0
+    işlev kur(e, b):
+        benim.en olsun e
+        benim.boy olsun b
+    işlev alan():
+        döndür benim.en * benim.boy
+    işlev cevre():
+        döndür 2 * (benim.en + benim.boy)
+
+k olsun yeni Kutu(5, 3)
+yazdır k.alan()
+yazdır k.cevre()
+k.en = 10
+yazdır k.alan()

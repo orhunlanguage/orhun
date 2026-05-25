@@ -1,0 +1,6 @@
+# v1.1 json modülü testi
+veri = "{\"ad\": \"Orhun\", \"surum\": 1, \"puanlar\": [10, 20]}"
+nesne = json.coz(veri)
+yazdır "JSON Adı: " + nesne["ad"]
+yazdır "JSON Sürüm: " + nesne["surum"]
+yazdır "İkinci Puan: " + nesne["puanlar"][1]

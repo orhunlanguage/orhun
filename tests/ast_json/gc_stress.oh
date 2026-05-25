@@ -1,0 +1,59 @@
+
+# GC Stress Test
+# Hedef: Döngü içinde sürekli nesne oluşturarak GC'yi tetiklemek ve bellek sızıntısı/çökme olmadığını doğrulamak.
+
+tip Dugum:
+    deger olsun 0
+    sonraki olsun 0
+
+işlev zincir_olustur(uzunluk):
+    bas olsun yeni Dugum()
+    bas.deger = 0
+    simdiki olsun bas
+
+    sayac olsun 1
+    sürece sayac küçük uzunluk:
+        yeni_dugum olsun yeni Dugum()
+        yeni_dugum.deger = sayac
+        simdiki.sonraki = yeni_dugum
+        simdiki = yeni_dugum
+        sayac = sayac + 1
+    döndür bas
+
+yazdır "GC Test 1: Basit Dongu Basliyor..."
+i olsun 0
+sürece i küçük 5000:
+    # Her iterasyonda 100 dugumluk bir liste olusur ve scope disina cikar -> Cop olmali
+    liste olsun zincir_olustur(50)
+    i = i + 1
+yazdır "GC Test 1: Tamamlandi."
+
+yazdır "GC Test 2: Icyice Listeler..."
+j olsun 0
+sürece j küçük 1000:
+    a olsun [1, 2, 3]
+    b olsun {"x": a, "y": "deneme"}
+    c olsun [b, b, b]
+    # c reference count arttirir, loop sonu hepsi serbest kalmali
+    j = j + 1
+yazdır "GC Test 2: Tamamlandi."
+
+# Dairesel Referans Testi (Eğer GC mark-sweep ise temizler, ref-count ise temizleyemez)
+# Orhun'un GC'si mark-sweep oldugundan bunu da test edelim.
+yazdır "GC Test 3: Dairesel Referans..."
+k olsun 0
+sürece k küçük 1000:
+    kok olsun yeni Dugum()
+    kok.deger = "kok"
+
+    cocuk olsun yeni Dugum()
+    cocuk.deger = "cocuk"
+
+    kok.sonraki = cocuk
+    cocuk.sonraki = kok # Daire!
+
+    # kok ve cocuk scope disina cikinca ulasilamaz olmali ve temizlenmeli
+    k = k + 1
+yazdır "GC Test 3: Tamamlandi."
+
+yazdır "Tum GC Testleri Basarili."

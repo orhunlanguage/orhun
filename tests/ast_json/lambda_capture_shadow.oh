@@ -1,0 +1,13 @@
+x olsun 10
+f olsun işlev(y): x + y
+yazdır f(5)
+x = 20
+yazdır f(5)
+
+işlev sar():
+    x olsun 100
+    g olsun işlev(z): x + z
+    döndür g
+
+h olsun sar()
+yazdır h(1)

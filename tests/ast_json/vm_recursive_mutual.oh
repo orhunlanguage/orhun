@@ -1,0 +1,12 @@
+işlev ciftMi(n):
+    eğer n eşit 0 ise:
+        döndür doğru
+    döndür tekMi(n - 1)
+
+işlev tekMi(n):
+    eğer n eşit 0 ise:
+        döndür yanlış
+    döndür ciftMi(n - 1)
+
+yazdır ciftMi(10)
+yazdır tekMi(7)

@@ -1,0 +1,8 @@
+işlev dis(a):
+    döndür işlev(b): a + b
+
+topla5 olsun dis(5)
+yazdır topla5(3)
+
+topla2 olsun dis(2)
+yazdır topla2(4)

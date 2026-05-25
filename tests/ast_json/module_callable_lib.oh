@@ -1,0 +1,9 @@
+deger olsun 10
+
+işlev topla(a, b):
+    döndür a + b
+
+tip Kutu:
+    sayi olsun 0
+    işlev kur(v):
+        benim.sayi olsun v

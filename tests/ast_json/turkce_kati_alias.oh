@@ -1,0 +1,2 @@
+dis_islev lstrlenA "kernel32.dll" (metin: string) - > int
+yazdır 1

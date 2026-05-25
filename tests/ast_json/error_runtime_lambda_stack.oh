@@ -1,0 +1,9 @@
+hataYap olsun işlev(): [1][5]
+
+işlev seviye2():
+    döndür hataYap()
+
+işlev seviye1():
+    döndür seviye2()
+
+yazdır seviye1()

@@ -1,0 +1,12 @@
+# OOP miras zincirleme testi (basitleştirilmiş)
+tip A:
+    işlev kim():
+        yazdır "A"
+
+tip B (A):
+    işlev selamla():
+        yazdır "B selamlar"
+
+nesne olsun yeni B()
+nesne.kim()
+nesne.selamla()

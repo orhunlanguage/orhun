@@ -1,0 +1,5 @@
+işlev f(i, n):
+    döndür (i*i küçük n) veya (i*i eşit n)
+
+yazdır f(2, 5)
+yazdır f(3, 5)

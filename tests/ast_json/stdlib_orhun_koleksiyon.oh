@@ -1,0 +1,20 @@
+koleksiyon olsun dahil_et "orhun/koleksiyon.oh"
+
+yazdır koleksiyon.surum
+yazdır koleksiyon.icerir([1, 2, 3], 2)
+yazdır koleksiyon.icerir([1, 2, 3], 9)
+yazdır koleksiyon.say([1, 2, 1, 3, 1], 1)
+
+cift_mi olsun işlev(x): x % 2 eşit 0
+buyuk_mu olsun işlev(x): x büyük 3
+topla olsun işlev(toplam, x): toplam + x
+
+yazdır koleksiyon.bul([1, 3, 4, 6], cift_mi, 0)
+yazdır koleksiyon.bul([1, 3, 5], cift_mi, 99)
+yazdır koleksiyon.hepsi([2, 4, 6], cift_mi)
+yazdır koleksiyon.hepsi([2, 3, 6], cift_mi)
+yazdır koleksiyon.herhangi([1, 3, 4], buyuk_mu)
+yazdır koleksiyon.herhangi([1, 2, 3], buyuk_mu)
+yazdır koleksiyon.katla([1, 2, 3, 4], 0, topla)
+yazdır koleksiyon.ters([1, 2, 3])
+yazdır koleksiyon.benzersiz([1, 2, 1, 3, 2])

@@ -1,0 +1,111 @@
+parser olsun dahil_et "orhun/parser.oh"
+
+kaynak olsun "işlev topla(a olsun 1, b olsun 2):\n    döndür a + b\n\nsonuc olsun topla(3)\nyazdır sonuc\n"
+sonuc olsun parser.ozetle(kaynak)
+
+yazdır parser.surum
+yazdır sonuc.ok
+yazdır uzunluk(sonuc.komutlar)
+yazdır metin.birlestir(parser.turleri(sonuc), "|")
+
+coklu olsun parser.ozetle("a, b olsun [1, 2]\nyazdır a\n")
+yazdır metin.birlestir(parser.turleri(coklu), "|")
+
+kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\n    yazdır \"hayır\"\n")
+yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
+yazdır json.yaz(kontrol.komutlar[0].bloklar)
+
+zincir_kontrol olsun parser.ozetle("eğer x büyük 20 ise:\n    yazdır \"buyuk\"\ndeğilse eğer x büyük 5 ise:\n    yazdır \"orta\"\ndeğilse:\n    yazdır \"kucuk\"\n")
+yazdır json.yaz(zincir_kontrol.komutlar[0].blok_sayilari)
+yazdır json.yaz(zincir_kontrol.komutlar[0].bloklar)
+
+ifade_kontrol olsun parser.ozetle("yazdır a + b * 2\n")
+yazdır json.yaz(ifade_kontrol.komutlar[0].ifade_ozeti)
+
+koleksiyon_kontrol olsun parser.ozetle("liste olsun [1, 2, 3]\nyazdır [x * 2 için x içinde liste eğer x büyük 1]\n")
+yazdır json.yaz(koleksiyon_kontrol.komutlar[0].ifade_ozeti.altlar)
+yazdır json.yaz(koleksiyon_kontrol.komutlar[1].ifade_ozeti.altlar)
+
+erisim_kontrol olsun parser.ozetle("ilk olsun liste[0]\nad olsun sozluk?.ad\nnesne olsun yeni Kutu(3)\n")
+yazdır json.yaz(erisim_kontrol.komutlar[0].ifade_ozeti.altlar)
+yazdır json.yaz(erisim_kontrol.komutlar[1].ifade_ozeti.altlar)
+yazdır json.yaz(erisim_kontrol.komutlar[2].ifade_ozeti.altlar)
+
+dilim_kontrol olsun parser.ozetle("parca olsun liste[1:3]\nbaslar olsun liste[:2]\nsonlar olsun liste[1:]\n")
+yazdır json.yaz(dilim_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(dilim_kontrol.komutlar[1].ifade_ozeti)
+yazdır json.yaz(dilim_kontrol.komutlar[2].ifade_ozeti)
+
+alan_kontrol olsun parser.ozetle("alan olsun nesne.deger\nokuma olsun nesne.oku()\n")
+yazdır json.yaz(alan_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(alan_kontrol.komutlar[1].ifade_ozeti)
+
+ozel_alan_kontrol olsun parser.ozetle("benimalan olsun benim.deger\nbenimokuma olsun benim.oku()\nustalan olsun ust.kur\nustokuma olsun ust.kur(1)\n")
+yazdır json.yaz(ozel_alan_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(ozel_alan_kontrol.komutlar[1].ifade_ozeti)
+yazdır json.yaz(ozel_alan_kontrol.komutlar[2].ifade_ozeti)
+yazdır json.yaz(ozel_alan_kontrol.komutlar[3].ifade_ozeti)
+
+cagri_kontrol olsun parser.ozetle("sonuc olsun topla(4, a + 1)\nikiyle olsun işlev(x): x * 2\n")
+yazdır json.yaz(cagri_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(cagri_kontrol.komutlar[1].ifade_ozeti)
+
+tekli_kontrol olsun parser.ozetle("negatif olsun -5\nters olsun değil yanlış\n")
+yazdır json.yaz(tekli_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(tekli_kontrol.komutlar[1].ifade_ozeti)
+
+paralel_kontrol olsun parser.ozetle("gorev olsun paralel yap: yazdır \"sur\"\n")
+yazdır json.yaz(paralel_kontrol.komutlar[0].ifade_ozeti)
+
+ozel_ifade_kontrol olsun parser.ozetle("yanit olsun sor \"Ad?\"\ntemel olsun dahil_et \"orhun/temel.oh\"\n")
+yazdır json.yaz(ozel_ifade_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(ozel_ifade_kontrol.komutlar[1].ifade_ozeti)
+
+ifade_komut_kontrol olsun parser.ozetle("sor \"Ad?\"\ndoğru\ndeğil yanlış\nyeni Kutu(1)\nbenim.deger\nust.kur\nparalel yap: yazdır \"sur\"\n")
+yazdır metin.birlestir(parser.turleri(ifade_komut_kontrol), "|")
+yazdır json.yaz(ifade_komut_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[1].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[2].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[3].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[4].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[5].ifade_ozeti)
+yazdır json.yaz(ifade_komut_kontrol.komutlar[6].ifade_ozeti)
+
+islem_ifade_komut_kontrol olsun parser.ozetle("-5\n[1, 2]\n{\"ad\": \"orhun\"}\n(1 + 2)\n")
+yazdır metin.birlestir(parser.turleri(islem_ifade_komut_kontrol), "|")
+yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[1].ifade_ozeti)
+yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[2].ifade_ozeti)
+yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[3].ifade_ozeti)
+
+hata olsun parser.ozetle("@\n")
+yazdır hata.ok
+yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")
+
+yazim_hata olsun parser.ozetle("yzdır 1\n")
+yazdır yazim_hata.ok
+yazdır metin.icerir(yazim_hata.hata.mesaj, "yazdır")
+
+baslik_hata olsun parser.ozetle("eğer doğru\n")
+yazdır baslik_hata.ok
+yazdır metin.icerir(baslik_hata.hata.mesaj, "ise")
+
+surece_hata olsun parser.ozetle("sürece doğru\n")
+yazdır surece_hata.ok
+yazdır metin.icerir(surece_hata.hata.mesaj, ":")
+
+tekrarla_hata olsun parser.ozetle("tekrarla 3\n")
+yazdır tekrarla_hata.ok
+yazdır metin.icerir(tekrarla_hata.hata.mesaj, "kez")
+
+islev_hata olsun parser.ozetle("işlev ana()\n")
+yazdır islev_hata.ok
+yazdır metin.icerir(islev_hata.hata.mesaj, ":")
+
+tip_hata olsun parser.ozetle("tip Kutu\n")
+yazdır tip_hata.ok
+yazdır metin.icerir(tip_hata.hata.mesaj, ":")
+
+deneme_hata olsun parser.ozetle("deneme\n")
+yazdır deneme_hata.ok
+yazdır metin.icerir(deneme_hata.hata.mesaj, ":")

@@ -1,0 +1,4 @@
+işlev test(a, b):
+    döndür a % b
+
+yazdır test(10, 3)

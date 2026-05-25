@@ -1,0 +1,3 @@
+liste olsun [10, 20, 30, 40, 50]
+yazdır liste[-3:][0]
+yazdır liste[:-1][3]

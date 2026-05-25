@@ -1,0 +1,15 @@
+tip A:
+    işlev selam(ad olsun "A"):
+        döndür "A-" + ad
+
+tip B(A):
+    işlev selam(ad olsun "B"):
+        döndür ust.selam(ad) + "-B"
+
+tip C(B):
+    işlev selam(ad olsun "C"):
+        döndür ust.selam(ad) + "-C"
+
+c olsun yeni C()
+yazdır c.selam()
+yazdır c.selam("X")

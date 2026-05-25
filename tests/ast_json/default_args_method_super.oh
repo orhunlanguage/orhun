@@ -1,0 +1,11 @@
+tip A:
+    işlev selam(x olsun 4):
+        döndür x * 2
+
+tip B(A):
+    işlev selam(x olsun 6):
+        döndür ust.selam(x) + 1
+
+b olsun yeni B()
+yazdır b.selam()
+yazdır b.selam(9)

@@ -1,0 +1,16 @@
+# Ic ice islev testi (closure kullanmadan)
+işlev dis(x):
+    işlev ic(y):
+        döndür y + 5
+    döndür ic(x)
+
+yazdır dis(10)
+
+işlev ust_islem(a, b):
+    işlev topla_it(p, q):
+        döndür p + q
+    işlev carp_it(p, q):
+        döndür p * q
+    döndür topla_it(a, b) + carp_it(a, b)
+
+yazdır ust_islem(3, 4)

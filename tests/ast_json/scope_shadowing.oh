@@ -1,0 +1,8 @@
+# Degisken kapsami testi
+x olsun 1
+işlev degistir():
+    x olsun 99
+    yazdır x
+
+degistir()
+yazdır x

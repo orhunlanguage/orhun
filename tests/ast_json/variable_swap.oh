@@ -1,0 +1,17 @@
+# Coklu atama ve degisken guncelleme testi
+a olsun 1
+b olsun 2
+c olsun 3
+
+# swap benzeri islem
+gecici olsun a
+a = b
+b = gecici
+yazdır a
+yazdır b
+
+# bileşik güncelleme
+x olsun 10
+x = x + 5
+x = x * 2
+yazdır x

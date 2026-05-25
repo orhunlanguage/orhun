@@ -1,0 +1,4 @@
+kutuphane olsun ffi.yukle("kernel32.dll")
+komut_satiri olsun ffi.cagir_metin(kutuphane, "GetCommandLineA")
+yazdır uzunluk(komut_satiri) büyük 0
+ffi.bosalt(kutuphane)

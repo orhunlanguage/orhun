@@ -1,0 +1,28 @@
+
+# StdLib Hata Yonetimi Testi
+
+yazdır "--- Dosya Okuma Hatasi ---"
+# Varolmayan dosya okuma
+# Orhun VM'i hata firlatmali ve try-catch ile yakalanmali
+deneme:
+    dosya.oku("olmayan_dosya_xyz_123.txt")
+yakala hata:
+    yazdır "Hata yakalandi: "
+    # Hata mesaji "Dosya acilamadi" veya benzeri icermeli
+    # Tam metni kontrol etmiyoruz cunku isletim sistemine gore degisebilir
+    yazdır metin.icerir(hata, "dosya") veya metin.icerir(hata, "File")
+
+yazdır "--- Dosya Yazma (Gecersiz Yol) ---"
+# Gecersiz karakterli dosya adi
+deneme:
+    dosya.yaz("?/|\\<>*.txt", "deneme")
+yakala hata:
+    yazdır "Hata yakalandi (Yazma)"
+
+yazdır "--- JSON Hatasi ---"
+deneme:
+    json.coz("{gucersiz json}")
+yakala hata:
+    yazdır "JSON hatasi yakalandi"
+
+yazdır "--- Test Bitti ---"
