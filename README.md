@@ -163,6 +163,7 @@ self-hosting plan.
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Language specification: `docs/SPEC.md`
+- Closure/capture plan: `docs/CLOSURE_CAPTURE_PLAN.md`
 - Release channels: `docs/RELEASE_CHANNELS.md`
 - Security policy: `SECURITY.md`
 
