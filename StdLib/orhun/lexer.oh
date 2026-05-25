@@ -4,7 +4,7 @@
 # ifade etmeye baslar. Metin islemleri simdilik VM'in bayt tabanli string
 # modelini kullanir; token degerleri yine kaynak metindeki UTF-8'i korur.
 
-surum olsun "0.1.0"
+surum olsun "0.1.1"
 satir_donusu olsun json.coz("\"\\r\"")
 
 anahtarlar olsun []
@@ -69,7 +69,7 @@ işlev satir_sonu_mi(k):
 işlev islem_mi(k):
     eğer k eşit "" ise:
         döndür yanlış
-    döndür metin.icerir("+-*/%=()[]{}.,:?", k)
+    döndür metin.icerir("+-*/%=>()[]{}.,:?", k)
 
 işlev bilinen_gecersiz_mi(k):
     eğer k eşit "" ise:
