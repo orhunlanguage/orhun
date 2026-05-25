@@ -31,6 +31,10 @@ yazdır json.yaz(erisim_kontrol.komutlar[0].ifade_ozeti.altlar)
 yazdır json.yaz(erisim_kontrol.komutlar[1].ifade_ozeti.altlar)
 yazdır json.yaz(erisim_kontrol.komutlar[2].ifade_ozeti.altlar)
 
+literal_postfix_kontrol olsun parser.ozetle("ilk olsun [1, 2][0]\nad olsun {\"ad\": \"orhun\"}.ad\n")
+yazdır json.yaz(literal_postfix_kontrol.komutlar[0].ifade_ozeti)
+yazdır json.yaz(literal_postfix_kontrol.komutlar[1].ifade_ozeti)
+
 dilim_kontrol olsun parser.ozetle("parca olsun liste[1:3]\nbaslar olsun liste[:2]\nsonlar olsun liste[1:]\n")
 yazdır json.yaz(dilim_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(dilim_kontrol.komutlar[1].ifade_ozeti)

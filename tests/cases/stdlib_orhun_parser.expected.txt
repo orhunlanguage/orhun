@@ -13,6 +13,8 @@ CokluAtama|Yazdir
 [{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"0","op":"","tur":"Sayi"}]
 [{"altlar":[],"ayrinti":"sozluk","op":"","tur":"Kimlik"}]
 [{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}]
+{"altlar":[{"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"","op":"","tur":"Liste"},{"altlar":[],"ayrinti":"0","op":"","tur":"Sayi"}],"ayrinti":"","op":"","tur":"IndeksErisim"}
+{"altlar":[{"altlar":[{"altlar":[],"ayrinti":"orhun","op":"","tur":"Metin"}],"ayrinti":"","op":"","tur":"Sozluk"}],"ayrinti":"ad","op":"","tur":"AlanErisim"}
 {"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}],"ayrinti":"liste","op":"","tur":"DilimErisim"}
 {"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"liste","op":"","tur":"DilimErisim"}
 {"altlar":[{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"liste","op":"","tur":"DilimErisim"}
