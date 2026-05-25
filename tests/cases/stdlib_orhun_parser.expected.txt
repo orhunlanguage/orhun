@@ -1,4 +1,4 @@
-0.3.9
+0.3.10
 1
 3
 IslevTanim|Atama|Yazdir
@@ -23,8 +23,8 @@ CokluAtama|Yazdir
 {"altlar":[],"ayrinti":"kur","op":"","tur":"UstErisim"}
 {"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"ust.kur","op":"","tur":"IslevCagri"}
 {"altlar":[{"altlar":[],"ayrinti":"4","op":"","tur":"Sayi"},{"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}],"ayrinti":"topla","op":"","tur":"IslevCagri"}
-{"altlar":[],"ayrinti":"x","op":"","tur":"IsimsizIslev"}
-{"altlar":[],"ayrinti":"a,b","op":"","tur":"IsimsizIslev"}
+{"altlar":[{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"*","op":"*","tur":"IkiliIslem"}],"ayrinti":"x","op":"","tur":"IsimsizIslev"}
+{"altlar":[{"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"b","op":"","tur":"Kimlik"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}],"ayrinti":"a,b","op":"","tur":"IsimsizIslev"}
 {"altlar":[{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"-","op":"-","tur":"TekliIslem"}
 {"altlar":[{"altlar":[],"ayrinti":"yanlış","op":"","tur":"Mantik"}],"ayrinti":"değil","op":"değil","tur":"TekliIslem"}
 {"altlar":[],"ayrinti":"","op":"","tur":"ParalelYap"}

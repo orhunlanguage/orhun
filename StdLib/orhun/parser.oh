@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.9"
+surum olsun "0.3.10"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -304,6 +304,53 @@ işlev acilis_islemi_mi(token):
 işlev kapanis_islemi_mi(token):
     döndür token.tur eşit "ISLEM" ve (token.deger eşit ")" veya token.deger eşit "]" veya token.deger eşit "}")
 
+işlev eslesen_kapanis_konumu(tokenlar, acilis, son):
+    ilk olsun guvenli_token(tokenlar, acilis)
+    kapanis olsun ""
+    eğer ilk.deger eşit "(" ise:
+        kapanis olsun ")"
+    eğer ilk.deger eşit "[" ise:
+        kapanis olsun "]"
+    eğer ilk.deger eşit "{" ise:
+        kapanis olsun "}"
+    eğer uzunluk(kapanis) eşit 0 ise:
+        döndür -1
+
+    i olsun acilis
+    derinlik olsun 0
+    sürece i küçük son:
+        token olsun tokenlar[i]
+        eğer token.tur eşit "ISLEM" ve token.deger eşit ilk.deger ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer token.tur eşit "ISLEM" ve token.deger eşit kapanis ise:
+                derinlik olsun derinlik - 1
+                eğer derinlik eşit 0 ise:
+                    döndür i
+        i olsun i + 1
+
+    döndür -1
+
+işlev literal_postfix_turu(tokenlar, baslangic, son):
+    kapanis olsun eslesen_kapanis_konumu(tokenlar, baslangic, son)
+    eğer kapanis küçük 0 veya kapanis + 1 büyük son - 1 ise:
+        döndür ""
+
+    sonraki olsun guvenli_token(tokenlar, kapanis + 1)
+    eğer sonraki.tur eşit_değil "ISLEM" ise:
+        döndür ""
+    eğer sonraki.deger eşit "[" ise:
+        iki_nokta olsun aralikta_deger_konumu(tokenlar, kapanis + 2, son - 1, ":")
+        eğer iki_nokta büyük 0 veya iki_nokta eşit 0 ise:
+            döndür "DilimErisim"
+        döndür "IndeksErisim"
+    eğer sonraki.deger eşit "?" ise:
+        döndür "GuvenliAlanErisim"
+    eğer sonraki.deger eşit "." ise:
+        döndür "AlanErisim"
+
+    döndür ""
+
 işlev operatoru_grupta_bul(tokenlar, baslangic, son, grup):
     konum olsun operator_konumu_grupta_bul(tokenlar, baslangic, son, grup)
     eğer konum küçük 0 ise:
@@ -453,11 +500,17 @@ işlev ifade_turu(tokenlar, baslangic, son):
     ilk olsun guvenli_token(tokenlar, baslangic)
 
     eğer ilk.tur eşit "ISLEM" ve ilk.deger eşit "[" ise:
+        postfix_tur olsun literal_postfix_turu(tokenlar, baslangic, son)
+        eğer uzunluk(postfix_tur) büyük 0 ise:
+            döndür postfix_tur
         eğer aralikta_deger_var_mi(tokenlar, baslangic, son, "için") ise:
             döndür "ListeUretec"
         döndür "Liste"
 
     eğer ilk.tur eşit "ISLEM" ve ilk.deger eşit "{" ise:
+        postfix_tur olsun literal_postfix_turu(tokenlar, baslangic, son)
+        eğer uzunluk(postfix_tur) büyük 0 ise:
+            döndür postfix_tur
         döndür "Sozluk"
 
     eğer ilk.tur eşit "ANAHTAR_KELIME" ve ilk.deger eşit "işlev" ise:
@@ -709,6 +762,29 @@ işlev sor_altlari(tokenlar, baslangic, son):
         altlar.ekle(alt_ifade_ozeti(tokenlar, baslangic + 1, son))
     döndür altlar
 
+işlev isimsiz_islev_govde_baslangici(tokenlar, baslangic, son):
+    i olsun baslangic
+    derinlik olsun 0
+    sürece i küçük son:
+        token olsun tokenlar[i]
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ":" ise:
+            döndür i + 1
+
+        eğer acilis_islemi_mi(token) ise:
+            derinlik olsun derinlik + 1
+        değilse:
+            eğer kapanis_islemi_mi(token) ve derinlik büyük 0 ise:
+                derinlik olsun derinlik - 1
+        i olsun i + 1
+
+    döndür -1
+
+işlev isimsiz_islev_altlari(tokenlar, baslangic, son):
+    govde_baslangic olsun isimsiz_islev_govde_baslangici(tokenlar, baslangic, son)
+    eğer govde_baslangic küçük 0 veya govde_baslangic büyük son - 1 ise:
+        döndür []
+    döndür [alt_ifade_ozeti(tokenlar, govde_baslangic, son)]
+
 işlev ifade_altlari(tokenlar, baslangic, son, tur):
     eğer dis_parantezle_sarili_mi(tokenlar, baslangic, son) ise:
         döndür ifade_altlari(tokenlar, baslangic + 1, son - 1, tur)
@@ -741,6 +817,8 @@ işlev ifade_altlari(tokenlar, baslangic, son, tur):
         altlar olsun tekli_altlari(tokenlar, baslangic, son)
     eğer tur eşit "Sor" ise:
         altlar olsun sor_altlari(tokenlar, baslangic, son)
+    eğer tur eşit "IsimsizIslev" ise:
+        altlar olsun isimsiz_islev_altlari(tokenlar, baslangic, son)
     döndür altlar
 
 işlev ifade_ozeti(tokenlar, baslangic, son):

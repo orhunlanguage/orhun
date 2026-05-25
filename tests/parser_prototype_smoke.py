@@ -268,6 +268,18 @@ def cxx_expression_children(expression: dict) -> list[dict]:
         args = expression.get("argumanlar")
         if isinstance(args, list):
             return [cxx_expression_summary(arg) for arg in args if isinstance(arg, dict)]
+    if expression.get("tur") == "IsimsizIslev":
+        body = expression.get("govde")
+        if isinstance(body, dict):
+            commands = body.get("komutlar")
+            if isinstance(commands, list):
+                return [
+                    cxx_expression_summary(command.get("ifade"))
+                    for command in commands
+                    if isinstance(command, dict)
+                    and command.get("tur") == "Dondur"
+                    and isinstance(command.get("ifade"), dict)
+                ]
     return []
 
 
