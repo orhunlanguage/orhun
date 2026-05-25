@@ -1,0 +1,8 @@
+ust:
+    # comment-only indented line
+    x olsun 1
+
+    ic:
+        yaz x
+    # comment before dedent
+sonuc olsun x
