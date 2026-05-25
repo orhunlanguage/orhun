@@ -5,6 +5,10 @@ closure capture semantics are not locked yet. The active known-gap fixture is:
 
 - `tests/cases/closure_missing_feature.oh`
 
+The current known-gap guard is:
+
+- `tests/known_gap_smoke.py`
+
 Current VM/interpreter behavior fails at the first captured outer local:
 
 ```text
@@ -50,8 +54,7 @@ This target implies:
 ## Implementation Slices
 
 1. Define capture semantics in `docs/SPEC.md`.
-2. Add a non-default known-gap test runner or promote the fixture once VM and
-   interpreter behavior match.
+2. Promote the known-gap fixture once VM and interpreter behavior match.
 3. Implement interpreter capture cells first to clarify semantics.
 4. Implement VM closure/upvalue storage with GC marking.
 5. Add parity tests for nested functions, anonymous functions, mutation, and

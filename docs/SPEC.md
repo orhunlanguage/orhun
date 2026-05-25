@@ -463,6 +463,17 @@ Until `1.0`, Orhun may change quickly, but changes should follow these rules:
 - Any behavior needed for self-hosting must be documented here before it is
   depended on by Orhun-written tooling.
 
+## Closure Capture Status
+
+Nested functions and anonymous functions are parsed and callable, but returned
+closures do not yet keep outer local variables alive. The tracked known-gap
+fixture is `tests/cases/closure_missing_feature.oh`, guarded by
+`tests/known_gap_smoke.py`.
+
+The intended capture model is documented in `docs/CLOSURE_CAPTURE_PLAN.md` and
+must be implemented consistently in both the interpreter and VM before the
+fixture is promoted to the normal runtime suite.
+
 ## Self-Hosting Implications
 
 This specification is the baseline for future Orhun-written components:
