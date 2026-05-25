@@ -164,6 +164,7 @@ self-hosting plan.
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Language specification: `docs/SPEC.md`
 - Closure/capture plan: `docs/CLOSURE_CAPTURE_PLAN.md`
+- Versioning policy: `docs/VERSIONING.md`
 - Release channels: `docs/RELEASE_CHANNELS.md`
 - Security policy: `SECURITY.md`
 
