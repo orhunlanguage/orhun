@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.7"
+surum olsun "0.3.8"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -822,6 +822,58 @@ işlev taninmayan_komut_hatasi(tokenlar, konum):
         döndür "Tanınmayan komut: '" + token.deger + "'"
     döndür ""
 
+işlev islev_parametre_sirasi_hatasi(tokenlar, konum):
+    parantez_konum olsun deger_konumu(tokenlar, konum + 1, "(")
+    eğer parantez_konum küçük 0 ise:
+        döndür ""
+
+    i olsun parantez_konum + 1
+    derinlik olsun 0
+    varsayilan_goruldu olsun yanlış
+    parametre_goruldu olsun yanlış
+    parametre_varsayilanli olsun yanlış
+    parametre_basinda olsun doğru
+
+    sürece i küçük uzunluk(tokenlar):
+        token olsun guvenli_token(tokenlar, i)
+        eğer satir_sonu_mu(token) ise:
+            döndür ""
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
+            eğer parametre_goruldu ve değil parametre_varsayilanli ve varsayilan_goruldu ise:
+                döndür "Varsayılan değerli parametrelerden sonra zorunlu parametre gelemez."
+            döndür ""
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit "," ise:
+            eğer parametre_goruldu ve değil parametre_varsayilanli ve varsayilan_goruldu ise:
+                döndür "Varsayılan değerli parametrelerden sonra zorunlu parametre gelemez."
+            parametre_goruldu olsun yanlış
+            parametre_varsayilanli olsun yanlış
+            parametre_basinda olsun doğru
+        değilse:
+            eğer derinlik eşit 0 ve parametre_basinda ve token.tur eşit "KIMLIK" ise:
+                parametre_goruldu olsun doğru
+                parametre_basinda olsun yanlış
+            eğer derinlik eşit 0 ve token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "olsun" ise:
+                parametre_varsayilanli olsun doğru
+                varsayilan_goruldu olsun doğru
+                parametre_basinda olsun yanlış
+            eğer acilis_islemi_mi(token) ise:
+                derinlik olsun derinlik + 1
+            değilse:
+                eğer kapanis_islemi_mi(token) ve derinlik büyük 0 ise:
+                    derinlik olsun derinlik - 1
+        i olsun i + 1
+    döndür ""
+
+işlev cok_satirli_sozluk_hatasi(tokenlar, konum):
+    baslangic olsun atama_ifade_baslangici(tokenlar, konum)
+    eğer baslangic küçük 0 ise:
+        baslangic olsun konum
+    ilk olsun guvenli_token(tokenlar, baslangic)
+    sonraki olsun guvenli_token(tokenlar, baslangic + 1)
+    eğer ilk.tur eşit "ISLEM" ve ilk.deger eşit "{" ve satir_sonu_mu(sonraki) ise:
+        döndür "Sözlük anahtarı bekleniyor (kimlik veya metin)."
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     taninmayan_hata olsun taninmayan_komut_hatasi(tokenlar, konum)
@@ -840,6 +892,9 @@ işlev baslik_hatasi(tokenlar, konum):
         ad_token olsun guvenli_token(tokenlar, konum + 1)
         eğer ad_token.tur eşit_değil "KIMLIK" ise:
             döndür "'işlev' başlığında işlev adı bekleniyor"
+        parametre_hata olsun islev_parametre_sirasi_hatasi(tokenlar, konum)
+        eğer uzunluk(parametre_hata) büyük 0 ise:
+            döndür parametre_hata
         eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
             döndür "'işlev' başlığından sonra ':' bekleniyor"
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tip" ise:
@@ -848,6 +903,9 @@ işlev baslik_hatasi(tokenlar, konum):
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "deneme" ise:
         eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
             döndür "'deneme' başlığından sonra ':' bekleniyor"
+    sozluk_hata olsun cok_satirli_sozluk_hatasi(tokenlar, konum)
+    eğer uzunluk(sozluk_hata) büyük 0 ise:
+        döndür sozluk_hata
     döndür ""
 
 işlev blok_ozeti(tokenlar, konum):

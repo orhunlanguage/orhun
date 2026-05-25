@@ -1,0 +1,10 @@
+# ast-error
+islemler olsun {
+    "iki_kat": işlev(x): x * 2,
+    "uc_kat": işlev(x): x * 3
+}
+
+f olsun islemler["iki_kat"]
+g olsun islemler["uc_kat"]
+yazdır f(4)
+yazdır g(3)

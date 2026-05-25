@@ -1,0 +1,5 @@
+# ast-error
+işlev hatali(a olsun 1, b):
+    döndür a + b
+
+yazdır hatali(1, 2)
