@@ -50,6 +50,9 @@ cagri_kontrol olsun parser.ozetle("sonuc olsun topla(4, a + 1)\nikiyle olsun iş
 yazdır json.yaz(cagri_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(cagri_kontrol.komutlar[1].ifade_ozeti)
 
+lambda_param_kontrol olsun parser.ozetle("f olsun işlev(a, b olsun 2): a + b\n")
+yazdır json.yaz(lambda_param_kontrol.komutlar[0].ifade_ozeti)
+
 tekli_kontrol olsun parser.ozetle("negatif olsun -5\nters olsun değil yanlış\n")
 yazdır json.yaz(tekli_kontrol.komutlar[0].ifade_ozeti)
 yazdır json.yaz(tekli_kontrol.komutlar[1].ifade_ozeti)
