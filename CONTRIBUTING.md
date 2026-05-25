@@ -33,8 +33,14 @@ bash tests/run_tests.sh g++ build/orhun_test
 bash tests/vm_parity.sh g++ build/orhun_test
 ```
 
-For self-hosting, CI, fixture, or release metadata changes, also run the
-relevant smoke tests:
+For self-hosting, CI, fixture, or release metadata changes, run the roadmap
+smoke aggregate:
+
+```bash
+python tests/roadmap_smoke.py ./build/orhun_test
+```
+
+If you need to isolate one area, run the relevant smoke tests directly:
 
 ```bash
 python tests/lexer_parity_smoke.py ./build/orhun_test --fixtures tests/cases --tokens-only

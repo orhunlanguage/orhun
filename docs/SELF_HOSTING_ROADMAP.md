@@ -75,6 +75,8 @@ Basari olcutu:
 
 - En az 100 dil fixture'i iki parser yolunda ayni ara temsili uretir.
 - Hata mesajlari Turkce ve ogretici kalir.
+- Yerel gelistirmede `python tests/roadmap_smoke.py ./build/orhun_test`
+  self-hosting, fixture, surum ve bilinen-gap kontrollerini birlikte gecirir.
 
 ## Faz 3: Orhun Ile Bytecode Derleyici
 
