@@ -1,0 +1,9 @@
+# ast: IslevTanim,Atama,Yazdir
+# Capture kullanmadan isimli ic islev dondurme
+işlev sec():
+    işlev cevap():
+        döndür 42
+    döndür cevap
+
+f olsun sec()
+yazdır f()
