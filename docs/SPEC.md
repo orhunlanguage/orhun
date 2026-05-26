@@ -432,6 +432,7 @@ Important commands:
 
 ```bash
 orhun dosya.oh
+orhun yorumla dosya.oh
 orhun vm-kati dosya.oh
 orhun doctor
 orhun doctor --json

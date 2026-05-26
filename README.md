@@ -98,6 +98,12 @@ Strict VM mode:
 orhun vm-kati dosya.oh
 ```
 
+Interpreter-only mode for runtime diagnostics:
+
+```bash
+orhun yorumla dosya.oh
+```
+
 Project health summary:
 
 ```bash

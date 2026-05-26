@@ -2296,6 +2296,18 @@ int dosyaCalistirVM(const std::string &dosyaYolu, bool katiMod) {
   return 0;
 }
 
+int dosyaCalistirYorumlayici(const std::string &dosyaYolu) {
+  if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
+    throw std::runtime_error(
+        "Hata: yorumla komutu icin .oh dosyasi bekleniyor.");
+  }
+
+  const std::string kod = dosyaOku(dosyaYolu);
+  Interpreter yorumlayici;
+  kodCalistir(kod, yorumlayici);
+  return 0;
+}
+
 template <typename F> double tekOlcumMilisaniye(F &&fonksiyon) {
   const auto bas = std::chrono::steady_clock::now();
   fonksiyon();
@@ -4221,6 +4233,7 @@ int main(int argc, char *argv[]) {
       return deger == "fmt" || deger == "lex" || deger == "tokenler" ||
              deger == "parse" || deger == "ast" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
+             deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
              deger == "lint" || deger == "lsp" || deger == "doctor" ||
              deger == "surum";
@@ -4471,6 +4484,14 @@ int main(int argc, char *argv[]) {
             "Hata: vm-kati komutu icin .oh dosyasi bekleniyor.");
       }
       return dosyaCalistirVM(argv[2], true);
+    }
+
+    if (komut == "yorumla") {
+      if (argc < 3) {
+        throw std::runtime_error(
+            "Hata: yorumla komutu icin .oh dosyasi bekleniyor.");
+      }
+      return dosyaCalistirYorumlayici(argv[2]);
     }
 
     if (komut == "obc") {

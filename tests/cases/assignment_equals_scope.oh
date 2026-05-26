@@ -3,6 +3,7 @@ x olsun 1
 
 işlev global_degistir():
     x = 5
+    döndür 0
 
 global_degistir()
 yazdır x
