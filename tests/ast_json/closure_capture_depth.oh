@@ -1,0 +1,7 @@
+# ast: IslevTanim
+işlev dis(a):
+    işlev orta(b):
+        işlev ic(c):
+            döndür a + b + c
+        döndür ic
+    döndür orta
