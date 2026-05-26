@@ -16,15 +16,15 @@ def main() -> int:
 
     cases = {
         repo / "tests" / "ast_json" / "lambda_capture_shadow.oh": {
-            "<program>.<lambda@2>": (set(), set()),
-            "<program>.sar.<lambda@9>": ({"x"}, set()),
+            "<program>.<lambda@2>": (set(), set(), {}),
+            "<program>.sar.<lambda@9>": ({"x"}, set(), {"x": 1}),
         },
         repo / "tests" / "ast_json" / "lambda_nested_return.oh": {
-            "<program>.dis.<lambda@2>": ({"a"}, set()),
+            "<program>.dis.<lambda@2>": ({"a"}, set(), {"a": 1}),
         },
         repo / "tests" / "ast_json" / "lambda_composed.oh": {
-            "<program>.<lambda@2>": (set(), set()),
-            "<program>.<lambda@3>": (set(), set()),
+            "<program>.<lambda@2>": (set(), set(), {}),
+            "<program>.<lambda@3>": (set(), set(), {}),
         },
     }
 
@@ -32,7 +32,7 @@ def main() -> int:
     for source, expected in cases.items():
         require(source.exists(), f"Lambda capture fixture not found: {source}")
         results = analyze_file(binary, repo, source)
-        for path, (captures, mutated_captures) in expected.items():
+        for path, (captures, mutated_captures, capture_depths) in expected.items():
             require(path in results, f"{source}: missing lambda path {path}")
             require(
                 results[path].captures == captures,
@@ -46,6 +46,11 @@ def main() -> int:
                 f"expected={sorted(mutated_captures)} "
                 f"actual={sorted(results[path].mutated_captures)} "
                 f"writes={sorted(results[path].writes)}",
+            )
+            require(
+                results[path].capture_depths == capture_depths,
+                f"{source}: {path} capture depths changed: "
+                f"expected={capture_depths} actual={results[path].capture_depths}",
             )
             checked += 1
 

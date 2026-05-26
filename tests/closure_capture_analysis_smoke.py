@@ -19,14 +19,30 @@ def main() -> int:
     results = analyze_file(binary, repo, source)
 
     expected = {
-        "<program>.sayac_uret.artir": ({"adet"}, {"adet"}),
-        "<program>.dis_fonksiyon.ic_fonksiyon": ({"dis_x", "param"}, set()),
-        "<program>.banka_hesabi.para_yatir": ({"bakiye"}, {"bakiye"}),
-        "<program>.banka_hesabi.para_cek": ({"bakiye"}, {"bakiye"}),
-        "<program>.fonksiyon_listesi_uret.yazdir_func": ({"x"}, set()),
+        "<program>.sayac_uret.artir": ({"adet"}, {"adet"}, {"adet": 1}),
+        "<program>.dis_fonksiyon.ic_fonksiyon": (
+            {"dis_x", "param"},
+            set(),
+            {"dis_x": 1, "param": 1},
+        ),
+        "<program>.banka_hesabi.para_yatir": (
+            {"bakiye"},
+            {"bakiye"},
+            {"bakiye": 1},
+        ),
+        "<program>.banka_hesabi.para_cek": (
+            {"bakiye"},
+            {"bakiye"},
+            {"bakiye": 1},
+        ),
+        "<program>.fonksiyon_listesi_uret.yazdir_func": (
+            {"x"},
+            set(),
+            {"x": 1},
+        ),
     }
 
-    for path, (captures, mutated_captures) in expected.items():
+    for path, (captures, mutated_captures, capture_depths) in expected.items():
         require(path in results, f"Closure analysis missing function path: {path}")
         require(
             results[path].captures == captures,
@@ -39,6 +55,11 @@ def main() -> int:
             f"{path} mutated captures changed: expected={sorted(mutated_captures)} "
             f"actual={sorted(results[path].mutated_captures)} "
             f"writes={sorted(results[path].writes)}",
+        )
+        require(
+            results[path].capture_depths == capture_depths,
+            f"{path} capture depths changed: expected={capture_depths} "
+            f"actual={results[path].capture_depths}",
         )
 
     print(f"Closure capture analysis smoke passed ({len(expected)} closures).")

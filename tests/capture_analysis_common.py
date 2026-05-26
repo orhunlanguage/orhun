@@ -187,6 +187,7 @@ class FunctionInfo:
     refs: set[str] = field(default_factory=set)
     writes: set[str] = field(default_factory=set)
     captures: set[str] = field(default_factory=set)
+    capture_depths: dict[str, int] = field(default_factory=dict)
     mutated_captures: set[str] = field(default_factory=set)
 
 
@@ -204,10 +205,12 @@ def analyze_callable(
     free = refs - locals_
 
     captures: set[str] = set()
+    capture_depths: dict[str, int] = {}
     for name in free:
-        for scope in reversed(outer_scopes):
+        for depth, scope in enumerate(reversed(outer_scopes), start=1):
             if name in scope:
                 captures.add(name)
+                capture_depths[name] = depth
                 break
 
     results[path] = FunctionInfo(
@@ -216,6 +219,7 @@ def analyze_callable(
         refs=refs,
         writes=writes,
         captures=captures,
+        capture_depths=capture_depths,
         mutated_captures=captures & writes,
     )
 
