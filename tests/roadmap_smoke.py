@@ -75,6 +75,7 @@ def main() -> int:
         ("version consistency", [py, "tests/version_consistency_smoke.py", str(binary)]),
         ("stdlib versions", [py, "tests/stdlib_version_smoke.py"]),
         ("known gaps", [py, "tests/known_gap_smoke.py", str(binary)]),
+        ("closure capture analysis", [py, "tests/closure_capture_analysis_smoke.py", str(binary)]),
         ("lexer parity fixtures", [py, "tests/lexer_parity_smoke.py", str(binary)]),
         (
             "lexer token sweep",

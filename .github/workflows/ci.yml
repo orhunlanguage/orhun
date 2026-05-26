@@ -129,6 +129,11 @@ jobs:
         shell: pwsh
         run: py -3 tests/known_gap_smoke.py .\build\orhun_test.exe
 
+      - name: Closure capture analysis smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/closure_capture_analysis_smoke.py .\build\orhun_test.exe
+
       - name: Fallback ORH-COMP smoke (Linux)
         if: runner.os == 'Linux'
         run: python3 tests/fallback_orh_comp_smoke.py ./build/orhun_test
@@ -137,6 +142,10 @@ jobs:
         if: runner.os == 'Linux'
         run: python3 tests/known_gap_smoke.py ./build/orhun_test
 
+      - name: Closure capture analysis smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/closure_capture_analysis_smoke.py ./build/orhun_test
+
       - name: Fallback ORH-COMP smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/fallback_orh_comp_smoke.py ./build/orhun_test
@@ -144,6 +153,10 @@ jobs:
       - name: Known-gap smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/known_gap_smoke.py ./build/orhun_test
+
+      - name: Closure capture analysis smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/closure_capture_analysis_smoke.py ./build/orhun_test
 
       - name: Benchmark contract (Windows)
         if: runner.os == 'Windows'

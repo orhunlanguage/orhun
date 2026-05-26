@@ -8,6 +8,7 @@ closure capture semantics are not locked yet. The active known-gap fixture is:
 The current known-gap guard is:
 
 - `tests/known_gap_smoke.py`
+- `tests/closure_capture_analysis_smoke.py`
 
 Current VM/interpreter behavior fails at the first captured outer local:
 
@@ -70,3 +71,7 @@ When closure capture lands, update that fixture and document the migration in
 4. Implement VM closure/upvalue storage with GC marking.
 5. Add parity tests for nested functions, anonymous functions, mutation, and
    loop captures.
+
+`tests/closure_capture_analysis_smoke.py` already locks the static capture
+candidates for the known-gap fixture, including counter mutation, nested
+parameter capture, shared account balance capture, and loop-local copies.

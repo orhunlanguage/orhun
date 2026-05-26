@@ -50,6 +50,7 @@ python tests/case_manifest_smoke.py
 python tests/version_consistency_smoke.py ./build/orhun_test
 python tests/stdlib_version_smoke.py
 python tests/known_gap_smoke.py ./build/orhun_test
+python tests/closure_capture_analysis_smoke.py ./build/orhun_test
 ```
 
 For documentation-only changes, explain that tests were not run and why.
