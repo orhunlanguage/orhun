@@ -8,13 +8,16 @@ yazdır sonuc.ok
 yazdır uzunluk(sonuc.komutlar)
 yazdır metin.birlestir(parser.turleri(sonuc), "|")
 yazdır sonuc.komutlar[1].bildirim
+yazdır sonuc.komutlar[1].hedef_ozeti.ayrinti
 
 coklu olsun parser.ozetle("a, b olsun [1, 2]\nyazdır a\n")
 yazdır metin.birlestir(parser.turleri(coklu), "|")
 yazdır coklu.komutlar[0].bildirim
+yazdır json.yaz(coklu.komutlar[0].hedefler)
 
 esit_kontrol olsun parser.ozetle("sayi = 10\nyazdır sayi\n")
 yazdır esit_kontrol.komutlar[0].bildirim
+yazdır esit_kontrol.komutlar[0].hedef_ozeti.ayrinti
 
 kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\n    yazdır \"hayır\"\n")
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)

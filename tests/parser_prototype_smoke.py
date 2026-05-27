@@ -192,6 +192,24 @@ def add_assignment_metadata(summary: dict, command: dict, source_name: str) -> N
         f"{source_name} assignment node missing bool bildirim: {command}",
     )
     summary["bildirim"] = marker
+    if summary.get("tur") == "Atama":
+        target = command.get("hedef") or command.get("hedef_ozeti")
+        require(
+            isinstance(target, dict),
+            f"{source_name} assignment node missing target summary: {command}",
+        )
+        if "tur" in target and "altlar" in target:
+            summary["hedef_ozeti"] = orhun_expression_payload(target, Path(source_name))
+        else:
+            summary["hedef_ozeti"] = cxx_expression_summary(target)
+    if summary.get("tur") == "CokluAtama":
+        targets = command.get("hedefler")
+        require(
+            isinstance(targets, list)
+            and all(isinstance(target, str) for target in targets),
+            f"{source_name} multi-assignment node missing target names: {command}",
+        )
+        summary["hedefler"] = targets
 
 
 def cxx_command_expression_summary(command: dict) -> dict:

@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.11"
+surum olsun "0.3.12"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -29,10 +29,41 @@ işlev atama_bildirim_mi(tokenlar, konum):
         i olsun i + 1
     döndür yanlış
 
+işlev coklu_atama_hedefleri(tokenlar, konum):
+    hedefler olsun []
+    i olsun konum
+    parametre_basinda olsun doğru
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür hedefler
+        eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "olsun" ise:
+            döndür hedefler
+        eğer token.tur eşit "ISLEM" ve token.deger eşit "=" ise:
+            döndür hedefler
+        eğer token.tur eşit "ISLEM" ve token.deger eşit "," ise:
+            parametre_basinda olsun doğru
+        değilse:
+            eğer parametre_basinda ve token.tur eşit "KIMLIK" ise:
+                hedefler.ekle(token.deger)
+                parametre_basinda olsun yanlış
+        i olsun i + 1
+    döndür hedefler
+
+işlev atama_hedef_ozeti(tokenlar, konum):
+    son olsun atama_ifade_baslangici(tokenlar, konum)
+    eğer son küçük 0 ise:
+        döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
+    döndür ifade_ozeti(tokenlar, konum, son - 1)
+
 işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
     sonuc olsun {"tur": tur, "satir": satir, "ifade_turu": ifade_ozeti.tur, "ifade_ozeti": ifade_ozeti, "blok_sayilari": blok_sayilari_uret(bloklar), "bloklar": bloklar}
     eğer tur eşit "Atama" veya tur eşit "CokluAtama" ise:
         sonuc["bildirim"] = atama_bildirim_mi(tokenlar, konum)
+    eğer tur eşit "Atama" ise:
+        sonuc["hedef_ozeti"] = atama_hedef_ozeti(tokenlar, konum)
+    eğer tur eşit "CokluAtama" ise:
+        sonuc["hedefler"] = coklu_atama_hedefleri(tokenlar, konum)
     döndür sonuc
 
 işlev blok_tasiyan_komut_mu(tur):
