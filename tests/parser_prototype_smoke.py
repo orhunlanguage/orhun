@@ -242,6 +242,39 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
         )
         summary["ad"] = name
         summary["ebeveyn"] = parent
+    if summary.get("tur") == "DisIslevTanim":
+        name = command.get("ad")
+        library = command.get("kutuphane")
+        param_names = command.get("parametre_adlari")
+        param_types = command.get("parametre_tipleri")
+        return_type = command.get("donus_tipi")
+        require(
+            isinstance(name, str),
+            f"{source_name} external function definition missing name: {command}",
+        )
+        require(
+            isinstance(library, str),
+            f"{source_name} external function definition missing library: {command}",
+        )
+        require(
+            isinstance(param_names, list)
+            and all(isinstance(param, str) for param in param_names),
+            f"{source_name} external function definition missing param names: {command}",
+        )
+        require(
+            isinstance(param_types, list)
+            and all(isinstance(param, str) for param in param_types),
+            f"{source_name} external function definition missing param types: {command}",
+        )
+        require(
+            isinstance(return_type, str),
+            f"{source_name} external function definition missing return type: {command}",
+        )
+        summary["ad"] = name
+        summary["kutuphane"] = library
+        summary["parametre_adlari"] = param_names
+        summary["parametre_tipleri"] = param_types
+        summary["donus_tipi"] = return_type
 
 
 def cxx_command_expression_summary(command: dict) -> dict:

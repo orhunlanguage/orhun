@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.13"
+surum olsun "0.3.14"
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -109,6 +109,69 @@ işlev sinif_ebeveyni(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev baslik_kutuphanesi(tokenlar, konum):
+    i olsun konum + 1
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür ""
+        eğer token.tur eşit "METIN" ise:
+            döndür token.deger
+        i olsun i + 1
+    döndür ""
+
+işlev dis_islev_parametreleri(tokenlar, konum):
+    adlar olsun []
+    tipler olsun []
+    parantez_konum olsun deger_konumu(tokenlar, konum + 1, "(")
+    eğer parantez_konum küçük 0 ise:
+        döndür {"adlar": adlar, "tipler": tipler}
+
+    i olsun parantez_konum + 1
+    derinlik olsun 0
+    parametre_basinda olsun doğru
+    tip_bekleniyor olsun yanlış
+    sürece i küçük uzunluk(tokenlar):
+        token olsun tokenlar[i]
+        eğer satir_sonu_mu(token) ise:
+            döndür {"adlar": adlar, "tipler": tipler}
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ")" ise:
+            döndür {"adlar": adlar, "tipler": tipler}
+        eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit "," ise:
+            parametre_basinda olsun doğru
+            tip_bekleniyor olsun yanlış
+        değilse:
+            eğer derinlik eşit 0 ve parametre_basinda ve token.tur eşit "KIMLIK" ise:
+                adlar.ekle(token.deger)
+                parametre_basinda olsun yanlış
+            değilse:
+                eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ":" ise:
+                    tip_bekleniyor olsun doğru
+                değilse:
+                    eğer derinlik eşit 0 ve tip_bekleniyor ve token.tur eşit "KIMLIK" ise:
+                        tipler.ekle(token.deger)
+                        tip_bekleniyor olsun yanlış
+            eğer acilis_islemi_mi(token) ise:
+                derinlik olsun derinlik + 1
+            değilse:
+                eğer kapanis_islemi_mi(token) ve derinlik büyük 0 ise:
+                    derinlik olsun derinlik - 1
+        i olsun i + 1
+    döndür {"adlar": adlar, "tipler": tipler}
+
+işlev dis_islev_donus_tipi(tokenlar, konum):
+    satir_sonu olsun satir_sonu_indeksi(tokenlar, konum)
+    i olsun konum
+    sürece i küçük satir_sonu - 2:
+        eğer tokenlar[i].tur eşit "ISLEM" ve tokenlar[i].deger eşit "-" ve tokenlar[i + 1].tur eşit "ISLEM" ve tokenlar[i + 1].deger eşit ">" ise:
+            j olsun i + 2
+            sürece j küçük satir_sonu:
+                eğer tokenlar[j].tur eşit "KIMLIK" ise:
+                    döndür tokenlar[j].deger
+                j olsun j + 1
+        i olsun i + 1
+    döndür ""
+
 işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
     sonuc olsun {"tur": tur, "satir": satir, "ifade_turu": ifade_ozeti.tur, "ifade_ozeti": ifade_ozeti, "blok_sayilari": blok_sayilari_uret(bloklar), "bloklar": bloklar}
     eğer tur eşit "Atama" veya tur eşit "CokluAtama" ise:
@@ -123,6 +186,13 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
     eğer tur eşit "SinifTanim" ise:
         sonuc["ad"] = baslik_adi(tokenlar, konum)
         sonuc["ebeveyn"] = sinif_ebeveyni(tokenlar, konum)
+    eğer tur eşit "DisIslevTanim" ise:
+        imza olsun dis_islev_parametreleri(tokenlar, konum)
+        sonuc["ad"] = baslik_adi(tokenlar, konum)
+        sonuc["kutuphane"] = baslik_kutuphanesi(tokenlar, konum)
+        sonuc["parametre_adlari"] = imza.adlar
+        sonuc["parametre_tipleri"] = imza.tipler
+        sonuc["donus_tipi"] = dis_islev_donus_tipi(tokenlar, konum)
     döndür sonuc
 
 işlev blok_tasiyan_komut_mu(tur):

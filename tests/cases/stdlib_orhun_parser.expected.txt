@@ -1,4 +1,4 @@
-0.3.13
+0.3.14
 1
 3
 IslevTanim|Atama|Yazdir
@@ -13,6 +13,11 @@ CokluAtama|Yazdir
 sayi
 Kedi
 Hayvan
+lstrlenA
+kernel32.dll
+["metin"]
+["string"]
+int
 [1,1]
 [{"komutlar":[{"blok_sayilari":[],"bloklar":[],"ifade_ozeti":{"altlar":[],"ayrinti":"evet","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}]},{"komutlar":[{"blok_sayilari":[],"bloklar":[],"ifade_ozeti":{"altlar":[],"ayrinti":"hayır","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":4,"tur":"Yazdir"}]}]
 [1,1]

@@ -25,6 +25,13 @@ sinif_kontrol olsun parser.ozetle("tip Kedi(Hayvan):\n    yazdır \"miyav\"\n")
 yazdır sinif_kontrol.komutlar[0].ad
 yazdır sinif_kontrol.komutlar[0].ebeveyn
 
+dis_islev_kontrol olsun parser.ozetle("dış_işlev lstrlenA \"kernel32.dll\" (metin: string) -> int\n")
+yazdır dis_islev_kontrol.komutlar[0].ad
+yazdır dis_islev_kontrol.komutlar[0].kutuphane
+yazdır json.yaz(dis_islev_kontrol.komutlar[0].parametre_adlari)
+yazdır json.yaz(dis_islev_kontrol.komutlar[0].parametre_tipleri)
+yazdır dis_islev_kontrol.komutlar[0].donus_tipi
+
 kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\n    yazdır \"hayır\"\n")
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
 yazdır json.yaz(kontrol.komutlar[0].bloklar)
