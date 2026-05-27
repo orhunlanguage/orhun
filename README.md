@@ -170,6 +170,7 @@ self-hosting plan.
 - Closure capture analysis smoke: `tests/closure_capture_analysis_smoke.py`
 - Lambda capture analysis smoke: `tests/lambda_capture_analysis_smoke.py`
 - Interpreter closure smoke: `tests/interpreter_closure_smoke.py`
+- VM closure extra smoke: `tests/vm_closure_extra_smoke.py`
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Language specification: `docs/SPEC.md`
