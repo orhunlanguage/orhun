@@ -1,6 +1,6 @@
 # Orhun ile yazilmis koleksiyon yardimcilari.
 
-surum olsun "0.1.0"
+surum olsun "0.2.0"
 
 işlev icerir(liste, aranan):
     i olsun 0
@@ -50,6 +50,24 @@ işlev katla(liste, baslangic, birlestirici):
     i olsun 0
     sürece i küçük uzunluk(liste):
         sonuc olsun birlestirici(sonuc, liste[i])
+        i olsun i + 1
+    döndür sonuc
+
+işlev haritala(liste, donusturucu):
+    sonuc olsun []
+    i olsun 0
+    sürece i küçük uzunluk(liste):
+        sonuc.ekle(donusturucu(liste[i]))
+        i olsun i + 1
+    döndür sonuc
+
+işlev filtrele(liste, kosul):
+    sonuc olsun []
+    i olsun 0
+    sürece i küçük uzunluk(liste):
+        oge olsun liste[i]
+        eğer kosul(oge) ise:
+            sonuc.ekle(oge)
         i olsun i + 1
     döndür sonuc
 
