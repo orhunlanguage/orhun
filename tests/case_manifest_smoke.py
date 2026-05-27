@@ -3,7 +3,6 @@ from pathlib import Path
 
 
 EXPECTEDLESS_CASES = {
-    "closure_missing_feature",
     "math_features",
     "mod_in_func",
     "module_callable_lib",

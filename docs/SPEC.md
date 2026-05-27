@@ -475,16 +475,12 @@ Until `1.0`, Orhun may change quickly, but changes should follow these rules:
 ## Closure Capture Status
 
 Nested functions and anonymous functions are parsed and callable. The
-interpreter (`orhun yorumla`) keeps returned closures' captured local variables
-alive and is guarded by `tests/interpreter_closure_smoke.py`.
-
-The VM/default runner does not yet keep returned closures' captured outer
-locals alive. The tracked VM known-gap fixture is
-`tests/cases/closure_missing_feature.oh`, guarded by `tests/known_gap_smoke.py`.
+interpreter (`orhun yorumla`), default runner, and `vm-kati` keep returned
+closures' captured local variables alive. The promoted closure fixture is
+`tests/cases/closure_missing_feature.oh`, guarded by
+`tests/known_gap_smoke.py` and `tests/interpreter_closure_smoke.py`.
 
 The intended capture model is documented in `docs/CLOSURE_CAPTURE_PLAN.md`.
-It must be implemented consistently in both the interpreter and VM before the
-fixture is promoted to the normal default runtime suite.
 
 Target closure semantics:
 

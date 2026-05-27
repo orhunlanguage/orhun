@@ -139,3 +139,14 @@
   `deneme` başlıklarındaki eksikler, tanınmayan komutlar, varsayılan
   parametreden sonra gelen zorunlu parametreler ve çok satırlı sözlük anahtarı
   hataları yakalanır.
+
+## 13. Closure Capture
+- Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri
+  canlı tutar.
+- Aynı dış çağrı içinde üretilen closure'lar aynı yakalanmış değişken hücresini
+  paylaşır; ayrı dış çağrılar ayrı hücre oluşturur.
+- Döngü içinde `x olsun i` gibi yeni yerel bağlar her iterasyonda bağımsız
+  capture hücresi üretir.
+- Önceki davranışta bazı döndürülen lambda'lar dış yerel değişken yerine aynı
+  adlı global değere düşebiliyordu. Yeni davranışta en yakın dış yerel bağ
+  kullanılır.

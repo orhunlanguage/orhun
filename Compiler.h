@@ -71,6 +71,7 @@ private:
   struct IslevBaglami {
     bool metodMu = false;
     std::unordered_map<std::string, std::uint16_t> localIndeksler;
+    std::vector<std::string> localAdlari;
     std::uint16_t sonrakiLocal = 0;
   };
   std::vector<IslevBaglami> islevYigini_;

@@ -1,31 +1,28 @@
 # Closure and Capture Plan
 
-Orhun currently parses nested functions and anonymous functions. The
-interpreter (`yorumla`) now keeps captured local scopes alive, including loop
-iteration-local capture cells. The VM/default runner still tracks closure
-capture as a known gap. The active fixture is:
+Orhun parses nested functions and anonymous functions, and the interpreter
+(`yorumla`), default runner, and `vm-kati` now keep captured local scopes alive,
+including loop iteration-local capture cells. The promoted runtime fixture is:
 
 - `tests/cases/closure_missing_feature.oh`
 
-The current known-gap guard is:
+The current closure guard is:
 
 - `tests/known_gap_smoke.py`
+- `tests/interpreter_closure_smoke.py`
 - `tests/closure_capture_analysis_smoke.py`
 - `tests/lambda_capture_analysis_smoke.py`
 
-Current VM/default behavior fails at the first captured outer local:
+Before this promotion, VM/default behavior failed at the first captured outer
+local:
 
 ```text
 Tanimsiz degisken: 'adet'.
 ```
 
-`tests/known_gap_smoke.py` checks this remains a controlled runtime error in
-the default runner and `vm-kati`, so closure work does not regress into a VM
-crash while VM upvalues are still pending.
-
-`tests/interpreter_closure_smoke.py` checks that `yorumla` already matches the
-target behavior for returned named functions, returned anonymous functions,
-shared mutable captures, shadowing, and loop-local captures.
+`tests/known_gap_smoke.py` now checks that the former known-gap fixture keeps
+passing in the default runner and `vm-kati`. `tests/interpreter_closure_smoke.py`
+checks the same capture behavior through `yorumla`.
 
 ## Target Behavior
 
@@ -65,29 +62,26 @@ This target implies:
 
 ## Existing Behavior To Migrate
 
-`tests/cases/lambda_capture_shadow.oh` still documents the VM/default
-pre-capture behavior where a returned lambda resolves `x` through the global
-scope after the outer function has returned. The interpreter smoke documents
-the migration target: the returned lambda sees the outer function's captured
-local instead.
+`tests/cases/lambda_capture_shadow.oh` now documents the promoted capture
+behavior: a returned lambda sees the outer function's captured local instead of
+falling back to a global with the same name.
 
-When closure capture lands, update that fixture and document the migration in
-`docs/MIGRATION_GUIDE.md`.
+The migration is documented in `docs/MIGRATION_GUIDE.md`.
 
 ## Implementation Slices
 
-1. Define capture semantics in `docs/SPEC.md`. Done as the target contract;
-   VM implementation is still pending.
+1. Define capture semantics in `docs/SPEC.md`. Done as the target contract.
 2. Implement interpreter capture cells first to clarify semantics. Done for
    named functions, anonymous functions, shared mutation, shadowing, and loop
    iteration-local captures.
-3. Implement VM closure/upvalue storage with GC marking.
-4. Promote the known-gap fixture once VM and interpreter behavior match.
+3. Implement VM closure/upvalue storage with GC marking. Done for the promoted
+   closure fixture and returned-lambda fixtures.
+4. Promote the known-gap fixture once VM and interpreter behavior match. Done.
 5. Add parity tests for nested functions, anonymous functions, mutation, and
    loop captures.
 
 `tests/closure_capture_analysis_smoke.py` already locks the static capture
-candidates for the known-gap fixture, including counter mutation, nested
+candidates for the promoted closure fixture, including counter mutation, nested
 parameter capture, shared account balance capture, and loop-local copies.
 `tests/lambda_capture_analysis_smoke.py` separately locks anonymous-function
 capture candidates for shadowing, returned lambdas, and top-level lambda

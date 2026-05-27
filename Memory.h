@@ -68,8 +68,17 @@ private:
 
     switch (obj->type) {
       case ObjType::STRING:
-      case ObjType::FUNCTION:
         return;
+      case ObjType::FUNCTION: {
+        auto* fn = static_cast<ObjFunction*>(obj);
+        for (const auto& [ad, hucre] : fn->yakalananDegerler) {
+          (void)ad;
+          if (hucre) {
+            markValue(*hucre);
+          }
+        }
+        return;
+      }
       case ObjType::NATIVE: {
         auto* native = static_cast<ObjNative*>(obj);
         for (const Value& bagli : native->bagliDegerler) {

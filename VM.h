@@ -34,6 +34,7 @@ private:
     std::size_t ip = 0;
     std::size_t slotBase = 0;
     std::size_t callBase = 0;
+    std::unordered_map<std::uint16_t, std::shared_ptr<Value>> localHucreleri;
   };
   struct BekleyenKurucu {
     std::size_t frameDerinligi = 0;
@@ -108,6 +109,9 @@ private:
   const Value &yiginBak(std::size_t tersten) const;
   Value &localEris(std::uint16_t indeks);
   const Value &localEris(std::uint16_t indeks) const;
+  std::shared_ptr<Value> localHucreAl(std::uint16_t indeks);
+  void localTanimla(std::uint16_t indeks, const Value &deger);
+  std::shared_ptr<Value> yakalananHucreBul(const std::string &ad) const;
 
   std::uint8_t byteOku();
   std::uint16_t u16Oku();

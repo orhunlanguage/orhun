@@ -13,6 +13,7 @@ enum class OpCode : std::uint8_t {
   OP_KOPYA,
   OP_GET_LOCAL,
   OP_SET_LOCAL,
+  OP_DEFINE_LOCAL,
   OP_GET_GLOBAL,
   OP_SET_GLOBAL,
   OP_ALAN_AL,

@@ -26,29 +26,46 @@ def run(
     )
 
 
-def assert_closure_known_gap(
+EXPECTED_CLOSURE_OUTPUT = """--- Test 1: Basit Closure ---
+1
+2
+1
+3
+--- Test 2: Ic Ice Closure ve Golgeleme ---
+global
+dis
+ic
+parametre
+--- Test 3: Closure ile Degisken Degistirme ---
+150
+130
+140
+--- Test 4: Dongu Icinde Closure ---
+0
+1
+2"""
+
+
+def normalize(text: str) -> str:
+    return text.replace("\r\n", "\n").rstrip("\n")
+
+
+def assert_closure_gap_resolved(
     proc: subprocess.CompletedProcess[str], label: str
 ) -> None:
-    combined = proc.stdout + proc.stderr
     require(
-        proc.returncode != 0,
-        f"closure known-gap case now passes in {label}; promote it to a normal "
-        "fixture and update docs/CLOSURE_CAPTURE_PLAN.md",
-    )
-    expected_signatures = (
-        "Tanimsiz degisken: 'adet'",
-        "Tanımsız değişken: 'adet'",
-        "'adet' değişkeni bulunamadı",
-        "'adet' degiskeni bulunamadi",
+        proc.returncode == 0,
+        f"closure capture fixture failed in {label}: "
+        f"{normalize(proc.stdout + proc.stderr)!r}",
     )
     require(
-        any(signature in combined for signature in expected_signatures),
-        f"closure known-gap failure changed in {label}; update the guard and plan",
+        normalize(proc.stdout + proc.stderr) == EXPECTED_CLOSURE_OUTPUT,
+        f"closure capture output changed in {label}",
     )
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Known-gap guard for unfinished semantics")
+    parser = argparse.ArgumentParser(description="Known-gap regression guard")
     parser.add_argument("binary", help="Orhun executable")
     args = parser.parse_args()
 
@@ -57,14 +74,14 @@ def main() -> int:
     require(binary.exists(), f"Binary not found: {binary}")
 
     closure_case = repo / "tests" / "cases" / "closure_missing_feature.oh"
-    require(closure_case.exists(), f"Known-gap case not found: {closure_case}")
+    require(closure_case.exists(), f"Closure fixture not found: {closure_case}")
 
-    assert_closure_known_gap(run(binary, closure_case), "default runner")
-    assert_closure_known_gap(run(binary, closure_case, "vm-kati"), "vm-kati")
+    assert_closure_gap_resolved(run(binary, closure_case), "default runner")
+    assert_closure_gap_resolved(run(binary, closure_case, "vm-kati"), "vm-kati")
 
     print(
         "Known-gap smoke passed "
-        "(closure capture still tracked in default runner and vm-kati)."
+        "(closure capture promoted in default runner and vm-kati)."
     )
     return 0
 

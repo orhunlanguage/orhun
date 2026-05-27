@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace {
 
@@ -127,6 +128,7 @@ std::size_t opcodeUzunlugu(const BytecodeChunk &chunk, std::size_t ip) {
   case OpCode::OP_SABIT:
   case OpCode::OP_GET_LOCAL:
   case OpCode::OP_SET_LOCAL:
+  case OpCode::OP_DEFINE_LOCAL:
   case OpCode::OP_GET_GLOBAL:
   case OpCode::OP_SET_GLOBAL:
   case OpCode::OP_ALAN_AL:
@@ -142,8 +144,15 @@ std::size_t opcodeUzunlugu(const BytecodeChunk &chunk, std::size_t ip) {
   case OpCode::OP_DONGU:
   case OpCode::OP_TRY_BASLA:
     return 3;
-  case OpCode::OP_ISLEV_OLUSTUR:
-    return 13;
+  case OpCode::OP_ISLEV_OLUSTUR: {
+    if (ip + 14 >= chunk.kod.size()) {
+      return 0;
+    }
+    const std::uint16_t localAdSayisi = static_cast<std::uint16_t>(
+        (static_cast<std::uint16_t>(chunk.kod[ip + 13]) << 8) |
+        static_cast<std::uint16_t>(chunk.kod[ip + 14]));
+    return 15 + static_cast<std::size_t>(localAdSayisi) * 4;
+  }
   default:
     return 1;
   }
@@ -1268,17 +1277,26 @@ void Compiler::islevLiteralDerleOrtak(
 
   IslevBaglami baglam;
   baglam.metodMu = metodMu;
+  const auto localKaydet = [&](const std::string &ad) -> std::uint16_t {
+    const std::uint16_t indeks = baglam.sonrakiLocal++;
+    baglam.localIndeksler[ad] = indeks;
+    if (baglam.localAdlari.size() <= indeks) {
+      baglam.localAdlari.resize(static_cast<std::size_t>(indeks) + 1);
+    }
+    baglam.localAdlari[indeks] = ad;
+    return indeks;
+  };
   if (metodMu) {
-    baglam.localIndeksler["benim"] = baglam.sonrakiLocal++;
+    localKaydet("benim");
   }
   if (ustGerekiyor) {
-    baglam.localIndeksler["ust"] = baglam.sonrakiLocal++;
+    localKaydet("ust");
   }
   for (const std::string &param : parametreler) {
     if (baglam.localIndeksler.find(param) != baglam.localIndeksler.end()) {
       derlemeHatasi(satir, "Yinelenen parametre: " + param);
     }
-    baglam.localIndeksler[param] = baglam.sonrakiLocal++;
+    localKaydet(param);
   }
   islevYigini_.push_back(std::move(baglam));
 
@@ -1352,6 +1370,24 @@ void Compiler::islevLiteralDerleOrtak(
   chunk_.yazU16(girisU16, satir);
   chunk_.yazU16(localSayisi, satir);
   chunk_.yazU16(baglamArg, satir);
+  std::vector<std::pair<std::uint16_t, std::uint16_t>> localAdlari;
+  for (std::size_t i = 0; i < kapanan.localAdlari.size(); ++i) {
+    if (kapanan.localAdlari[i].empty()) {
+      continue;
+    }
+    const std::uint16_t adSabit =
+        chunk_.sabitEkle(SabitDeger(kapanan.localAdlari[i]));
+    localAdlari.push_back(
+        {static_cast<std::uint16_t>(i), static_cast<std::uint16_t>(adSabit)});
+  }
+  if (localAdlari.size() > std::numeric_limits<std::uint16_t>::max()) {
+    derlemeHatasi(satir, "Islev local adi limiti asildi.");
+  }
+  chunk_.yazU16(static_cast<std::uint16_t>(localAdlari.size()), satir);
+  for (const auto &[indeks, adSabit] : localAdlari) {
+    chunk_.yazU16(indeks, satir);
+    chunk_.yazU16(adSabit, satir);
+  }
 }
 
 void Compiler::islevLiteralDerle(const IslevTanimNode *dugum, bool metodMu,
@@ -1419,7 +1455,7 @@ void Compiler::atamaHedefiYaz(const std::string &ad, std::size_t satir,
 
   if (bildirimMi) {
     const std::uint16_t local = localAlVeyaOlustur(ad);
-    chunk_.yazOpCode(OpCode::OP_SET_LOCAL, satir);
+    chunk_.yazOpCode(OpCode::OP_DEFINE_LOCAL, satir);
     chunk_.yazU16(local, satir);
     return;
   }
@@ -1578,6 +1614,10 @@ std::uint16_t Compiler::localAlVeyaOlustur(const std::string &ad) {
   }
   const std::uint16_t yeni = baglam.sonrakiLocal++;
   baglam.localIndeksler[ad] = yeni;
+  if (baglam.localAdlari.size() <= yeni) {
+    baglam.localAdlari.resize(static_cast<std::size_t>(yeni) + 1);
+  }
+  baglam.localAdlari[yeni] = ad;
   return yeni;
 }
 

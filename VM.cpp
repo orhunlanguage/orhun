@@ -24,6 +24,7 @@
 #include <stdexcept>
 #include <thread>
 #include <unordered_set>
+#include <utility>
 
 namespace {
 
@@ -2123,6 +2124,12 @@ void VM::gcCalistir() {
     }
     for (const CallFrame &frame : frameYigini_) {
       mem.markObject(frame.function);
+      for (const auto &[indeks, hucre] : frame.localHucreleri) {
+        (void)indeks;
+        if (hucre) {
+          mem.markValue(*hucre);
+        }
+      }
     }
     for (const BekleyenKurucu &b : bekleyenKurucular_) {
       mem.markValue(b.olusanNesne);
@@ -2241,6 +2248,7 @@ void VM::calistir(const BytecodeChunk &chunk) {
                                    &&CASE_OP_KOPYA,
                                    &&CASE_OP_GET_LOCAL,
                                    &&CASE_OP_SET_LOCAL,
+                                   &&CASE_OP_DEFINE_LOCAL,
                                    &&CASE_OP_GET_GLOBAL,
                                    &&CASE_OP_SET_GLOBAL,
                                    &&CASE_OP_ALAN_AL,
@@ -2343,8 +2351,22 @@ void VM::calistir(const BytecodeChunk &chunk) {
         localEris(idx) = yiginBak(0);
         BREAK;
       }
+      CASE(OP_DEFINE_LOCAL) {
+        const std::uint16_t idx = u16Oku();
+        localTanimla(idx, yiginBak(0));
+        BREAK;
+      }
       CASE(OP_GET_GLOBAL) {
         const std::uint16_t sabitIndeks = u16Oku();
+        const SabitDeger &adDegeri = sabitOku(sabitIndeks);
+        if (!std::holds_alternative<std::string>(adDegeri.veri)) {
+          calismaHatasi("GET_GLOBAL sabiti metin degil.");
+        }
+        const std::string &ad = std::get<std::string>(adDegeri.veri);
+        if (auto hucre = yakalananHucreBul(ad)) {
+          yiginPush(*hucre);
+          BREAK;
+        }
         const bool anaChunk =
             frameYigini_.back().function->chunk == chunk_;
         if (anaChunk && sabitIndeks < globalInlineCache_.size()) {
@@ -2354,11 +2376,6 @@ void VM::calistir(const BytecodeChunk &chunk) {
             BREAK;
           }
         }
-        const SabitDeger &adDegeri = sabitOku(sabitIndeks);
-        if (!std::holds_alternative<std::string>(adDegeri.veri)) {
-          calismaHatasi("GET_GLOBAL sabiti metin degil.");
-        }
-        const std::string &ad = std::get<std::string>(adDegeri.veri);
         const auto it = globaller_.find(ad);
         if (it == globaller_.end()) {
           calismaHatasi("Tanimsiz degisken: '" + ad + "'.");
@@ -2381,6 +2398,10 @@ void VM::calistir(const BytecodeChunk &chunk) {
         }
         const std::string &ad = std::get<std::string>(adDegeri.veri);
         const Value atanan = yiginBak(0);
+        if (auto hucre = yakalananHucreBul(ad)) {
+          *hucre = atanan;
+          BREAK;
+        }
         auto it = globaller_.find(ad);
         if (it == globaller_.end()) {
           auto [yeniIt, _eklendi] = globaller_.emplace(ad, atanan);
@@ -2559,8 +2580,20 @@ void VM::calistir(const BytecodeChunk &chunk) {
         const std::uint16_t giris = u16Oku();
         const std::uint16_t localSayisi = u16Oku();
         const std::uint16_t baglamArg = u16Oku();
+        const std::uint16_t localAdSayisi = u16Oku();
         if (!std::holds_alternative<std::string>(adDegeri.veri)) {
           calismaHatasi("ISLEV_OLUSTUR ad sabiti metin degil.");
+        }
+        std::vector<std::pair<std::uint16_t, std::string>> localAdlari;
+        localAdlari.reserve(localAdSayisi);
+        for (std::uint16_t i = 0; i < localAdSayisi; ++i) {
+          const std::uint16_t localIndeks = u16Oku();
+          const SabitDeger &localAdDegeri = sabitOku(u16Oku());
+          if (!std::holds_alternative<std::string>(localAdDegeri.veri)) {
+            calismaHatasi("ISLEV_OLUSTUR local adi sabiti metin degil.");
+          }
+          localAdlari.push_back(
+              {localIndeks, std::get<std::string>(localAdDegeri.veri)});
         }
         const BytecodeChunk *aktifChunk = frameYigini_.back().function->chunk;
         if (aktifChunk == nullptr) {
@@ -2570,6 +2603,24 @@ void VM::calistir(const BytecodeChunk &chunk) {
             std::get<std::string>(adDegeri.veri), static_cast<int>(minArity),
             static_cast<int>(maxArity), aktifChunk, giris, localSayisi,
             baglamArg);
+        fn->localAdlari.resize(localSayisi);
+        for (const auto &[localIndeks, localAd] : localAdlari) {
+          if (localIndeks < fn->localAdlari.size()) {
+            fn->localAdlari[localIndeks] = localAd;
+          }
+        }
+        const CallFrame &olusturanFrame = frameYigini_.back();
+        if (olusturanFrame.function != nullptr) {
+          const ObjFunction *olusturan = olusturanFrame.function;
+          for (std::size_t i = 0; i < olusturan->localAdlari.size(); ++i) {
+            const std::string &localAd = olusturan->localAdlari[i];
+            if (localAd.empty()) {
+              continue;
+            }
+            fn->yakalananDegerler[localAd] =
+                localHucreAl(static_cast<std::uint16_t>(i));
+          }
+        }
         yiginPush(Value::nesne(fn));
         BREAK;
       }
@@ -3003,7 +3054,12 @@ Value &VM::localEris(std::uint16_t indeks) {
   if (frameYigini_.empty()) {
     calismaHatasi("Local erisimi icin aktif frame yok.");
   }
-  const std::size_t hedef = frameYigini_.back().slotBase + indeks;
+  CallFrame &frame = frameYigini_.back();
+  const auto hucre = frame.localHucreleri.find(indeks);
+  if (hucre != frame.localHucreleri.end() && hucre->second) {
+    return *hucre->second;
+  }
+  const std::size_t hedef = frame.slotBase + indeks;
   if (hedef >= yigin_.size()) {
     calismaHatasi("Local indeks sinir disi.");
   }
@@ -3014,11 +3070,59 @@ const Value &VM::localEris(std::uint16_t indeks) const {
   if (frameYigini_.empty()) {
     calismaHatasi("Local erisimi icin aktif frame yok.");
   }
-  const std::size_t hedef = frameYigini_.back().slotBase + indeks;
+  const CallFrame &frame = frameYigini_.back();
+  const auto hucre = frame.localHucreleri.find(indeks);
+  if (hucre != frame.localHucreleri.end() && hucre->second) {
+    return *hucre->second;
+  }
+  const std::size_t hedef = frame.slotBase + indeks;
   if (hedef >= yigin_.size()) {
     calismaHatasi("Local indeks sinir disi.");
   }
   return yigin_[hedef];
+}
+
+std::shared_ptr<Value> VM::localHucreAl(std::uint16_t indeks) {
+  if (frameYigini_.empty()) {
+    calismaHatasi("Local hucresi icin aktif frame yok.");
+  }
+  CallFrame &frame = frameYigini_.back();
+  const auto mevcut = frame.localHucreleri.find(indeks);
+  if (mevcut != frame.localHucreleri.end() && mevcut->second) {
+    return mevcut->second;
+  }
+  const std::size_t hedef = frame.slotBase + indeks;
+  if (hedef >= yigin_.size()) {
+    calismaHatasi("Local hucresi icin indeks sinir disi.");
+  }
+  auto hucre = std::make_shared<Value>(yigin_[hedef]);
+  frame.localHucreleri[indeks] = hucre;
+  return hucre;
+}
+
+void VM::localTanimla(std::uint16_t indeks, const Value &deger) {
+  if (frameYigini_.empty()) {
+    calismaHatasi("Local tanimi icin aktif frame yok.");
+  }
+  CallFrame &frame = frameYigini_.back();
+  const std::size_t hedef = frame.slotBase + indeks;
+  if (hedef >= yigin_.size()) {
+    calismaHatasi("Local tanimi icin indeks sinir disi.");
+  }
+  frame.localHucreleri.erase(indeks);
+  yigin_[hedef] = deger;
+}
+
+std::shared_ptr<Value> VM::yakalananHucreBul(const std::string &ad) const {
+  if (frameYigini_.empty() || frameYigini_.back().function == nullptr) {
+    return nullptr;
+  }
+  const auto &yakalananlar = frameYigini_.back().function->yakalananDegerler;
+  const auto bulunan = yakalananlar.find(ad);
+  if (bulunan == yakalananlar.end()) {
+    return nullptr;
+  }
+  return bulunan->second;
 }
 
 std::uint8_t VM::byteOku() {

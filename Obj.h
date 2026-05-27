@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -74,6 +75,8 @@ struct ObjFunction final : Obj {
   std::uint16_t girisIp = 0;
   std::uint16_t localSayisi = 0;
   std::uint16_t baglamArgSayisi = 0;
+  std::vector<std::string> localAdlari;
+  std::unordered_map<std::string, std::shared_ptr<Value>> yakalananDegerler;
 };
 
 struct ObjNative final : Obj {
