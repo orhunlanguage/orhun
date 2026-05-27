@@ -141,16 +141,24 @@ private:
   };
 
   using DegiskenTablosu = std::unordered_map<std::string, OrhunDegeri>;
+  using KapsamPtr = std::shared_ptr<DegiskenTablosu>;
   using GomuluIslev =
       std::function<OrhunDegeri(const std::vector<OrhunDegeri> &, std::size_t)>;
 
   DegiskenTablosu globalHafiza_;
-  std::vector<DegiskenTablosu> yerelKapsamYigini_;
+  std::vector<KapsamPtr> yerelKapsamYigini_;
   int donguDerinligi_ = 0;
 
   std::unordered_map<std::string, const IslevTanimNode *> islevTablosu_;
   std::unordered_map<std::string, const IsimsizIslevNode *>
       anonimIslevTablosu_;
+  struct ClosureKaydi {
+    const IslevTanimNode *islev = nullptr;
+    const IsimsizIslevNode *anonimIslev = nullptr;
+    std::vector<KapsamPtr> yakalananKapsamlar;
+    std::string ad;
+  };
+  std::unordered_map<std::string, ClosureKaydi> closureTablosu_;
   std::unordered_map<std::string, const SinifTanimNode *> sinifTablosu_;
   std::unordered_map<std::string, GomuluIslev> gomuluIslevler_;
   std::vector<std::unique_ptr<ProgramNode>> yukluModuller_;
@@ -161,6 +169,7 @@ private:
   int ffiSonrakiKimlik_ = 1;
   int ffiSonrakiIslevKimlik_ = 1;
   std::size_t anonimIslevSayaci_ = 0;
+  std::size_t closureSayaci_ = 0;
   struct CagriCercevesi {
     std::string ad;
     std::size_t satir = 0;
@@ -202,7 +211,8 @@ private:
   OrhunDegeri alanErisim(const AlanErisimNode *dugum);
   OrhunDegeri benimErisim(const BenimErisimNode *dugum);
   OrhunDegeri yeniNesneOlustur(const YeniNesneNode *dugum);
-  OrhunDegeri islevCagir(const IslevCagriNode *dugum);
+  OrhunDegeri islevCagir(const IslevCagriNode *dugum,
+                         bool dondurZorunlu = true);
   OrhunDegeri anonimIslevOlustur(const IsimsizIslevNode *dugum);
   OrhunDegeri dahilEtDegerlendir(const DahilEtNode *dugum);
   OrhunDegeri ustIslevCagir(const std::string &metodAdi,
@@ -210,19 +220,24 @@ private:
                             std::size_t satir);
   OrhunDegeri islevCagirAdaGore(const std::string &ad,
                                 const std::vector<OrhunDegeri> &argumanlar,
-                                std::size_t satir);
+                                std::size_t satir,
+                                bool dondurZorunlu = true);
   OrhunDegeri kullaniciIslevCalistir(const IslevTanimNode *islev,
                                      const std::vector<OrhunDegeri> &argumanlar,
                                      std::size_t satir,
                                      const OrhunDegeri *benimDegeri,
                                      const std::string *etkinSinifAdi,
-                                     bool dondurZorunlu);
+                                     bool dondurZorunlu,
+                                     const std::vector<KapsamPtr>
+                                         *yakalananKapsamlar = nullptr);
   OrhunDegeri anonimIslevCalistir(const IsimsizIslevNode *islev,
                                   const std::vector<OrhunDegeri> &argumanlar,
                                   std::size_t satir,
                                   const OrhunDegeri *benimDegeri,
                                   const std::string *etkinSinifAdi,
-                                  bool dondurZorunlu);
+                                  bool dondurZorunlu,
+                                  const std::vector<KapsamPtr>
+                                      *yakalananKapsamlar = nullptr);
   OrhunDegeri nesneMetoduCagir(const OrhunDegeri &hedef,
                                const std::string &metodAdi,
                                const std::vector<OrhunDegeri> &argumanlar,

@@ -1,7 +1,9 @@
 # Closure and Capture Plan
 
-Orhun currently parses nested functions and anonymous functions, but full
-closure capture semantics are not locked yet. The active known-gap fixture is:
+Orhun currently parses nested functions and anonymous functions. The
+interpreter (`yorumla`) now keeps captured local scopes alive, including loop
+iteration-local capture cells. The VM/default runner still tracks closure
+capture as a known gap. The active fixture is:
 
 - `tests/cases/closure_missing_feature.oh`
 
@@ -11,15 +13,19 @@ The current known-gap guard is:
 - `tests/closure_capture_analysis_smoke.py`
 - `tests/lambda_capture_analysis_smoke.py`
 
-Current VM/interpreter behavior fails at the first captured outer local:
+Current VM/default behavior fails at the first captured outer local:
 
 ```text
 Tanimsiz degisken: 'adet'.
 ```
 
 `tests/known_gap_smoke.py` checks this remains a controlled runtime error in
-the default runner, `yorumla`, and `vm-kati`, so closure work does not regress
-into a VM crash while the semantics are still pending.
+the default runner and `vm-kati`, so closure work does not regress into a VM
+crash while VM upvalues are still pending.
+
+`tests/interpreter_closure_smoke.py` checks that `yorumla` already matches the
+target behavior for returned named functions, returned anonymous functions,
+shared mutable captures, shadowing, and loop-local captures.
 
 ## Target Behavior
 
@@ -59,10 +65,11 @@ This target implies:
 
 ## Existing Behavior To Migrate
 
-`tests/cases/lambda_capture_shadow.oh` currently documents the pre-capture
-behavior where a returned lambda resolves `x` through the global scope after the
-outer function has returned. Full closure capture will change that expectation:
-the returned lambda should see the outer function's captured local instead.
+`tests/cases/lambda_capture_shadow.oh` still documents the VM/default
+pre-capture behavior where a returned lambda resolves `x` through the global
+scope after the outer function has returned. The interpreter smoke documents
+the migration target: the returned lambda sees the outer function's captured
+local instead.
 
 When closure capture lands, update that fixture and document the migration in
 `docs/MIGRATION_GUIDE.md`.
@@ -70,10 +77,12 @@ When closure capture lands, update that fixture and document the migration in
 ## Implementation Slices
 
 1. Define capture semantics in `docs/SPEC.md`. Done as the target contract;
-   implementation is still pending.
-2. Promote the known-gap fixture once VM and interpreter behavior match.
-3. Implement interpreter capture cells first to clarify semantics.
-4. Implement VM closure/upvalue storage with GC marking.
+   VM implementation is still pending.
+2. Implement interpreter capture cells first to clarify semantics. Done for
+   named functions, anonymous functions, shared mutation, shadowing, and loop
+   iteration-local captures.
+3. Implement VM closure/upvalue storage with GC marking.
+4. Promote the known-gap fixture once VM and interpreter behavior match.
 5. Add parity tests for nested functions, anonymous functions, mutation, and
    loop captures.
 

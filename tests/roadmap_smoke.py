@@ -78,6 +78,7 @@ def main() -> int:
         ("closure capture analysis", [py, "tests/closure_capture_analysis_smoke.py", str(binary)]),
         ("lambda capture analysis", [py, "tests/lambda_capture_analysis_smoke.py", str(binary)]),
         ("interpreter mode", [py, "tests/interpreter_mode_smoke.py", str(binary)]),
+        ("interpreter closures", [py, "tests/interpreter_closure_smoke.py", str(binary)]),
         ("lexer parity fixtures", [py, "tests/lexer_parity_smoke.py", str(binary)]),
         (
             "lexer token sweep",

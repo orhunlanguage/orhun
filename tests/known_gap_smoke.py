@@ -60,12 +60,11 @@ def main() -> int:
     require(closure_case.exists(), f"Known-gap case not found: {closure_case}")
 
     assert_closure_known_gap(run(binary, closure_case), "default runner")
-    assert_closure_known_gap(run(binary, closure_case, "yorumla"), "yorumla")
     assert_closure_known_gap(run(binary, closure_case, "vm-kati"), "vm-kati")
 
     print(
         "Known-gap smoke passed "
-        "(closure capture still tracked in default, yorumla, and vm-kati)."
+        "(closure capture still tracked in default runner and vm-kati)."
     )
     return 0
 
