@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.24"
+surum olsun "0.3.25"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1384,6 +1384,31 @@ işlev yeni_nesne_hatasi(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
+işlev postfix_ifade_hatasi(tokenlar, konum):
+    token olsun guvenli_token(tokenlar, konum)
+    eğer token.tur eşit "ANAHTAR_KELIME" ve (token.deger eşit "işlev" veya token.deger eşit "dış_işlev" veya token.deger eşit "dis_islev" veya token.deger eşit "tip") ise:
+        döndür ""
+
+    satir_sonu olsun satir_sonu_indeksi(tokenlar, konum)
+    i olsun konum
+    sürece i küçük satir_sonu:
+        simdiki olsun guvenli_token(tokenlar, i)
+        onceki olsun guvenli_token(tokenlar, i - 1)
+        sonraki olsun guvenli_token(tokenlar, i + 1)
+        eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "(" ve onceki.tur eşit "KIMLIK" ise:
+            kapanis olsun ilk_deger_konumu(tokenlar, i + 1, satir_sonu, ")")
+            eğer kapanis küçük 0 ise:
+                döndür "Argüman listesinin sonunda ')' bekleniyor."
+        eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "[" ve onceki.tur eşit "KIMLIK" ise:
+            kapanis olsun ilk_deger_konumu(tokenlar, i + 1, satir_sonu, "]")
+            eğer kapanis küçük 0 ve değil satir_sonu_mu(sonraki) ise:
+                döndür "İndeks erişiminde ']' bekleniyor."
+        eğer simdiki.tur eşit "ISLEM" ve simdiki.deger eşit "." ise:
+            eğer sonraki.tur eşit_değil "KIMLIK" ise:
+                döndür "Nokta erişiminden sonra alan adı bekleniyor."
+        i olsun i + 1
+    döndür ""
+
 işlev baslik_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
     taninmayan_hata olsun taninmayan_komut_hatasi(tokenlar, konum)
@@ -1419,6 +1444,9 @@ işlev baslik_hatasi(tokenlar, konum):
     yeni_hata olsun yeni_nesne_hatasi(tokenlar, konum)
     eğer uzunluk(yeni_hata) büyük 0 ise:
         döndür yeni_hata
+    postfix_hata olsun postfix_ifade_hatasi(tokenlar, konum)
+    eğer uzunluk(postfix_hata) büyük 0 ise:
+        döndür postfix_hata
     paralel_hata olsun paralel_yap_hatasi(tokenlar, konum)
     eğer uzunluk(paralel_hata) büyük 0 ise:
         döndür paralel_hata
