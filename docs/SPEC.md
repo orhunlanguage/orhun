@@ -413,13 +413,16 @@ sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 
 The current prototype summarizes command node kinds, line numbers, primary
 expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
-children, assignment `bildirim` metadata for `Atama`/`CokluAtama`, child block
-command counts, and recursive child block command summaries, then compares them
-against the C++ parser AST through
+children, assignment metadata, child block command counts, and recursive child
+block command summaries, then compares them against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. Current coverage includes 138 successful AST
-fixtures and 10 parser error fixtures. Anonymous function summaries include
-their parameter names in `ayrinti` and the returned inline body expression in
-`altlar`. Error parity covers missing `ise`,
+fixtures and 10 parser error fixtures. Command metadata covers declaration
+assignment forms, assignment targets, multiple-assignment targets,
+function/class/external-function headers, includes, and try/catch error
+variables. Expression metadata covers anonymous function parameters/defaults,
+inline anonymous function body summaries, list-comprehension variables,
+dictionary literal keys, slice-bound presence, and `paralel yap` body command
+counts. Error parity covers missing `ise`,
 missing `kez`, required header colons, unknown command typos such as `yzdır 1`,
 non-trailing required parameters after default values, and multiline dictionary
 key errors. Those error fixtures also compare the reported line, expected-token
