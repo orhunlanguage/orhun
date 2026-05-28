@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.26"
+surum olsun "0.3.27"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1463,11 +1463,18 @@ işlev baslik_hatasi(tokenlar, konum):
         eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
             döndür "'işlev' başlığından sonra ':' bekleniyor"
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tip" ise:
+        ad_token olsun guvenli_token(tokenlar, konum + 1)
+        eğer ad_token.tur eşit_değil "KIMLIK" ise:
+            döndür "'tip' ifadesinden sonra sınıf adı bekleniyor."
         eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
             döndür "'tip' başlığından sonra ':' bekleniyor"
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "deneme" ise:
         eğer değil satirda_islem_mi(tokenlar, konum, ":") ise:
             döndür "'deneme' başlığından sonra ':' bekleniyor"
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "dahil_et" ise:
+        dosya_token olsun guvenli_token(tokenlar, konum + 1)
+        eğer dosya_token.tur eşit_değil "METIN" ise:
+            döndür "'dahil_et' komutundan sonra dosya adı bekleniyor."
     isimsiz_hata olsun isimsiz_islev_hatasi(tokenlar, konum)
     eğer uzunluk(isimsiz_hata) büyük 0 ise:
         döndür isimsiz_hata
