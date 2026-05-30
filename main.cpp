@@ -1290,7 +1290,7 @@ int komutPaketYeni(const std::string &projeAdi) {
 
   const std::string anaDosya = "# " + projeAdi +
                                "\n"
-                               "yazdır \"Merhaba Orhun!\"\n";
+                               "yaz \"Merhaba Orhun!\"\n";
   dosyaYaz((kok / "main.oh").string(), anaDosya);
 
   const std::string yapilandirma = "ad: \"" + projeAdi +
