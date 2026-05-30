@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.34"
+surum olsun "0.3.35"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1467,6 +1467,14 @@ işlev eksik_ifade_hatasi(tokenlar, konum):
         döndür "'sor' komutundan sonra bir soru ifadesi bekleniyor."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "döndür" ve satir_sonu_mu(sonraki) ise:
         döndür "'döndür' komutundan sonra bir ifade bekleniyor."
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ve satir_sonu_mu(sonraki) ise:
+        döndür "'eğer' komutundan sonra koşul ifadesi bekleniyor."
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "sürece" ve satir_sonu_mu(sonraki) ise:
+        döndür "'sürece' komutundan sonra koşul bekleniyor."
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "sürece" ve sonraki.tur eşit "ISLEM" ve sonraki.deger eşit ":" ise:
+        döndür "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez)."
+    eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ve satir_sonu_mu(sonraki) ise:
+        döndür "'tekrarla' komutundan sonra tekrar sayısı bekleniyor."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ve sonraki.tur eşit "ANAHTAR_KELIME" ve sonraki.deger eşit "ise" ise:
         döndür "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez)."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ve sonraki.tur eşit "ANAHTAR_KELIME" ve sonraki.deger eşit "kez" ise:

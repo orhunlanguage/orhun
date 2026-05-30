@@ -416,14 +416,15 @@ expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
 children, assignment metadata, child block command counts, and recursive child
 block command summaries, then compares them against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. Current coverage includes 138 successful AST
-fixtures and 57 parser error fixtures. Command metadata covers declaration
+fixtures and 61 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets,
 function/class/external-function headers, includes, and try/catch error
 variables. Expression metadata covers anonymous function parameters/defaults,
 inline anonymous function body summaries, list-comprehension variables,
 dictionary literal keys, slice-bound presence, and `paralel yap` body command
 counts. Error parity covers missing `ise`,
-missing `kez`, missing assignment/return expression operands, required header names/colons,
+missing `kez`, missing control-flow conditions/counts,
+missing assignment/return expression operands, required header names/colons,
 malformed external-function, `deneme/yakala`, anonymous-function, `yeni`,
 postfix, safe-access, collection/list-comprehension, and `paralel yap`
 expressions, unknown command typos such as `yzdır 1`,
