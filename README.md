@@ -28,6 +28,9 @@ Do not treat Orhun as production-stable yet. The project is currently focused on
 language semantics, VM parity, reliability, developer experience, and the path
 toward self-hosting.
 
+For a more concrete progress snapshot and the current estimate toward `1.0` /
+`2.1.0`, see [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
+
 ## What Orhun Provides
 
 - Turkish-first syntax and diagnostics

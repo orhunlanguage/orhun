@@ -73,6 +73,7 @@ def main() -> int:
     steps = [
         ("case manifest", [py, "tests/case_manifest_smoke.py"]),
         ("version consistency", [py, "tests/version_consistency_smoke.py", str(binary)]),
+        ("project status", [py, "tests/project_status_smoke.py"]),
         ("stdlib versions", [py, "tests/stdlib_version_smoke.py"]),
         ("known gaps", [py, "tests/known_gap_smoke.py", str(binary)]),
         ("closure capture analysis", [py, "tests/closure_capture_analysis_smoke.py", str(binary)]),
