@@ -1,0 +1,6 @@
+# ast: Yazdir,Yazdir,Yazdir,Yazdir,Yazdir
+yaz aralik(5)
+yaz aralik(1, 5)
+yaz aralık(5, 1, -2)
+yaz aralik(1, 5, 2)
+yaz aralik(1, 5, 0)

@@ -1546,6 +1546,48 @@ void Interpreter::gomuluIslevleriYukle() {
     return OrhunDegeri(std::move(yeniListe));
   };
 
+  auto aralikOlustur = [this](const std::vector<OrhunDegeri> &args,
+                              std::size_t satir) -> OrhunDegeri {
+    if (args.empty() || args.size() > 3) {
+      hataFirlat(satir, "aralik([baslangic], bitis, [adim]) bir, iki veya uc "
+                       "arguman alir.");
+    }
+
+    const long long baslangic =
+        args.size() == 1
+            ? 0
+            : static_cast<long long>(
+                  std::llround(sayiDegeri(args[0], satir, "aralik")));
+    const long long bitis = static_cast<long long>(std::llround(sayiDegeri(
+        args.size() == 1 ? args[0] : args[1], satir, "aralik")));
+    const long long adim =
+        args.size() < 3
+            ? 1
+            : static_cast<long long>(
+                  std::llround(sayiDegeri(args[2], satir, "aralik")));
+
+    OrhunDegeri::ListeVeri sonuc;
+    if (adim == 0) {
+      return OrhunDegeri(std::move(sonuc));
+    }
+
+    auto sayiDegeriOlustur = [](long long deger) -> OrhunDegeri {
+      if (deger >= std::numeric_limits<int>::min() &&
+          deger <= std::numeric_limits<int>::max()) {
+        return OrhunDegeri(static_cast<int>(deger));
+      }
+      return OrhunDegeri(static_cast<double>(deger));
+    };
+
+    for (long long i = baslangic;
+         adim > 0 ? i < bitis : i > bitis; i += adim) {
+      sonuc.push_back(sayiDegeriOlustur(i));
+    }
+    return OrhunDegeri(std::move(sonuc));
+  };
+  gomuluIslevler_["aralik"] = aralikOlustur;
+  gomuluIslevler_["aralık"] = aralikOlustur;
+
   gomuluIslevler_["dosya_oku"] = [this](const std::vector<OrhunDegeri> &args,
                                         std::size_t satir) -> OrhunDegeri {
     if (args.size() != 1) {

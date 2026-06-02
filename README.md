@@ -105,6 +105,13 @@ ad olsun oku("Adın? ")
 yaz "Merhaba, " + ad
 ```
 
+Create a simple range:
+
+```orhun
+yaz aralik(5)
+yaz aralık(5, 1, -2)
+```
+
 Strict VM mode:
 
 ```bash

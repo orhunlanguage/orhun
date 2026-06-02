@@ -168,6 +168,21 @@ ad olsun oku("Adın? ")
 yaz "Merhaba, " + ad
 ```
 
+## Ranges
+
+`aralik` creates a list of numbers without requiring a module import. The
+Turkish spelling `aralık` is also available. It accepts one, two, or three
+arguments:
+
+```orhun
+yaz aralik(5)          # [0, 1, 2, 3, 4]
+yaz aralik(1, 5)       # [1, 2, 3, 4]
+yaz aralık(5, 1, -2)   # [5, 3]
+```
+
+An `adim` value of `0` returns an empty list, matching the current
+`orhun/temel.oh` helper behavior.
+
 ## Control Flow
 
 ### If

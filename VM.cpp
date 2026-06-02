@@ -549,6 +549,37 @@ void VM::yerlesikNativesYukle() {
     throw std::runtime_error("uzunluk: metin/liste/sozluk bekleniyor.");
   });
 
+  ekleNative("aralik", -1, [](VM &vm, const std::vector<Value> &args) -> Value {
+    if (args.empty() || args.size() > 3) {
+      throw std::runtime_error(
+          "aralik([baslangic], bitis, [adim]) bir, iki veya uc arguman alir.");
+    }
+
+    const long long baslangic =
+        args.size() == 1
+            ? 0
+            : static_cast<long long>(
+                  std::llround(vm.sayiyaCevir(args[0], "aralik")));
+    const long long bitis = static_cast<long long>(std::llround(
+        vm.sayiyaCevir(args.size() == 1 ? args[0] : args[1], "aralik")));
+    const long long adim =
+        args.size() < 3
+            ? 1
+            : static_cast<long long>(
+                  std::llround(vm.sayiyaCevir(args[2], "aralik")));
+
+    std::vector<Value> sonuc;
+    if (adim == 0) {
+      return vm.yeniListe(std::move(sonuc));
+    }
+    for (long long i = baslangic;
+         adim > 0 ? i < bitis : i > bitis; i += adim) {
+      sonuc.push_back(Value::sayi(static_cast<double>(i)));
+    }
+    return vm.yeniListe(std::move(sonuc));
+  });
+  globaller_["aralık"] = globaller_["aralik"];
+
   ekleNative(
       "listeye_ekle", 2, [](VM &, const std::vector<Value> &args) -> Value {
         const Value &hedef = args[0];

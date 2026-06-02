@@ -6,6 +6,8 @@ from pathlib import Path
 
 
 BUILTINS = {
+    "aralik",
+    "aralık",
     "bekle",
     "dosya",
     "gorev",

@@ -37,8 +37,8 @@ These percentages are planning estimates, not promises.
   policy surfaces.
 - Formatter, linter, LSP, VS Code tooling, package/lock verification, and CI.
 - Orhun-written lexer/parser prototypes with parity smoke tests.
-- Beginner-friendly `yaz` print alias and `oku` input alias without reserving
-  those words as keywords.
+- Beginner-friendly `yaz` print alias, `oku` input alias, and global
+  `aralik`/`aralık` range helper without reserving those words as keywords.
 
 ## Main Remaining Work
 
