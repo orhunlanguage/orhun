@@ -132,6 +132,17 @@ def main() -> int:
                 {
                     "jsonrpc": "2.0",
                     "id": 6,
+                    "method": "textDocument/completion",
+                    "params": {
+                        "textDocument": {"uri": uri},
+                        "position": {"line": 4, "character": 0},
+                    },
+                }
+            ),
+            encode_message(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 7,
                     "method": "textDocument/rename",
                     "params": {
                         "textDocument": {"uri": uri},
@@ -161,12 +172,12 @@ def main() -> int:
             encode_message(
                 {
                     "jsonrpc": "2.0",
-                    "id": 7,
+                    "id": 8,
                     "method": "textDocument/diagnostic",
                     "params": {"textDocument": {"uri": uri}},
                 }
             ),
-            encode_message({"jsonrpc": "2.0", "id": 8, "method": "shutdown", "params": {}}),
+            encode_message({"jsonrpc": "2.0", "id": 9, "method": "shutdown", "params": {}}),
             encode_message({"jsonrpc": "2.0", "method": "exit", "params": {}}),
         ]
     )
@@ -185,6 +196,7 @@ def main() -> int:
         raise SystemExit("LSP smoke failed: initialize response missing")
     caps = init["result"].get("capabilities", {})
     for cap in (
+        "completionProvider",
         "hoverProvider",
         "signatureHelpProvider",
         "definitionProvider",
@@ -219,7 +231,16 @@ def main() -> int:
     if not isinstance(refs_resp["result"], list) or not refs_resp["result"]:
         raise SystemExit("LSP smoke failed: references result empty")
 
-    rename_resp = next((m for m in messages if m.get("id") == 6), None)
+    completion_resp = next((m for m in messages if m.get("id") == 6), None)
+    if completion_resp is None or "result" not in completion_resp:
+        raise SystemExit("LSP smoke failed: completion response missing")
+    completion_items = completion_resp["result"].get("items", [])
+    labels = {str(item.get("label", "")) for item in completion_items}
+    for label in ("yaz", "oku", "aralik", "aralık", "ilk", "son", "dolu_mu"):
+        if label not in labels:
+            raise SystemExit(f"LSP smoke failed: completion missing {label}")
+
+    rename_resp = next((m for m in messages if m.get("id") == 7), None)
     if rename_resp is None or "result" not in rename_resp:
         raise SystemExit("LSP smoke failed: rename response missing")
     changes = rename_resp["result"].get("changes", {})
@@ -229,7 +250,7 @@ def main() -> int:
     if uri_changes[0].get("newText") != "sonuc":
         raise SystemExit("LSP smoke failed: rename newText mismatch")
 
-    diag_resp = next((m for m in messages if m.get("id") == 7), None)
+    diag_resp = next((m for m in messages if m.get("id") == 8), None)
     if diag_resp is None or "result" not in diag_resp:
         raise SystemExit("LSP smoke failed: diagnostic response missing")
     items = diag_resp["result"].get("items", [])

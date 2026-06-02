@@ -491,6 +491,10 @@ orhun hiz dosya.oh --json
 orhun lsp --stdio
 ```
 
+The LSP completion provider returns language keywords plus common built-in
+functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
+and `dosya`.
+
 Stable channel defaults:
 
 - VM fallback is off.

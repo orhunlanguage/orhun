@@ -2942,21 +2942,72 @@ void lspYanitYaz(std::ostream &out, const std::string &idToken,
 }
 
 std::string lspTamamlamaSonucuJson() {
-  static const std::vector<std::string> anahtarlar = {
-      "yaz",    "yazdır", "olsun",      "eğer",  "ise",      "değilse", "doğru",
-      "yanlış", "eşit",   "eşit_değil", "büyük", "küçük",    "ve",
-      "veya",   "değil",  "tekrarla",   "kez",   "sürece",   "sor",
-      "işlev",  "döndür", "tip",        "yeni",  "benim",    "ust",
-      "deneme", "yakala", "kır",        "devam", "dahil_et", "için",
-      "içinde"};
+  struct TamamlamaOgesi {
+    const char *etiket;
+    int tur;
+    const char *ayrinti;
+  };
+
+  static const std::vector<TamamlamaOgesi> ogeler = {
+      {"olsun", 14, "Orhun anahtar kelimesi"},
+      {"eğer", 14, "Orhun anahtar kelimesi"},
+      {"ise", 14, "Orhun anahtar kelimesi"},
+      {"değilse", 14, "Orhun anahtar kelimesi"},
+      {"doğru", 14, "Orhun sabiti"},
+      {"yanlış", 14, "Orhun sabiti"},
+      {"eşit", 14, "Orhun operatörü"},
+      {"eşit_değil", 14, "Orhun operatörü"},
+      {"büyük", 14, "Orhun operatörü"},
+      {"küçük", 14, "Orhun operatörü"},
+      {"ve", 14, "Orhun operatörü"},
+      {"veya", 14, "Orhun operatörü"},
+      {"değil", 14, "Orhun operatörü"},
+      {"tekrarla", 14, "Orhun anahtar kelimesi"},
+      {"kez", 14, "Orhun anahtar kelimesi"},
+      {"sürece", 14, "Orhun anahtar kelimesi"},
+      {"işlev", 14, "Orhun anahtar kelimesi"},
+      {"döndür", 14, "Orhun anahtar kelimesi"},
+      {"tip", 14, "Orhun anahtar kelimesi"},
+      {"yeni", 14, "Orhun anahtar kelimesi"},
+      {"benim", 14, "Orhun anahtar kelimesi"},
+      {"ust", 14, "Orhun anahtar kelimesi"},
+      {"deneme", 14, "Orhun anahtar kelimesi"},
+      {"yakala", 14, "Orhun anahtar kelimesi"},
+      {"kır", 14, "Orhun anahtar kelimesi"},
+      {"devam", 14, "Orhun anahtar kelimesi"},
+      {"dahil_et", 14, "Orhun anahtar kelimesi"},
+      {"için", 14, "Orhun anahtar kelimesi"},
+      {"içinde", 14, "Orhun anahtar kelimesi"},
+      {"yaz", 3, "Yerleşik çıktı işlevi"},
+      {"yazdır", 3, "Yerleşik çıktı işlevi"},
+      {"sor", 3, "Yerleşik girdi işlevi"},
+      {"oku", 3, "Yerleşik girdi işlevi"},
+      {"aralik", 3, "Yerleşik aralık işlevi"},
+      {"aralık", 3, "Yerleşik aralık işlevi"},
+      {"ilk", 3, "Yerleşik koleksiyon işlevi"},
+      {"son", 3, "Yerleşik koleksiyon işlevi"},
+      {"bos_mu", 3, "Yerleşik koleksiyon işlevi"},
+      {"boş_mu", 3, "Yerleşik koleksiyon işlevi"},
+      {"dolu_mu", 3, "Yerleşik koleksiyon işlevi"},
+      {"uzunluk", 3, "Yerleşik koleksiyon işlevi"},
+      {"metne_cevir", 3, "Yerleşik dönüşüm işlevi"},
+      {"sayiya_cevir", 3, "Yerleşik dönüşüm işlevi"},
+      {"bekle", 3, "Yerleşik zaman işlevi"},
+      {"json", 9, "Yerleşik modül"},
+      {"metin", 9, "Yerleşik modül"},
+      {"dosya", 9, "Yerleşik modül"},
+      {"regex", 9, "Yerleşik modül"},
+      {"gorev", 9, "Yerleşik modül"},
+      {"veritabani", 9, "Yerleşik modül"}};
   std::ostringstream ss;
   ss << "{\"isIncomplete\":false,\"items\":[";
-  for (std::size_t i = 0; i < anahtarlar.size(); ++i) {
+  for (std::size_t i = 0; i < ogeler.size(); ++i) {
     if (i > 0) {
       ss << ",";
     }
-    ss << "{\"label\":\"" << anahtarlar[i]
-       << "\",\"kind\":14,\"detail\":\"Orhun anahtar kelimesi\"}";
+    ss << "{\"label\":\"" << jsonKacis(ogeler[i].etiket)
+       << "\",\"kind\":" << ogeler[i].tur << ",\"detail\":\""
+       << jsonKacis(ogeler[i].ayrinti) << "\"}";
   }
   ss << "]}";
   return ss.str();
