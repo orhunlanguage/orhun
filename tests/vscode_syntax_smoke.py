@@ -59,6 +59,8 @@ def main() -> int:
         "Eğer": "eger",
         "İşlev": "islev",
         "Aralık Döngüsü": "aralik",
+        "Numaralandır": "numaralandir",
+        "Eşleştir": "eslestir",
     }
     for name, prefix in required_snippets.items():
         require(name in snippets, f"VS Code snippet missing {name}")
@@ -70,6 +72,10 @@ def main() -> int:
     require("oku(" in "\n".join(snippets["Oku"]["body"]), "Oku snippet should call oku")
     require("aralik(" in "\n".join(snippets["Aralık Döngüsü"]["body"]),
             "Aralik snippet should call aralik")
+    require("koleksiyon.numaralandir(" in "\n".join(snippets["Numaralandır"]["body"]),
+            "Numaralandir snippet should call koleksiyon.numaralandir")
+    require("koleksiyon.eslestir(" in "\n".join(snippets["Eşleştir"]["body"]),
+            "Eslestir snippet should call koleksiyon.eslestir")
 
     print("VS Code tooling smoke passed.")
     return 0

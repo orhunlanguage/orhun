@@ -42,5 +42,24 @@
       "    ${4:i} olsun ${4:i} + 1"
     ],
     "description": "Aralık listesiyle basit döngü oluştur"
+  },
+  "Numaralandır": {
+    "prefix": "numaralandir",
+    "body": [
+      "koleksiyon olsun dahil_et \"orhun/koleksiyon.oh\"",
+      "${1:sayilar} olsun [${2:5}, ${3:6}]",
+      "yaz koleksiyon.numaralandir(${1:sayilar}, ${4:1})"
+    ],
+    "description": "Liste değerlerini sıra numarasıyla eşleştir"
+  },
+  "Eşleştir": {
+    "prefix": "eslestir",
+    "body": [
+      "koleksiyon olsun dahil_et \"orhun/koleksiyon.oh\"",
+      "${1:sol} olsun [${2:1}, ${3:2}]",
+      "${4:sag} olsun [${5:7}, ${6:8}]",
+      "yaz koleksiyon.eslestir(${1:sol}, ${4:sag})"
+    ],
+    "description": "İki listeyi çiftler halinde eşleştir"
   }
 }

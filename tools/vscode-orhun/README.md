@@ -7,7 +7,8 @@ Bu klasor Orhun dili icin temel VS Code entegrasyon taslagini icerir.
 - `.oh` dosya uzantisini tanir
 - Temel sozdizimi renklendirme (anahtar kelime, yorum, metin, sayi)
 - Girinti tabanli dil icin temel editor ayarlari
-- Baslangic dostu snippet'lar (`yaz`, `oku`, `eger`, `islev`, `aralik`)
+- Baslangic dostu snippet'lar (`yaz`, `oku`, `eger`, `islev`, `aralik`,
+  `numaralandir`, `eslestir`)
 
 ## Snippet'lar
 
@@ -18,6 +19,8 @@ Editor icinde bu kisaltmalar kullanilabilir:
 - `eger`: kosul blogu
 - `islev`: islev tanimi
 - `aralik`: basit aralik dongusu
+- `numaralandir`: koleksiyon yardimcisiyla sirali ciftler
+- `eslestir`: iki listeyi ciftler halinde eslestirme
 
 ## LSP Baglantisi
 
