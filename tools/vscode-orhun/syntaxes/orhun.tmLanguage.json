@@ -12,6 +12,9 @@
       "include": "#keywords"
     },
     {
+      "include": "#builtins"
+    },
+    {
       "include": "#numbers"
     },
     {
@@ -63,6 +66,18 @@
         {
           "name": "keyword.operator.logical.orhun",
           "match": "\\b(eşit|eşit_değil|büyük|küçük|ve|veya|değil)\\b"
+        }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.orhun",
+          "match": "\\b(yaz|yazdır|sor|oku|aralik|aralık|ilk|son|bos_mu|boş_mu|dolu_mu|uzunluk|metne_cevir|sayiya_cevir|bekle)\\b"
+        },
+        {
+          "name": "support.module.orhun",
+          "match": "\\b(json|metin|dosya|regex|gorev|veritabani)\\b"
         }
       ]
     },
