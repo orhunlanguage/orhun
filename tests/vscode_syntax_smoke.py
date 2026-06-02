@@ -11,8 +11,24 @@ def require(condition: bool, message: str) -> None:
 
 def main() -> int:
     repo = Path(__file__).resolve().parents[1]
+    package_path = repo / "tools" / "vscode-orhun" / "package.json"
     syntax_path = repo / "tools" / "vscode-orhun" / "syntaxes" / "orhun.tmLanguage.json"
+    snippets_path = repo / "tools" / "vscode-orhun" / "snippets" / "orhun.code-snippets"
+
+    package = json.loads(package_path.read_text(encoding="utf-8"))
+    snippets = json.loads(snippets_path.read_text(encoding="utf-8"))
     grammar = json.loads(syntax_path.read_text(encoding="utf-8"))
+
+    snippet_contribs = package.get("contributes", {}).get("snippets", [])
+    require(snippet_contribs, "VS Code package should contribute snippets")
+    require(
+        any(
+            item.get("language") == "orhun"
+            and item.get("path") == "./snippets/orhun.code-snippets"
+            for item in snippet_contribs
+        ),
+        "VS Code package snippet contribution is missing or stale",
+    )
 
     includes = [item.get("include") for item in grammar.get("patterns", [])]
     require("#builtins" in includes, "VS Code grammar should include #builtins")
@@ -37,7 +53,25 @@ def main() -> int:
         require(re.search(rf"(?<![A-Za-z_]){re.escape(word)}(?![A-Za-z_])", combined),
                 f"VS Code builtins pattern missing {word}")
 
-    print("VS Code syntax smoke passed.")
+    required_snippets = {
+        "Yaz": "yaz",
+        "Oku": "oku",
+        "Eğer": "eger",
+        "İşlev": "islev",
+        "Aralık Döngüsü": "aralik",
+    }
+    for name, prefix in required_snippets.items():
+        require(name in snippets, f"VS Code snippet missing {name}")
+        snippet = snippets[name]
+        require(snippet.get("prefix") == prefix, f"VS Code snippet prefix stale: {name}")
+        body = "\n".join(snippet.get("body", []))
+        require(body.strip(), f"VS Code snippet body empty: {name}")
+
+    require("oku(" in "\n".join(snippets["Oku"]["body"]), "Oku snippet should call oku")
+    require("aralik(" in "\n".join(snippets["Aralık Döngüsü"]["body"]),
+            "Aralik snippet should call aralik")
+
+    print("VS Code tooling smoke passed.")
     return 0
 
 

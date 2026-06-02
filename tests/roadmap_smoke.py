@@ -84,7 +84,7 @@ def main() -> int:
         ("input alias", [py, "tests/input_alias_smoke.py", str(binary)]),
         ("examples", [py, "tests/examples_smoke.py", str(binary)]),
         ("package new scaffold", [py, "tests/package_new_smoke.py", str(binary)]),
-        ("VS Code syntax", [py, "tests/vscode_syntax_smoke.py"]),
+        ("VS Code tooling", [py, "tests/vscode_syntax_smoke.py"]),
         ("lexer parity fixtures", [py, "tests/lexer_parity_smoke.py", str(binary)]),
         (
             "lexer token sweep",

@@ -1,0 +1,46 @@
+{
+  "Yaz": {
+    "prefix": "yaz",
+    "body": [
+      "yaz \"$1\""
+    ],
+    "description": "Ekrana metin yazdır"
+  },
+  "Oku": {
+    "prefix": "oku",
+    "body": [
+      "${1:ad} olsun oku(\"${2:Adın?} \")",
+      "yaz \"Merhaba, \" + ${1:ad}"
+    ],
+    "description": "Kullanıcıdan bir satır oku"
+  },
+  "Eğer": {
+    "prefix": "eger",
+    "body": [
+      "eğer ${1:koşul} ise:",
+      "    ${2:yaz \"doğru\"}",
+      "değilse:",
+      "    ${3:yaz \"yanlış\"}"
+    ],
+    "description": "Koşul bloğu oluştur"
+  },
+  "İşlev": {
+    "prefix": "islev",
+    "body": [
+      "işlev ${1:ad}(${2:parametre}):",
+      "    döndür ${3:parametre}"
+    ],
+    "description": "İşlev tanımı oluştur"
+  },
+  "Aralık Döngüsü": {
+    "prefix": "aralik",
+    "body": [
+      "${1:sayilar} olsun aralik(${2:1}, ${3:6})",
+      "${4:i} olsun 0",
+      "sürece ${4:i} küçük uzunluk(${1:sayilar}):",
+      "    yaz ${1:sayilar}[${4:i}]",
+      "    ${4:i} olsun ${4:i} + 1"
+    ],
+    "description": "Aralık listesiyle basit döngü oluştur"
+  }
+}

@@ -30,6 +30,12 @@
         "scopeName": "source.orhun",
         "path": "./syntaxes/orhun.tmLanguage.json"
       }
+    ],
+    "snippets": [
+      {
+        "language": "orhun",
+        "path": "./snippets/orhun.code-snippets"
+      }
     ]
   }
 }
