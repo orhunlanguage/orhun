@@ -82,6 +82,7 @@ def main() -> int:
         ("interpreter closures", [py, "tests/interpreter_closure_smoke.py", str(binary)]),
         ("VM closure extras", [py, "tests/vm_closure_extra_smoke.py", str(binary)]),
         ("input alias", [py, "tests/input_alias_smoke.py", str(binary)]),
+        ("beginner docs", [py, "tests/beginner_docs_smoke.py"]),
         ("examples", [py, "tests/examples_smoke.py", str(binary)]),
         ("package new scaffold", [py, "tests/package_new_smoke.py", str(binary)]),
         ("VS Code tooling", [py, "tests/vscode_syntax_smoke.py"]),

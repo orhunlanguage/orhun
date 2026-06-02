@@ -92,6 +92,9 @@ g++ -std=c++17 -Wall -Wextra main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk
 
 ## Quick Start
 
+For a step-by-step Turkish beginner guide, see
+[`docs/BEGINNER_GUIDE.md`](docs/BEGINNER_GUIDE.md).
+
 Run a source file:
 
 ```bash
@@ -197,6 +200,7 @@ self-hosting plan.
 - VS Code tooling smoke: `tests/vscode_syntax_smoke.py`
 - VS Code tooling: `tools/vscode-orhun`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
+- Beginner guide: `docs/BEGINNER_GUIDE.md`
 - Language specification: `docs/SPEC.md`
 - Closure/capture plan: `docs/CLOSURE_CAPTURE_PLAN.md`
 - Versioning policy: `docs/VERSIONING.md`
