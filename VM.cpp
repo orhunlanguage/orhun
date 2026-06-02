@@ -580,6 +580,75 @@ void VM::yerlesikNativesYukle() {
   });
   globaller_["aralık"] = globaller_["aralik"];
 
+  auto koleksiyonUzunluguBul = [](const Value &deger,
+                                  const std::string &baglam) -> std::size_t {
+    if (deger.nesneMi() && deger.as.nesne != nullptr) {
+      if (deger.as.nesne->type == ObjType::STRING) {
+        return static_cast<ObjString *>(deger.as.nesne)->deger.size();
+      }
+      if (deger.as.nesne->type == ObjType::LIST) {
+        return static_cast<ObjList *>(deger.as.nesne)->ogeler.size();
+      }
+      if (deger.as.nesne->type == ObjType::DICT) {
+        return static_cast<ObjDict *>(deger.as.nesne)->alanlar.size();
+      }
+    }
+    throw std::runtime_error(baglam + ": metin, liste veya sozluk bekleniyor.");
+  };
+
+  ekleNative("bos_mu", 1,
+             [koleksiyonUzunluguBul](VM &, const std::vector<Value> &args)
+                 -> Value {
+               return Value::mantik(
+                   koleksiyonUzunluguBul(args[0], "bos_mu") == 0);
+             });
+  globaller_["boş_mu"] = globaller_["bos_mu"];
+
+  ekleNative("dolu_mu", 1,
+             [koleksiyonUzunluguBul](VM &, const std::vector<Value> &args)
+                 -> Value {
+               return Value::mantik(
+                   koleksiyonUzunluguBul(args[0], "dolu_mu") > 0);
+             });
+
+  ekleNative("ilk", -1, [](VM &, const std::vector<Value> &args) -> Value {
+    if (args.empty() || args.size() > 2) {
+      throw std::runtime_error("ilk(liste, [yedek]) bir veya iki arguman alir.");
+    }
+    const Value &hedef = args[0];
+    if (!hedef.nesneMi() || hedef.as.nesne == nullptr ||
+        hedef.as.nesne->type != ObjType::LIST) {
+      throw std::runtime_error("ilk icin ilk arguman liste olmalidir.");
+    }
+    const auto *liste = static_cast<ObjList *>(hedef.as.nesne);
+    if (!liste->ogeler.empty()) {
+      return liste->ogeler.front();
+    }
+    if (args.size() == 2) {
+      return args[1];
+    }
+    throw std::runtime_error("ilk bos liste icin yedek arguman ister.");
+  });
+
+  ekleNative("son", -1, [](VM &, const std::vector<Value> &args) -> Value {
+    if (args.empty() || args.size() > 2) {
+      throw std::runtime_error("son(liste, [yedek]) bir veya iki arguman alir.");
+    }
+    const Value &hedef = args[0];
+    if (!hedef.nesneMi() || hedef.as.nesne == nullptr ||
+        hedef.as.nesne->type != ObjType::LIST) {
+      throw std::runtime_error("son icin ilk arguman liste olmalidir.");
+    }
+    const auto *liste = static_cast<ObjList *>(hedef.as.nesne);
+    if (!liste->ogeler.empty()) {
+      return liste->ogeler.back();
+    }
+    if (args.size() == 2) {
+      return args[1];
+    }
+    throw std::runtime_error("son bos liste icin yedek arguman ister.");
+  });
+
   ekleNative(
       "listeye_ekle", 2, [](VM &, const std::vector<Value> &args) -> Value {
         const Value &hedef = args[0];

@@ -1588,6 +1588,82 @@ void Interpreter::gomuluIslevleriYukle() {
   gomuluIslevler_["aralik"] = aralikOlustur;
   gomuluIslevler_["aralık"] = aralikOlustur;
 
+  auto koleksiyonUzunluguBul = [this](const OrhunDegeri &deger,
+                                      std::size_t satir,
+                                      const std::string &baglam) -> std::size_t {
+    if (std::holds_alternative<std::string>(deger.veri)) {
+      return std::get<std::string>(deger.veri).size();
+    }
+    if (std::holds_alternative<OrhunDegeri::ListeTipi>(deger.veri)) {
+      const auto &liste = std::get<OrhunDegeri::ListeTipi>(deger.veri);
+      return liste ? liste->size() : 0;
+    }
+    if (std::holds_alternative<OrhunDegeri::SozlukTipi>(deger.veri)) {
+      const auto &sozluk = std::get<OrhunDegeri::SozlukTipi>(deger.veri);
+      return sozluk ? sozluk->size() : 0;
+    }
+    hataFirlat(satir, baglam + ": metin, liste veya sozluk bekleniyor.");
+  };
+
+  gomuluIslevler_["bos_mu"] = [this, koleksiyonUzunluguBul](
+                                  const std::vector<OrhunDegeri> &args,
+                                  std::size_t satir) -> OrhunDegeri {
+    if (args.size() != 1) {
+      hataFirlat(satir, "bos_mu(deger) tek arguman alir.");
+    }
+    return OrhunDegeri(koleksiyonUzunluguBul(args[0], satir, "bos_mu") == 0
+                           ? 1
+                           : 0);
+  };
+  gomuluIslevler_["boş_mu"] = gomuluIslevler_["bos_mu"];
+
+  gomuluIslevler_["dolu_mu"] = [this, koleksiyonUzunluguBul](
+                                   const std::vector<OrhunDegeri> &args,
+                                   std::size_t satir) -> OrhunDegeri {
+    if (args.size() != 1) {
+      hataFirlat(satir, "dolu_mu(deger) tek arguman alir.");
+    }
+    return OrhunDegeri(koleksiyonUzunluguBul(args[0], satir, "dolu_mu") > 0
+                           ? 1
+                           : 0);
+  };
+
+  gomuluIslevler_["ilk"] = [this](const std::vector<OrhunDegeri> &args,
+                                  std::size_t satir) -> OrhunDegeri {
+    if (args.empty() || args.size() > 2) {
+      hataFirlat(satir, "ilk(liste, [yedek]) bir veya iki arguman alir.");
+    }
+    if (!std::holds_alternative<OrhunDegeri::ListeTipi>(args[0].veri)) {
+      hataFirlat(satir, "ilk icin ilk arguman liste olmalidir.");
+    }
+    const auto &liste = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
+    if (liste && !liste->empty()) {
+      return liste->front();
+    }
+    if (args.size() == 2) {
+      return args[1];
+    }
+    hataFirlat(satir, "ilk bos liste icin yedek arguman ister.");
+  };
+
+  gomuluIslevler_["son"] = [this](const std::vector<OrhunDegeri> &args,
+                                  std::size_t satir) -> OrhunDegeri {
+    if (args.empty() || args.size() > 2) {
+      hataFirlat(satir, "son(liste, [yedek]) bir veya iki arguman alir.");
+    }
+    if (!std::holds_alternative<OrhunDegeri::ListeTipi>(args[0].veri)) {
+      hataFirlat(satir, "son icin ilk arguman liste olmalidir.");
+    }
+    const auto &liste = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
+    if (liste && !liste->empty()) {
+      return liste->back();
+    }
+    if (args.size() == 2) {
+      return args[1];
+    }
+    hataFirlat(satir, "son bos liste icin yedek arguman ister.");
+  };
+
   gomuluIslevler_["dosya_oku"] = [this](const std::vector<OrhunDegeri> &args,
                                         std::size_t satir) -> OrhunDegeri {
     if (args.size() != 1) {

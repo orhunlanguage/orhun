@@ -255,6 +255,9 @@ Lists:
 ```orhun
 sayılar olsun [1, 2, 3]
 yazdır sayılar[0]
+yaz ilk(sayılar)
+yaz son(sayılar)
+yaz dolu_mu(sayılar)
 ```
 
 Dictionaries:
@@ -270,6 +273,15 @@ List comprehensions are supported.
 ```orhun
 sonuç olsun [x * 2 için x içinde [1, 2, 3]]
 ```
+
+Collection helpers:
+
+- `ilk(liste, [yedek])` returns the first item. Empty lists require `yedek`.
+- `son(liste, [yedek])` returns the last item. Empty lists require `yedek`.
+- `bos_mu(deger)` / `boş_mu(deger)` checks whether a string, list, or
+  dictionary is empty.
+- `dolu_mu(deger)` checks whether a string, list, or dictionary has at least
+  one item.
 
 ## Classes
 

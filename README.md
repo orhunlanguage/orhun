@@ -110,6 +110,8 @@ Create a simple range:
 ```orhun
 yaz aralik(5)
 yaz aralık(5, 1, -2)
+yaz ilk([3, 4])
+yaz son([3, 4])
 ```
 
 Strict VM mode:

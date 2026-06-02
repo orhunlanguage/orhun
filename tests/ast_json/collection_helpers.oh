@@ -1,0 +1,9 @@
+# ast: Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir,Yazdir
+yaz ilk([3, 4])
+yaz ilk([], 99)
+yaz son([3, 4])
+yaz son([], 99)
+yaz bos_mu([])
+yaz boş_mu("")
+yaz dolu_mu([1])
+yaz dolu_mu({})
