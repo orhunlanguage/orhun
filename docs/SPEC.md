@@ -456,7 +456,7 @@ expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
 children, assignment metadata, child block command counts, and recursive child
 block command summaries, then compares them against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. Current coverage includes 142 successful AST
-fixtures and 62 parser error fixtures. Command metadata covers declaration
+fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets,
 function/class/external-function headers, includes, and try/catch error
 variables. Expression metadata covers anonymous function parameters/defaults,

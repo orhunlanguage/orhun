@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.36"
+surum olsun "0.3.37"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1266,6 +1266,8 @@ işlev taninmayan_komut_hatasi(tokenlar, konum):
     eğer ikili_operator_mu(sonraki) ise:
         döndür ""
     eğer sonraki.tur eşit "SAYI" veya sonraki.tur eşit "ONDALIK" veya sonraki.tur eşit "METIN" veya sonraki.tur eşit "ANAHTAR_KELIME" veya sonraki.tur eşit "KIMLIK" ise:
+        eğer token.deger eşit "yaaz" ise:
+            döndür "Tanınmayan komut: '" + token.deger + "'. Bunu mu demek istediniz: 'yaz'?"
         eğer token.deger eşit "yzdır" ise:
             döndür "Tanınmayan komut: '" + token.deger + "'. Bunu mu demek istediniz: 'yazdır'?"
         döndür "Tanınmayan komut: '" + token.deger + "'"

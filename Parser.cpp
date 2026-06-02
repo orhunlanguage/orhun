@@ -38,12 +38,15 @@ bool cagrilabilirAdCoz(const ASTNode *dugum, std::string &ad) {
 
 const std::vector<std::string> &orhunAnahtarKelimeleri() {
   static const std::vector<std::string> anahtarlar = {
-      "yazdır",    "olsun",     "eğer",     "ise",    "değilse", "doğru",
-      "yanlış",    "tekrarla",  "kez",      "sor",    "işlev",   "döndür",
+      "yaz",       "yazdır",    "olsun",    "eğer",   "ise",     "değilse",
+      "doğru",     "yanlış",    "tekrarla", "kez",    "sor",     "oku",
+      "işlev",     "döndür",
       "dış_işlev", "dis_islev", "dahil_et", "sürece", "eşit",    "eşit_değil",
       "büyük",     "küçük",     "ve",       "veya",   "değil",   "tip",
       "yeni",      "benim",     "deneme",   "yakala", "kır",     "devam",
-      "ust",       "için",      "içinde",   "paralel", "yap"};
+      "ust",       "için",      "içinde",   "paralel", "yap",    "aralik",
+      "aralık",    "ilk",       "son",      "bos_mu", "boş_mu",  "dolu_mu",
+      "uzunluk"};
   return anahtarlar;
 }
 
