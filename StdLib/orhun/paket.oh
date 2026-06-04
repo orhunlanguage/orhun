@@ -42,16 +42,19 @@ işlev ozet(manifest):
     döndür ad(manifest) + "@" + surum_al(manifest)
 
 işlev ad_gecerli_mi(paket_adi):
-    eğer uzunluk(paket_adi) eşit 0 ise:
-        döndür yanlış
-
-    i olsun 0
-    sürece i küçük uzunluk(paket_adi):
-        eğer metin.icerir(izinli_ad_karakterleri, paket_adi[i]) ise:
-            i olsun i + 1
-        değilse:
+    deneme:
+        eğer uzunluk(paket_adi) eşit 0 ise:
             döndür yanlış
-    döndür doğru
+
+        i olsun 0
+        sürece i küçük uzunluk(paket_adi):
+            eğer metin.icerir(izinli_ad_karakterleri, paket_adi[i]) ise:
+                i olsun i + 1
+            değilse:
+                döndür yanlış
+        döndür doğru
+    yakala hata:
+        döndür yanlış
 
 işlev ilk_gecersiz_bagimlilik(bagimlilik_listesi):
     i olsun 0
@@ -64,9 +67,13 @@ işlev ilk_gecersiz_bagimlilik(bagimlilik_listesi):
 
 işlev dogrula(manifest):
     deneme:
-        eğer uzunluk(ad(manifest)) eşit 0 ise:
-            döndür sonuc_yardimci.hata("manifest ad alani zorunlu")
-        eğer değil ad_gecerli_mi(ad(manifest)) ise:
+        manifest_adi olsun ad(manifest)
+        eğer değil ad_gecerli_mi(manifest_adi) ise:
+            deneme:
+                eğer uzunluk(manifest_adi) eşit 0 ise:
+                    döndür sonuc_yardimci.hata("manifest ad alani zorunlu")
+            yakala hata:
+                döndür sonuc_yardimci.hata("manifest ad alani gecersiz")
             döndür sonuc_yardimci.hata("manifest ad alani gecersiz")
         eğer uzunluk(surum_al(manifest)) eşit 0 ise:
             döndür sonuc_yardimci.hata("manifest surum alani zorunlu")

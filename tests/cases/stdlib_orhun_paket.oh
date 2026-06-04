@@ -37,6 +37,14 @@ gecersiz_bagimlilik olsun json.coz("{\"ad\":\"ornek\",\"surum\":\"1.0.0\",\"bagi
 yazdır paket_yardimci.dogrula(gecersiz_bagimlilik).ok
 yazdır metin.icerir(paket_yardimci.dogrula(gecersiz_bagimlilik).hata, "bagimlilik")
 
+gecersiz_ad_tipi olsun json.coz("{\"ad\":1,\"surum\":\"1.0.0\"}")
+yazdır paket_yardimci.dogrula(gecersiz_ad_tipi).ok
+yazdır metin.icerir(paket_yardimci.dogrula(gecersiz_ad_tipi).hata, "ad")
+
+gecersiz_bagimlilik_tipi olsun json.coz("{\"ad\":\"ornek\",\"surum\":\"1.0.0\",\"bagimliliklar\":[1]}")
+yazdır paket_yardimci.dogrula(gecersiz_bagimlilik_tipi).ok
+yazdır metin.icerir(paket_yardimci.dogrula(gecersiz_bagimlilik_tipi).hata, "bagimlilik")
+
 bozuk olsun paket_yardimci.coz("{bozuk")
 yazdır bozuk.ok
 yazdır metin.icerir(bozuk.hata, "json.coz")
