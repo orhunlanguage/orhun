@@ -454,6 +454,9 @@ Lexer parity fixtures live in `tests/lexer_parity/` and are compared against the
 C++ lexer through `tests/lexer_parity_smoke.py`. The same smoke can sweep the
 runtime case suite with `--fixtures tests/cases --tokens-only` to guard token
 type/value parity across broader language examples.
+Fixtures that intentionally exercise lexer errors use `# parity: allow-errors`;
+for those cases the smoke compares error counts and token shape while leaving
+the exact diagnostic text free for clearer Turkish wording.
 
 ## Orhun-Source Parser Prototype
 

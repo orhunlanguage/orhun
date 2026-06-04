@@ -52,8 +52,10 @@ Basari olcutu:
 ## Faz 2: Orhun Ile Lexer ve Parser
 
 Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.2.0 ile `hata_sayisi` ve
-`tokenlar` payload'i ureten `ozetle` giris noktasini sagliyor. Parser
-prototipi 142 basarili AST fixture ve 63 hata fixture seviyesine tasindi.
+`tokenlar` payload'i ureten `ozetle` giris noktasini sagliyor. Lexer parity
+7 basarili fixture, 3 hata fixture ve genis `tests/cases` token sweep
+seviyesine tasindi. Parser prototipi 142 basarili AST fixture ve 63 hata
+fixture seviyesine tasindi.
 Recursive block summary parity ve recursive expression child parity basladi.
 `orhun/parser.oh` 0.3.41 atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini, islev basligi varsayilan arguman

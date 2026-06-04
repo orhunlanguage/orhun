@@ -37,9 +37,19 @@ def orhun_string(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
-def normalized(tokens: list[dict], include_position: bool) -> list[dict]:
+def normalized(
+    tokens: list[dict],
+    include_position: bool,
+    include_error_value: bool,
+) -> list[dict]:
     keys = ("tur", "deger", "satir", "sutun") if include_position else ("tur", "deger")
-    return [{key: token.get(key) for key in keys} for token in tokens]
+    result = []
+    for token in tokens:
+        item = {key: token.get(key) for key in keys}
+        if token.get("tur") == "HATA" and not include_error_value:
+            item.pop("deger", None)
+        result.append(item)
+    return result
 
 
 def fixture_include_position(path: Path) -> bool:
@@ -50,18 +60,44 @@ def fixture_include_position(path: Path) -> bool:
     return "parity: tokens-only" not in first_line
 
 
-def compare_file(binary: Path, repo: Path, source_file: Path, include_position: bool) -> None:
+def fixture_allow_errors(path: Path) -> bool:
+    try:
+        first_line = path.read_text(encoding="utf-8").splitlines()[0]
+    except IndexError:
+        return False
+    return "parity: allow-errors" in first_line
+
+
+def compare_file(
+    binary: Path,
+    repo: Path,
+    source_file: Path,
+    include_position: bool,
+    allow_errors: bool,
+) -> None:
     with tempfile.TemporaryDirectory(prefix="orhun_lexer_parity_") as tmp:
         root = Path(tmp)
         driver_file = root / "driver.oh"
 
         cxx_proc = run_cmd([str(binary), "lex", str(source_file), "--json"], repo)
-        require(
-            cxx_proc.returncode == 0,
-            f"C++ lexer command failed:\nSTDOUT:\n{cxx_proc.stdout}\nSTDERR:\n{cxx_proc.stderr}",
-        )
+        if allow_errors:
+            require(
+                cxx_proc.returncode != 0,
+                f"C++ lexer should fail for error fixture: {source_file}",
+            )
+        else:
+            require(
+                cxx_proc.returncode == 0,
+                f"C++ lexer command failed:\nSTDOUT:\n{cxx_proc.stdout}\nSTDERR:\n{cxx_proc.stderr}",
+            )
         cxx_payload = parse_last_json(cxx_proc.stdout)
-        require(cxx_payload.get("hata_sayisi") == 0, "C++ lexer reported errors")
+        if allow_errors:
+            require(
+                cxx_payload.get("hata_sayisi", 0) > 0,
+                f"C++ lexer should report errors for {source_file}",
+            )
+        else:
+            require(cxx_payload.get("hata_sayisi") == 0, "C++ lexer reported errors")
         cxx_tokens = cxx_payload.get("tokenlar")
         require(isinstance(cxx_tokens, list), "C++ lexer JSON missing tokenlar list")
 
@@ -91,8 +127,8 @@ def compare_file(binary: Path, repo: Path, source_file: Path, include_position: 
         orhun_tokens = orhun_payload.get("tokenlar")
         require(isinstance(orhun_tokens, list), "Orhun lexer payload missing tokenlar list")
 
-        left = normalized(cxx_tokens, include_position)
-        right = normalized(orhun_tokens, include_position)
+        left = normalized(cxx_tokens, include_position, include_error_value=not allow_errors)
+        right = normalized(orhun_tokens, include_position, include_error_value=not allow_errors)
         require(
             left == right,
             f"Lexer parity mismatch: {source_file}\n"
@@ -106,12 +142,13 @@ def compare_source(
     repo: Path,
     source: str,
     include_position: bool,
+    allow_errors: bool = False,
     newline: str = "\n",
 ) -> None:
     with tempfile.TemporaryDirectory(prefix="orhun_lexer_parity_src_") as tmp:
         source_file = Path(tmp) / "case.oh"
         source_file.write_text(source, encoding="utf-8", newline=newline)
-        compare_file(binary, repo, source_file, include_position)
+        compare_file(binary, repo, source_file, include_position, allow_errors)
 
 
 def main() -> int:
@@ -167,7 +204,7 @@ def main() -> int:
 
     for case in cases:
         include_position = False if args.tokens_only else fixture_include_position(case)
-        compare_file(binary, repo, case, include_position)
+        compare_file(binary, repo, case, include_position, fixture_allow_errors(case))
 
     compare_source(
         binary,
