@@ -457,6 +457,10 @@ type/value parity across broader language examples.
 Fixtures that intentionally exercise lexer errors use `# parity: allow-errors`;
 for those cases the smoke compares error counts and token shape while leaving
 the exact diagnostic text free for clearer Turkish wording.
+Fixtures with non-ASCII source text currently use `# parity: tokens-only`.
+UTF-8 token values are still compared, but column parity is kept out of those
+fixtures until the Orhun-source lexer and C++ lexer agree on character-based
+position accounting.
 
 ## Orhun-Source Parser Prototype
 

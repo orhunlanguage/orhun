@@ -87,6 +87,7 @@ def main() -> int:
         ("examples", [py, "tests/examples_smoke.py", str(binary)]),
         ("package new scaffold", [py, "tests/package_new_smoke.py", str(binary)]),
         ("VS Code tooling", [py, "tests/vscode_syntax_smoke.py"]),
+        ("lexer position policy", [py, "tests/lexer_position_policy_smoke.py"]),
         ("lexer parity fixtures", [py, "tests/lexer_parity_smoke.py", str(binary)]),
         (
             "lexer token sweep",
