@@ -13,6 +13,8 @@ yazdır paket_yardimci.ozet(manifest)
 yazdır paket_yardimci.bagimli_mi(manifest, "sonuc")
 yazdır paket_yardimci.bagimli_mi(manifest, "metin")
 yazdır paket_yardimci.dogrula(manifest).ok
+yazdır paket_yardimci.ad_gecerli_mi("ornek_paket-1.0")
+yazdır paket_yardimci.ad_gecerli_mi("kotu/ad")
 
 varsayilanli olsun json.coz("{\"ad\":\"yalin\",\"surum\":\"1.0.0\"}")
 yazdır paket_yardimci.giris(varsayilanli)
@@ -26,6 +28,14 @@ yazdır metin.icerir(paket_yardimci.dogrula(eksik).hata, "surum")
 yanlis_bagimlilik olsun json.coz("{\"ad\":\"yanlis\",\"surum\":\"1.0.0\",\"bagimliliklar\":\"temel\"}")
 yazdır paket_yardimci.dogrula(yanlis_bagimlilik).ok
 yazdır metin.icerir(paket_yardimci.dogrula(yanlis_bagimlilik).hata, "liste")
+
+gecersiz_ad olsun json.coz("{\"ad\":\"kotu/ad\",\"surum\":\"1.0.0\"}")
+yazdır paket_yardimci.dogrula(gecersiz_ad).ok
+yazdır metin.icerir(paket_yardimci.dogrula(gecersiz_ad).hata, "ad")
+
+gecersiz_bagimlilik olsun json.coz("{\"ad\":\"ornek\",\"surum\":\"1.0.0\",\"bagimliliklar\":[\"temel\",\"kotu/ad\"]}")
+yazdır paket_yardimci.dogrula(gecersiz_bagimlilik).ok
+yazdır metin.icerir(paket_yardimci.dogrula(gecersiz_bagimlilik).hata, "bagimlilik")
 
 bozuk olsun paket_yardimci.coz("{bozuk")
 yazdır bozuk.ok

@@ -379,6 +379,11 @@ lexer olsun dahil_et "orhun/lexer.oh"
 `[sira, deger]` pairs, and `eslestir(sol, sag)` returns pairs up to the
 shorter list.
 
+`orhun/paket.oh` includes package manifest helpers such as `coz`,
+`coz_ve_dogrula`, `dogrula`, `bagimliliklar`, `bagimli_mi`, and
+`ad_gecerli_mi`. Manifest package names and dependency names should contain
+only letters, digits, `_`, `.`, and `-`.
+
 The public package and module system is still evolving. Pre-1.0 code should keep
 module behavior covered by tests.
 

@@ -2,7 +2,8 @@
 
 sonuc_yardimci olsun dahil_et "orhun/sonuc.oh"
 
-surum olsun "0.1.0"
+surum olsun "0.2.0"
+izinli_ad_karakterleri olsun "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
 
 işlev coz(kaynak):
     deneme:
@@ -40,10 +41,33 @@ işlev bagimli_mi(manifest, paket_adi):
 işlev ozet(manifest):
     döndür ad(manifest) + "@" + surum_al(manifest)
 
+işlev ad_gecerli_mi(paket_adi):
+    eğer uzunluk(paket_adi) eşit 0 ise:
+        döndür yanlış
+
+    i olsun 0
+    sürece i küçük uzunluk(paket_adi):
+        eğer metin.icerir(izinli_ad_karakterleri, paket_adi[i]) ise:
+            i olsun i + 1
+        değilse:
+            döndür yanlış
+    döndür doğru
+
+işlev ilk_gecersiz_bagimlilik(bagimlilik_listesi):
+    i olsun 0
+    sürece i küçük uzunluk(bagimlilik_listesi):
+        eğer ad_gecerli_mi(bagimlilik_listesi[i]) ise:
+            i olsun i + 1
+        değilse:
+            döndür metne_cevir(bagimlilik_listesi[i])
+    döndür ""
+
 işlev dogrula(manifest):
     deneme:
         eğer uzunluk(ad(manifest)) eşit 0 ise:
             döndür sonuc_yardimci.hata("manifest ad alani zorunlu")
+        eğer değil ad_gecerli_mi(ad(manifest)) ise:
+            döndür sonuc_yardimci.hata("manifest ad alani gecersiz")
         eğer uzunluk(surum_al(manifest)) eşit 0 ise:
             döndür sonuc_yardimci.hata("manifest surum alani zorunlu")
         eğer uzunluk(giris(manifest)) eşit 0 ise:
@@ -54,6 +78,10 @@ işlev dogrula(manifest):
             uzunluk(bagimliliklar(manifest))
         değilse:
             döndür sonuc_yardimci.hata("manifest bagimliliklar alani liste olmali")
+
+        gecersiz_bagimlilik olsun ilk_gecersiz_bagimlilik(bagimliliklar(manifest))
+        eğer uzunluk(gecersiz_bagimlilik) büyük 0 ise:
+            döndür sonuc_yardimci.hata("manifest bagimlilik adi gecersiz: " + gecersiz_bagimlilik)
 
         döndür sonuc_yardimci.ok(manifest)
     yakala hata:
