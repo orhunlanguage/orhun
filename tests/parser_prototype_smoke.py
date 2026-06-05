@@ -822,6 +822,8 @@ def empty_coverage() -> dict[str, int]:
         "function_definitions": 0,
         "external_function_definitions": 0,
         "anonymous_function_expressions": 0,
+        "assignment_nodes": 0,
+        "multi_assignment_nodes": 0,
     }
 
 
@@ -855,6 +857,10 @@ def collect_node_coverage(node: dict, coverage: dict[str, int]) -> None:
         coverage["function_definitions"] += 1
     elif node.get("tur") == "DisIslevTanim":
         coverage["external_function_definitions"] += 1
+    elif node.get("tur") == "Atama":
+        coverage["assignment_nodes"] += 1
+    elif node.get("tur") == "CokluAtama":
+        coverage["multi_assignment_nodes"] += 1
 
     for key in ("ifade_ozeti", "hedef_ozeti"):
         expression = node.get(key)
@@ -941,7 +947,9 @@ def main() -> int:
         "signatures function/external/anonymous: "
         f"{coverage['function_definitions']}/"
         f"{coverage['external_function_definitions']}/"
-        f"{coverage['anonymous_function_expressions']})."
+        f"{coverage['anonymous_function_expressions']}, "
+        "assignments single/multi: "
+        f"{coverage['assignment_nodes']}/{coverage['multi_assignment_nodes']})."
     )
     return 0
 
