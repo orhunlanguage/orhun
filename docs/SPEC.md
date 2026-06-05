@@ -483,8 +483,9 @@ function/class/external-function headers, includes, and try/catch error
 variables. Control-flow metadata covers `eğer`/`sürece` condition summaries and
 `tekrarla` count summaries. Expression metadata covers anonymous function
 parameters/defaults, inline anonymous function body summaries,
-list-comprehension variables, dictionary literal keys, slice-bound presence, and
-`paralel yap` body command counts. Error parity covers missing `ise`,
+list-comprehension variables and condition presence, dictionary literal keys,
+slice-bound presence, and `paralel yap` body command counts. Error parity
+covers missing `ise`,
 missing `kez`, missing control-flow conditions/counts,
 missing assignment/return expression operands, required header names/colons,
 malformed external-function, `deneme/yakala`, anonymous-function, `yeni`,

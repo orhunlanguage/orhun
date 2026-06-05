@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.41"
+surum olsun "0.3.42"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -1001,6 +1001,12 @@ işlev liste_uretec_degiskeni(tokenlar, baslangic, son):
         i olsun i + 1
     döndür ""
 
+işlev liste_uretec_kosul_var_mi(tokenlar, baslangic, son):
+    ic_baslangic olsun baslangic + 1
+    ic_son olsun son - 1
+    eger_konum olsun aralikta_deger_konumu(tokenlar, ic_baslangic, ic_son, "eğer")
+    döndür eger_konum büyük 0 veya eger_konum eşit 0
+
 işlev indeks_altlari(tokenlar, baslangic, son):
     altlar olsun []
     koseli_konum olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
@@ -1156,6 +1162,7 @@ işlev ifade_ozeti(tokenlar, baslangic, son):
         sonuc["varsayilanlar"] = baslik_varsayilanlari(tokenlar, baslangic)
     eğer tur eşit "ListeUretec" ise:
         sonuc["degisken"] = liste_uretec_degiskeni(tokenlar, baslangic, son)
+        sonuc["kosul_var"] = liste_uretec_kosul_var_mi(tokenlar, baslangic, son)
     eğer tur eşit "Sozluk" ise:
         sonuc["anahtarlar"] = sozluk_anahtarlari(tokenlar, baslangic, son)
     eğer tur eşit "DilimErisim" ise:

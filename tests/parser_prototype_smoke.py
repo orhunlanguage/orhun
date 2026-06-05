@@ -597,6 +597,15 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
             f"{source_name} list comprehension expression missing variable: {expression}",
         )
         summary["degisken"] = variable
+        if "kosul_var" in expression:
+            condition_present = expression.get("kosul_var")
+        else:
+            condition_present = expression.get("kosul") is not None
+        require(
+            isinstance(condition_present, bool),
+            f"{source_name} list comprehension expression missing condition presence: {expression}",
+        )
+        summary["kosul_var"] = condition_present
     if summary.get("tur") == "Sozluk":
         items = expression.get("ogeler")
         if items is None:

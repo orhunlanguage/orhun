@@ -58,15 +58,16 @@ seviyesine tasindi; non-ASCII fixture'lar UTF-8 sutun parity tamamlanana kadar
 `tokens-only` politikasi ile korunuyor. Parser prototipi 142 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.3.41 atama `bildirim` ve hedef
+`orhun/parser.oh` 0.3.42 atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini, islev basligi varsayilan arguman
 ozetlerini, islev/sinif/dis islev/dahil_et/deneme-yakala baslik metadatasini,
 eger/surece kosul ozetlerini, tekrarla sayi ozetlerini,
 anonim islev parametre ve varsayilan arguman ozetlerini, inline anonim islev
-govde ifadesini, liste uretec degiskenini, sozluk anahtarlarini, dilim erisim
-sinir varligini, paralel yap govde komut sayisini ve liste/sozluk literal
-postfix ozetlerini, alan/ust erisim adlarini, islev cagri adlarini, yeni nesne
-sinif adlarini ve arguman sayilarini C++ AST ile karsilastiriyor.
+govde ifadesini, liste uretec degiskenini ve kosul varligini, sozluk
+anahtarlarini, dilim erisim sinir varligini, paralel yap govde komut sayisini,
+liste/sozluk literal postfix ozetlerini, alan/ust erisim adlarini, islev cagri
+adlarini, yeni nesne sinif adlarini ve arguman sayilarini C++ AST ile
+karsilastiriyor.
 
 Hedefler:
 
