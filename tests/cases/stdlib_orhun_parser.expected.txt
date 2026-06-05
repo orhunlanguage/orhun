@@ -1,10 +1,12 @@
-0.3.43
+0.3.44
 1
 3
 IslevTanim|Atama|Yazdir
 topla
 ["a","b"]
 [{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}]
+2
+2
 1
 sonuc
 CokluAtama|Yazdir
@@ -18,6 +20,7 @@ lstrlenA
 kernel32.dll
 ["metin"]
 ["string"]
+1
 int
 orhun/temel.oh
 hata
@@ -51,8 +54,8 @@ x
 {"altlar":[],"ayrinti":"kur","metod":"kur","op":"","tur":"UstErisim"}
 {"ad":"ust.kur","altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"arguman_sayisi":1,"ayrinti":"ust.kur","op":"","tur":"IslevCagri"}
 {"ad":"topla","altlar":[{"altlar":[],"ayrinti":"4","op":"","tur":"Sayi"},{"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}],"arguman_sayisi":2,"ayrinti":"topla","op":"","tur":"IslevCagri"}
-{"altlar":[{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"*","op":"*","tur":"IkiliIslem"}],"ayrinti":"x","op":"","parametreler":["x"],"tur":"IsimsizIslev","varsayilanlar":[{"altlar":[],"ayrinti":"","op":"","tur":""}]}
-{"altlar":[{"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"b","op":"","tur":"Kimlik"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}],"ayrinti":"a,b","op":"","parametreler":["a","b"],"tur":"IsimsizIslev","varsayilanlar":[{"altlar":[],"ayrinti":"","op":"","tur":""},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}]}
+{"altlar":[{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"*","op":"*","tur":"IkiliIslem"}],"ayrinti":"x","op":"","parametre_sayisi":1,"parametreler":["x"],"tur":"IsimsizIslev","varsayilan_sayisi":0,"varsayilanlar":[{"altlar":[],"ayrinti":"","op":"","tur":""}]}
+{"altlar":[{"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"b","op":"","tur":"Kimlik"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}],"ayrinti":"a,b","op":"","parametre_sayisi":2,"parametreler":["a","b"],"tur":"IsimsizIslev","varsayilan_sayisi":1,"varsayilanlar":[{"altlar":[],"ayrinti":"","op":"","tur":""},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}]}
 {"altlar":[{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"-","op":"-","tur":"TekliIslem"}
 {"altlar":[{"altlar":[],"ayrinti":"yanlış","op":"","tur":"Mantik"}],"ayrinti":"değil","op":"değil","tur":"TekliIslem"}
 {"altlar":[],"ayrinti":"","komut_sayisi":1,"op":"","tur":"ParalelYap"}

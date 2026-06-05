@@ -255,9 +255,20 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
         )
         summary["ad"] = name
         summary["parametreler"] = params
-        summary["varsayilanlar"] = [
+        normalized_defaults = [
             definition_default_summary(default, source_name) for default in defaults
         ]
+        summary["varsayilanlar"] = normalized_defaults
+        summary["parametre_sayisi"] = metadata_count(
+            command, "parametre_sayisi", len(params), source_name, "function definition"
+        )
+        summary["varsayilan_sayisi"] = metadata_count(
+            command,
+            "varsayilan_sayisi",
+            default_value_count(normalized_defaults),
+            source_name,
+            "function definition",
+        )
     if summary.get("tur") == "SinifTanim":
         name = command.get("ad")
         parent = command.get("ebeveyn")
@@ -303,6 +314,13 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
         summary["kutuphane"] = library
         summary["parametre_adlari"] = param_names
         summary["parametre_tipleri"] = param_types
+        summary["parametre_sayisi"] = metadata_count(
+            command,
+            "parametre_sayisi",
+            len(param_names),
+            source_name,
+            "external function definition",
+        )
         summary["donus_tipi"] = return_type
     if summary.get("tur") == "DahilEt":
         source = command.get("dosya")
@@ -330,6 +348,28 @@ def definition_default_summary(default: object, source_name: str) -> dict:
     if "tur" in default and "altlar" in default:
         return orhun_expression_payload(default, Path(source_name))
     return cxx_expression_summary(default)
+
+
+def default_value_count(defaults: list[dict]) -> int:
+    return sum(1 for default in defaults if default.get("tur"))
+
+
+def metadata_count(
+    owner: dict, key: str, fallback: int, source_name: str, label: str
+) -> int:
+    if key not in owner:
+        require(
+            not source_name.startswith("prototype "),
+            f"{source_name} {label} missing {key}: {owner}",
+        )
+        return fallback
+    value = owner.get(key)
+    require(isinstance(value, int), f"{source_name} {label} {key} invalid: {owner}")
+    require(
+        value == fallback,
+        f"{source_name} {label} {key} mismatch: {value} != {fallback}",
+    )
+    return value
 
 
 def cxx_command_expression_summary(command: dict) -> dict:
@@ -587,9 +627,24 @@ def add_expression_metadata(summary: dict, expression: dict, source_name: str) -
             f"{source_name} anonymous function expression missing defaults: {expression}",
         )
         summary["parametreler"] = params
-        summary["varsayilanlar"] = [
+        normalized_defaults = [
             definition_default_summary(default, source_name) for default in defaults
         ]
+        summary["varsayilanlar"] = normalized_defaults
+        summary["parametre_sayisi"] = metadata_count(
+            expression,
+            "parametre_sayisi",
+            len(params),
+            source_name,
+            "anonymous function expression",
+        )
+        summary["varsayilan_sayisi"] = metadata_count(
+            expression,
+            "varsayilan_sayisi",
+            default_value_count(normalized_defaults),
+            source_name,
+            "anonymous function expression",
+        )
     if summary.get("tur") == "ListeUretec":
         variable = expression.get("degisken")
         require(

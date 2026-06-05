@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.43"
+surum olsun "0.3.44"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -134,6 +134,15 @@ işlev baslik_varsayilanlari(tokenlar, konum):
         i olsun i + 1
     döndür varsayilanlar
 
+işlev varsayilan_deger_sayisi(varsayilanlar):
+    sayi olsun 0
+    i olsun 0
+    sürece i küçük uzunluk(varsayilanlar):
+        eğer varsayilanlar[i].tur eşit_değil "" ise:
+            sayi olsun sayi + 1
+        i olsun i + 1
+    döndür sayi
+
 işlev sinif_ebeveyni(tokenlar, konum):
     parantez_konum olsun deger_konumu(tokenlar, konum + 1, "(")
     eğer parantez_konum küçük 0 ise:
@@ -242,9 +251,13 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
     eğer tur eşit "CokluAtama" ise:
         sonuc["hedefler"] = coklu_atama_hedefleri(tokenlar, konum)
     eğer tur eşit "IslevTanim" ise:
+        parametreler olsun baslik_parametreleri(tokenlar, konum)
+        varsayilanlar olsun baslik_varsayilanlari(tokenlar, konum)
         sonuc["ad"] = baslik_adi(tokenlar, konum)
-        sonuc["parametreler"] = baslik_parametreleri(tokenlar, konum)
-        sonuc["varsayilanlar"] = baslik_varsayilanlari(tokenlar, konum)
+        sonuc["parametreler"] = parametreler
+        sonuc["varsayilanlar"] = varsayilanlar
+        sonuc["parametre_sayisi"] = uzunluk(parametreler)
+        sonuc["varsayilan_sayisi"] = varsayilan_deger_sayisi(varsayilanlar)
     eğer tur eşit "SinifTanim" ise:
         sonuc["ad"] = baslik_adi(tokenlar, konum)
         sonuc["ebeveyn"] = sinif_ebeveyni(tokenlar, konum)
@@ -254,6 +267,7 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
         sonuc["kutuphane"] = baslik_kutuphanesi(tokenlar, konum)
         sonuc["parametre_adlari"] = imza.adlar
         sonuc["parametre_tipleri"] = imza.tipler
+        sonuc["parametre_sayisi"] = uzunluk(imza.adlar)
         sonuc["donus_tipi"] = dis_islev_donus_tipi(tokenlar, konum)
     eğer tur eşit "DahilEt" ise:
         sonuc["dosya"] = dahil_et_dosyasi(tokenlar, konum, satir_sonu_indeksi(tokenlar, konum))
@@ -1158,8 +1172,12 @@ işlev ifade_ozeti(tokenlar, baslangic, son):
         op olsun ifade_ayrintisi(tokenlar, baslangic, son, tur)
     sonuc olsun {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": ifade_altlari(tokenlar, baslangic, son, tur)}
     eğer tur eşit "IsimsizIslev" ise:
-        sonuc["parametreler"] = baslik_parametreleri(tokenlar, baslangic)
-        sonuc["varsayilanlar"] = baslik_varsayilanlari(tokenlar, baslangic)
+        parametreler olsun baslik_parametreleri(tokenlar, baslangic)
+        varsayilanlar olsun baslik_varsayilanlari(tokenlar, baslangic)
+        sonuc["parametreler"] = parametreler
+        sonuc["varsayilanlar"] = varsayilanlar
+        sonuc["parametre_sayisi"] = uzunluk(parametreler)
+        sonuc["varsayilan_sayisi"] = varsayilan_deger_sayisi(varsayilanlar)
     eğer tur eşit "Liste" ise:
         sonuc["oge_sayisi"] = uzunluk(sonuc.altlar)
     eğer tur eşit "ListeUretec" ise:

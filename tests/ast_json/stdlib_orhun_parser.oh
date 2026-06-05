@@ -10,6 +10,8 @@ yazdır metin.birlestir(parser.turleri(sonuc), "|")
 yazdır sonuc.komutlar[0].ad
 yazdır json.yaz(sonuc.komutlar[0].parametreler)
 yazdır json.yaz(sonuc.komutlar[0].varsayilanlar)
+yazdır sonuc.komutlar[0].parametre_sayisi
+yazdır sonuc.komutlar[0].varsayilan_sayisi
 yazdır sonuc.komutlar[1].bildirim
 yazdır sonuc.komutlar[1].hedef_ozeti.ayrinti
 
@@ -31,6 +33,7 @@ yazdır dis_islev_kontrol.komutlar[0].ad
 yazdır dis_islev_kontrol.komutlar[0].kutuphane
 yazdır json.yaz(dis_islev_kontrol.komutlar[0].parametre_adlari)
 yazdır json.yaz(dis_islev_kontrol.komutlar[0].parametre_tipleri)
+yazdır dis_islev_kontrol.komutlar[0].parametre_sayisi
 yazdır dis_islev_kontrol.komutlar[0].donus_tipi
 
 dahil_kontrol olsun parser.ozetle("dahil_et \"orhun/temel.oh\"\n")
