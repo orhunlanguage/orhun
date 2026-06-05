@@ -29,11 +29,13 @@ hata
 [{"komutlar":[{"blok_sayilari":[],"bloklar":[],"ifade_ozeti":{"altlar":[],"ayrinti":"buyuk","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":2,"tur":"Yazdir"}]},{"komutlar":[{"blok_sayilari":[1,1],"bloklar":[{"komutlar":[{"blok_sayilari":[],"bloklar":[],"ifade_ozeti":{"altlar":[],"ayrinti":"orta","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":4,"tur":"Yazdir"}]},{"komutlar":[{"blok_sayilari":[],"bloklar":[],"ifade_ozeti":{"altlar":[],"ayrinti":"kucuk","op":"","tur":"Metin"},"ifade_turu":"Metin","satir":6,"tur":"Yazdir"}]}],"ifade_ozeti":{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","tur":"IkiliIslem"},"ifade_turu":"IkiliIslem","kosul_ozeti":{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"5","op":"","tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","tur":"IkiliIslem"},"satir":3,"tur":"Eger"}]}]
 {"altlar":[{"altlar":[],"ayrinti":"a","op":"","tur":"Kimlik"},{"altlar":[{"altlar":[],"ayrinti":"b","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"*","op":"*","tur":"IkiliIslem"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}
 [{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}]
+3
 [{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"*","op":"*","tur":"IkiliIslem"},{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[{"altlar":[],"ayrinti":"x","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"}],"ayrinti":"büyük","op":"büyük","tur":"IkiliIslem"}]
 x
 1
 0
 ["ad","surum"]
+2
 [{"altlar":[],"ayrinti":"liste","op":"","tur":"Kimlik"},{"altlar":[],"ayrinti":"0","op":"","tur":"Sayi"}]
 [{"altlar":[],"ayrinti":"sozluk","op":"","tur":"Kimlik"}]
 [{"altlar":[],"ayrinti":"3","op":"","tur":"Sayi"}]

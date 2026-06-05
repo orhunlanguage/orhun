@@ -52,6 +52,7 @@ yazdır json.yaz(ifade_kontrol.komutlar[0].ifade_ozeti)
 
 koleksiyon_kontrol olsun parser.ozetle("liste olsun [1, 2, 3]\nyazdır [x * 2 için x içinde liste eğer x büyük 1]\n")
 yazdır json.yaz(koleksiyon_kontrol.komutlar[0].ifade_ozeti.altlar)
+yazdır koleksiyon_kontrol.komutlar[0].ifade_ozeti.oge_sayisi
 yazdır json.yaz(koleksiyon_kontrol.komutlar[1].ifade_ozeti.altlar)
 yazdır koleksiyon_kontrol.komutlar[1].ifade_ozeti.degisken
 yazdır koleksiyon_kontrol.komutlar[1].ifade_ozeti.kosul_var
@@ -61,6 +62,7 @@ yazdır kosulsuz_uretec_kontrol.komutlar[0].ifade_ozeti.kosul_var
 
 sozluk_kontrol olsun parser.ozetle("ayar olsun {\"ad\": \"orhun\", \"surum\": 1}\n")
 yazdır json.yaz(sozluk_kontrol.komutlar[0].ifade_ozeti.anahtarlar)
+yazdır sozluk_kontrol.komutlar[0].ifade_ozeti.oge_sayisi
 
 erisim_kontrol olsun parser.ozetle("ilk olsun liste[0]\nad olsun sozluk?.ad\nnesne olsun yeni Kutu(3)\n")
 yazdır json.yaz(erisim_kontrol.komutlar[0].ifade_ozeti.altlar)
