@@ -812,6 +812,9 @@ def empty_coverage() -> dict[str, int]:
         "list_comp_condition_false": 0,
         "list_expressions": 0,
         "dict_expressions": 0,
+        "function_definitions": 0,
+        "external_function_definitions": 0,
+        "anonymous_function_expressions": 0,
     }
 
 
@@ -830,6 +833,8 @@ def collect_expression_coverage(expression: dict, coverage: dict[str, int]) -> N
         coverage["list_expressions"] += 1
     elif expression.get("tur") == "Sozluk":
         coverage["dict_expressions"] += 1
+    elif expression.get("tur") == "IsimsizIslev":
+        coverage["anonymous_function_expressions"] += 1
 
     children = expression.get("altlar", [])
     if isinstance(children, list):
@@ -839,6 +844,11 @@ def collect_expression_coverage(expression: dict, coverage: dict[str, int]) -> N
 
 
 def collect_node_coverage(node: dict, coverage: dict[str, int]) -> None:
+    if node.get("tur") == "IslevTanim":
+        coverage["function_definitions"] += 1
+    elif node.get("tur") == "DisIslevTanim":
+        coverage["external_function_definitions"] += 1
+
     for key in ("ifade_ozeti", "hedef_ozeti"):
         expression = node.get(key)
         if isinstance(expression, dict):
@@ -920,7 +930,11 @@ def main() -> int:
         "list-comp condition true/false: "
         f"{coverage['list_comp_condition_true']}/{coverage['list_comp_condition_false']}, "
         "collections list/dict: "
-        f"{coverage['list_expressions']}/{coverage['dict_expressions']})."
+        f"{coverage['list_expressions']}/{coverage['dict_expressions']}, "
+        "signatures function/external/anonymous: "
+        f"{coverage['function_definitions']}/"
+        f"{coverage['external_function_definitions']}/"
+        f"{coverage['anonymous_function_expressions']})."
     )
     return 0
 
