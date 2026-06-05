@@ -755,6 +755,8 @@ def empty_coverage() -> dict[str, int]:
     return {
         "list_comp_condition_true": 0,
         "list_comp_condition_false": 0,
+        "list_expressions": 0,
+        "dict_expressions": 0,
     }
 
 
@@ -769,6 +771,10 @@ def collect_expression_coverage(expression: dict, coverage: dict[str, int]) -> N
             coverage["list_comp_condition_true"] += 1
         elif expression.get("kosul_var") is False:
             coverage["list_comp_condition_false"] += 1
+    elif expression.get("tur") == "Liste":
+        coverage["list_expressions"] += 1
+    elif expression.get("tur") == "Sozluk":
+        coverage["dict_expressions"] += 1
 
     children = expression.get("altlar", [])
     if isinstance(children, list):
@@ -857,7 +863,9 @@ def main() -> int:
         "Parser prototype smoke passed "
         f"({ok_count} fixture ok, {error_count} fixture error, "
         "list-comp condition true/false: "
-        f"{coverage['list_comp_condition_true']}/{coverage['list_comp_condition_false']})."
+        f"{coverage['list_comp_condition_true']}/{coverage['list_comp_condition_false']}, "
+        "collections list/dict: "
+        f"{coverage['list_expressions']}/{coverage['dict_expressions']})."
     )
     return 0
 
