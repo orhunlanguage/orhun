@@ -1,5 +1,6 @@
-0.3.49
+0.3.50
 1
+0
 3
 3
 IslevTanim|Atama|Yazdir
@@ -83,6 +84,7 @@ IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
 {"altlar":[{"altlar":[],"ayrinti":"orhun","op":"","tur":"Metin"}],"anahtarlar":["ad"],"ayrinti":"","oge_sayisi":1,"op":"","tur":"Sozluk"}
 {"altlar":[{"altlar":[],"ayrinti":"1","op":"","tur":"Sayi"},{"altlar":[],"ayrinti":"2","op":"","tur":"Sayi"}],"ayrinti":"+","op":"+","tur":"IkiliIslem"}
 0
+1
 0
 1
 0

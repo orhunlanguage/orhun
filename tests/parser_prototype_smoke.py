@@ -599,6 +599,10 @@ def orhun_parser_payload(binary: Path, repo: Path, source_file: Path) -> dict:
 
 def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
     require(payload.get("ok") is True, f"prototype returned error for {source_file}: {payload}")
+    require(
+        payload.get("hata_sayisi") == 0,
+        f"prototype success error count mismatch for {source_file}: {payload}",
+    )
     commands = payload.get("komutlar")
     require(isinstance(commands, list), f"prototype payload missing komutlar for {source_file}")
     require(
@@ -993,6 +997,10 @@ def main() -> int:
             require(
                 proto_payload.get("komut_sayisi") == 0,
                 f"prototype error command count mismatch for {case}: {proto_payload}",
+            )
+            require(
+                proto_payload.get("hata_sayisi") == 1,
+                f"prototype error count mismatch for {case}: {proto_payload}",
             )
             validate_error_parity(cxx_payload, proto_payload, case)
             error_count += 1

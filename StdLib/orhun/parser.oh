@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.49"
+surum olsun "0.3.50"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -297,10 +297,10 @@ işlev komut_dugumu(tokenlar, konum):
     döndür dugum(tur, token.satir, komut_ifade_ozeti(tokenlar, konum), bloklar, tokenlar, konum)
 
 işlev sonuc_ok(komutlar):
-    döndür {"ok": doğru, "hata": "", "komut_sayisi": uzunluk(komutlar), "komutlar": komutlar}
+    döndür {"ok": doğru, "hata": "", "hata_sayisi": 0, "komut_sayisi": uzunluk(komutlar), "komutlar": komutlar}
 
 işlev sonuc_hata(mesaj, token):
-    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "komut_sayisi": 0, "komutlar": []}
+    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "komut_sayisi": 0, "komutlar": []}
 
 işlev token_yok():
     döndür {"tur": "DOSYA_SONU", "deger": "", "satir": 0, "sutun": 0}

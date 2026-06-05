@@ -5,6 +5,7 @@ sonuc olsun parser.ozetle(kaynak)
 
 yazdır parser.surum
 yazdır sonuc.ok
+yazdır sonuc.hata_sayisi
 yazdır uzunluk(sonuc.komutlar)
 yazdır sonuc.komut_sayisi
 yazdır metin.birlestir(parser.turleri(sonuc), "|")
@@ -142,6 +143,7 @@ yazdır json.yaz(islem_ifade_komut_kontrol.komutlar[3].ifade_ozeti)
 
 hata olsun parser.ozetle("@\n")
 yazdır hata.ok
+yazdır hata.hata_sayisi
 yazdır hata.komut_sayisi
 yazdır metin.icerir(hata.hata.mesaj, "Tanimsiz")
 
