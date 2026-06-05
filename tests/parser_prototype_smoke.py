@@ -845,6 +845,9 @@ def empty_coverage() -> dict[str, int]:
         "list_expressions": 0,
         "dict_expressions": 0,
         "function_definitions": 0,
+        "class_definitions": 0,
+        "class_parent_true": 0,
+        "class_parent_false": 0,
         "external_function_definitions": 0,
         "anonymous_function_expressions": 0,
         "assignment_nodes": 0,
@@ -880,6 +883,12 @@ def collect_expression_coverage(expression: dict, coverage: dict[str, int]) -> N
 def collect_node_coverage(node: dict, coverage: dict[str, int]) -> None:
     if node.get("tur") == "IslevTanim":
         coverage["function_definitions"] += 1
+    elif node.get("tur") == "SinifTanim":
+        coverage["class_definitions"] += 1
+        if node.get("ebeveyn_var") is True:
+            coverage["class_parent_true"] += 1
+        elif node.get("ebeveyn_var") is False:
+            coverage["class_parent_false"] += 1
     elif node.get("tur") == "DisIslevTanim":
         coverage["external_function_definitions"] += 1
     elif node.get("tur") == "Atama":
@@ -973,6 +982,10 @@ def main() -> int:
         f"{coverage['function_definitions']}/"
         f"{coverage['external_function_definitions']}/"
         f"{coverage['anonymous_function_expressions']}, "
+        "classes total/parent/no-parent: "
+        f"{coverage['class_definitions']}/"
+        f"{coverage['class_parent_true']}/"
+        f"{coverage['class_parent_false']}, "
         "assignments single/multi: "
         f"{coverage['assignment_nodes']}/{coverage['multi_assignment_nodes']})."
     )
