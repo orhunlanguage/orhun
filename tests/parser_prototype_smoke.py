@@ -729,6 +729,63 @@ def orhun_shallow_node(command: dict, source_file: Path) -> dict:
     return summary
 
 
+def empty_coverage() -> dict[str, int]:
+    return {
+        "list_comp_condition_true": 0,
+        "list_comp_condition_false": 0,
+    }
+
+
+def add_coverage(target: dict[str, int], source: dict[str, int]) -> None:
+    for key, value in source.items():
+        target[key] = target.get(key, 0) + value
+
+
+def collect_expression_coverage(expression: dict, coverage: dict[str, int]) -> None:
+    if expression.get("tur") == "ListeUretec":
+        if expression.get("kosul_var") is True:
+            coverage["list_comp_condition_true"] += 1
+        elif expression.get("kosul_var") is False:
+            coverage["list_comp_condition_false"] += 1
+
+    children = expression.get("altlar", [])
+    if isinstance(children, list):
+        for child in children:
+            if isinstance(child, dict):
+                collect_expression_coverage(child, coverage)
+
+
+def collect_node_coverage(node: dict, coverage: dict[str, int]) -> None:
+    for key in ("ifade_ozeti", "hedef_ozeti"):
+        expression = node.get(key)
+        if isinstance(expression, dict):
+            collect_expression_coverage(expression, coverage)
+
+    defaults = node.get("varsayilanlar", [])
+    if isinstance(defaults, list):
+        for default in defaults:
+            if isinstance(default, dict):
+                collect_expression_coverage(default, coverage)
+
+    blocks = node.get("bloklar", [])
+    if isinstance(blocks, list):
+        for block in blocks:
+            if not isinstance(block, dict):
+                continue
+            commands = block.get("komutlar", [])
+            if isinstance(commands, list):
+                for command in commands:
+                    if isinstance(command, dict):
+                        collect_node_coverage(command, coverage)
+
+
+def coverage_from_nodes(nodes: list[dict]) -> dict[str, int]:
+    coverage = empty_coverage()
+    for node in nodes:
+        collect_node_coverage(node, coverage)
+    return coverage
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Compare Orhun parser prototype summaries against C++ AST"
@@ -752,6 +809,7 @@ def main() -> int:
 
     ok_count = 0
     error_count = 0
+    coverage = empty_coverage()
     for case in cases:
         should_fail = is_error_fixture(case)
         cxx_payload = cxx_parse_payload(binary, repo, case, should_fail)
@@ -770,9 +828,15 @@ def main() -> int:
             cxx == proto,
             f"Parser prototype node mismatch for {case}\nC++: {cxx}\nOrhun: {proto}",
         )
+        add_coverage(coverage, coverage_from_nodes(cxx))
         ok_count += 1
 
-    print(f"Parser prototype smoke passed ({ok_count} fixture ok, {error_count} fixture error).")
+    print(
+        "Parser prototype smoke passed "
+        f"({ok_count} fixture ok, {error_count} fixture error, "
+        "list-comp condition true/false: "
+        f"{coverage['list_comp_condition_true']}/{coverage['list_comp_condition_false']})."
+    )
     return 0
 
 
