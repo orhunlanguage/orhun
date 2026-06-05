@@ -481,7 +481,7 @@ against the C++ parser AST through
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,
-parameter/default counts, includes,
+parameter/default counts, external-function type counts, includes,
 and try/catch error variables. Control-flow metadata covers `eğer`/`sürece`
 condition summaries and `tekrarla` count summaries. Expression metadata covers
 anonymous function parameter/default counts, parameters/defaults,

@@ -336,6 +336,13 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
             source_name,
             "external function definition",
         )
+        summary["tip_sayisi"] = metadata_count(
+            command,
+            "tip_sayisi",
+            len(param_types),
+            source_name,
+            "external function definition",
+        )
         summary["donus_tipi"] = return_type
     if summary.get("tur") == "DahilEt":
         source = command.get("dosya")

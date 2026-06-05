@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.47"
+surum olsun "0.3.48"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -273,6 +273,7 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
         sonuc["parametre_adlari"] = imza.adlar
         sonuc["parametre_tipleri"] = imza.tipler
         sonuc["parametre_sayisi"] = uzunluk(imza.adlar)
+        sonuc["tip_sayisi"] = uzunluk(imza.tipler)
         sonuc["donus_tipi"] = dis_islev_donus_tipi(tokenlar, konum)
     eğer tur eşit "DahilEt" ise:
         sonuc["dosya"] = dahil_et_dosyasi(tokenlar, konum, satir_sonu_indeksi(tokenlar, konum))

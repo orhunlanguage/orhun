@@ -39,6 +39,7 @@ yazdır dis_islev_kontrol.komutlar[0].ad
 yazdır dis_islev_kontrol.komutlar[0].kutuphane
 yazdır json.yaz(dis_islev_kontrol.komutlar[0].parametre_adlari)
 yazdır json.yaz(dis_islev_kontrol.komutlar[0].parametre_tipleri)
+yazdır dis_islev_kontrol.komutlar[0].tip_sayisi
 yazdır dis_islev_kontrol.komutlar[0].parametre_sayisi
 yazdır dis_islev_kontrol.komutlar[0].donus_tipi
 
