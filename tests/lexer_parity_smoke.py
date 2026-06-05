@@ -202,9 +202,16 @@ def main() -> int:
         print("Lexer parity smoke passed (3 inline cases).")
         return 0
 
+    error_cases = 0
+    tokens_only_cases = 0
     for case in cases:
         include_position = False if args.tokens_only else fixture_include_position(case)
-        compare_file(binary, repo, case, include_position, fixture_allow_errors(case))
+        allow_errors = fixture_allow_errors(case)
+        if allow_errors:
+            error_cases += 1
+        if not include_position:
+            tokens_only_cases += 1
+        compare_file(binary, repo, case, include_position, allow_errors)
 
     compare_source(
         binary,
@@ -215,8 +222,18 @@ def main() -> int:
         newline="\r\n",
     )
 
-    mode = " token-only" if args.tokens_only else ""
-    print(f"Lexer parity smoke passed ({len(cases)}{mode} fixture cases, 1 CRLF inline case).")
+    ok_cases = len(cases) - error_cases
+    if args.tokens_only:
+        print(
+            f"Lexer parity smoke passed ({len(cases)} token-only fixture cases, "
+            "1 CRLF inline case)."
+        )
+    else:
+        print(
+            "Lexer parity smoke passed "
+            f"({ok_cases} ok fixture, {error_cases} error fixture, "
+            f"{tokens_only_cases} tokens-only fixture, 1 CRLF inline case)."
+        )
     return 0
 
 
