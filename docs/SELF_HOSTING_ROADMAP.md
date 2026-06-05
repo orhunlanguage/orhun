@@ -58,11 +58,11 @@ seviyesine tasindi; non-ASCII fixture'lar UTF-8 sutun parity tamamlanana kadar
 `tokens-only` politikasi ile korunuyor. Parser prototipi 142 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.3.46 atama `bildirim` ve hedef
+`orhun/parser.oh` 0.3.47 atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
 sayilarini ve varsayilan arguman ozetlerini, islev/sinif/dis
 islev/dahil_et/deneme-yakala baslik metadatasini, eger/surece kosul
-ozetlerini, sinif ebeveyn varligini, tekrarla sayi ozetlerini,
+ozetlerini, sinif ebeveyn varligini, blok sayisini, tekrarla sayi ozetlerini,
 anonim islev parametre ve varsayilan arguman ozetlerini, inline anonim islev
 govde ifadesini, liste uretec degiskenini ve kosul varligini, sozluk
 anahtarlarini, liste/sozluk oge sayilarini, dilim erisim sinir varligini,

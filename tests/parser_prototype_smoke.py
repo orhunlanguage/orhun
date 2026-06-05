@@ -164,6 +164,7 @@ def cxx_node_summary(command: dict) -> dict:
         "satir": command.get("satir"),
         "ifade_turu": expression["tur"],
         "ifade_ozeti": expression,
+        "blok_sayisi": len(blocks),
         "blok_sayilari": block_counts(blocks),
         "bloklar": blocks,
     }
@@ -600,12 +601,20 @@ def orhun_node_summary(command: dict, source_file: Path) -> dict:
     blocks = orhun_block_summaries(command.get("bloklar", []), source_file)
     counts = command.get("blok_sayilari", [])
     require(counts == block_counts(blocks), f"prototype block counts mismatch for {source_file}")
+    block_count = metadata_count(
+        command,
+        "blok_sayisi",
+        len(blocks),
+        f"prototype {source_file}",
+        "command node",
+    )
     expression = orhun_expression_summary(command, source_file)
     summary = {
         "tur": command.get("tur"),
         "satir": command.get("satir"),
         "ifade_turu": expression["tur"],
         "ifade_ozeti": expression,
+        "blok_sayisi": block_count,
         "blok_sayilari": counts,
         "bloklar": blocks,
     }

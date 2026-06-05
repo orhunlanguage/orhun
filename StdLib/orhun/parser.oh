@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.46"
+surum olsun "0.3.47"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -244,6 +244,7 @@ işlev yakala_degiskeni(tokenlar, konum):
 
 işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
     sonuc olsun {"tur": tur, "satir": satir, "ifade_turu": ifade_ozeti.tur, "ifade_ozeti": ifade_ozeti, "blok_sayilari": blok_sayilari_uret(bloklar), "bloklar": bloklar}
+    sonuc["blok_sayisi"] = uzunluk(bloklar)
     eğer tur eşit "Atama" veya tur eşit "CokluAtama" ise:
         sonuc["bildirim"] = atama_bildirim_mi(tokenlar, konum)
     eğer tur eşit "Atama" ise:

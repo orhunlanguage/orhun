@@ -7,6 +7,7 @@ yazdır parser.surum
 yazdır sonuc.ok
 yazdır uzunluk(sonuc.komutlar)
 yazdır metin.birlestir(parser.turleri(sonuc), "|")
+yazdır sonuc.komutlar[0].blok_sayisi
 yazdır sonuc.komutlar[0].ad
 yazdır json.yaz(sonuc.komutlar[0].parametreler)
 yazdır json.yaz(sonuc.komutlar[0].varsayilanlar)
@@ -46,8 +47,10 @@ yazdır dahil_kontrol.komutlar[0].dosya
 
 deneme_kontrol olsun parser.ozetle("deneme:\n    kır\nyakala hata:\n    devam\n")
 yazdır deneme_kontrol.komutlar[0].hata_degiskeni
+yazdır deneme_kontrol.komutlar[0].blok_sayisi
 
 kontrol olsun parser.ozetle("eğer doğru ise:\n    yazdır \"evet\"\ndeğilse:\n    yazdır \"hayır\"\n")
+yazdır kontrol.komutlar[0].blok_sayisi
 yazdır json.yaz(kontrol.komutlar[0].blok_sayilari)
 yazdır json.yaz(kontrol.komutlar[0].bloklar)
 
