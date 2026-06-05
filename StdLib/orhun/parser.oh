@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.45"
+surum olsun "0.3.46"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -261,8 +261,10 @@ işlev dugum(tur, satir, ifade_ozeti, bloklar, tokenlar, konum):
         sonuc["parametre_sayisi"] = uzunluk(parametreler)
         sonuc["varsayilan_sayisi"] = varsayilan_deger_sayisi(varsayilanlar)
     eğer tur eşit "SinifTanim" ise:
+        ebeveyn olsun sinif_ebeveyni(tokenlar, konum)
         sonuc["ad"] = baslik_adi(tokenlar, konum)
-        sonuc["ebeveyn"] = sinif_ebeveyni(tokenlar, konum)
+        sonuc["ebeveyn"] = ebeveyn
+        sonuc["ebeveyn_var"] = uzunluk(ebeveyn) büyük 0
     eğer tur eşit "DisIslevTanim" ise:
         imza olsun dis_islev_parametreleri(tokenlar, konum)
         sonuc["ad"] = baslik_adi(tokenlar, konum)

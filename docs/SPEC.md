@@ -479,7 +479,8 @@ block command summaries, then compares them against the C++ parser AST through
 `tests/parser_prototype_smoke.py`. Current coverage includes 142 successful AST
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
-function/class/external-function headers, parameter/default counts, includes,
+function/class/external-function headers, class parent presence,
+parameter/default counts, includes,
 and try/catch error variables. Control-flow metadata covers `eğer`/`sürece`
 condition summaries and `tekrarla` count summaries. Expression metadata covers
 anonymous function parameter/default counts, parameters/defaults,

@@ -28,6 +28,10 @@ yazdır esit_kontrol.komutlar[0].hedef_ozeti.ayrinti
 sinif_kontrol olsun parser.ozetle("tip Kedi(Hayvan):\n    yazdır \"miyav\"\n")
 yazdır sinif_kontrol.komutlar[0].ad
 yazdır sinif_kontrol.komutlar[0].ebeveyn
+yazdır sinif_kontrol.komutlar[0].ebeveyn_var
+
+yalin_sinif_kontrol olsun parser.ozetle("tip Kutu:\n    yazdır \"kutu\"\n")
+yazdır yalin_sinif_kontrol.komutlar[0].ebeveyn_var
 
 dis_islev_kontrol olsun parser.ozetle("dış_işlev lstrlenA \"kernel32.dll\" (metin: string) -> int\n")
 yazdır dis_islev_kontrol.komutlar[0].ad

@@ -289,6 +289,13 @@ def add_definition_metadata(summary: dict, command: dict, source_name: str) -> N
         )
         summary["ad"] = name
         summary["ebeveyn"] = parent
+        summary["ebeveyn_var"] = metadata_bool(
+            command,
+            "ebeveyn_var",
+            bool(parent),
+            source_name,
+            "class definition",
+        )
     if summary.get("tur") == "DisIslevTanim":
         name = command.get("ad")
         library = command.get("kutuphane")
@@ -372,6 +379,24 @@ def metadata_count(
         return fallback
     value = owner.get(key)
     require(isinstance(value, int), f"{source_name} {label} {key} invalid: {owner}")
+    require(
+        value == fallback,
+        f"{source_name} {label} {key} mismatch: {value} != {fallback}",
+    )
+    return value
+
+
+def metadata_bool(
+    owner: dict, key: str, fallback: bool, source_name: str, label: str
+) -> bool:
+    if key not in owner:
+        require(
+            not source_name.startswith("prototype "),
+            f"{source_name} {label} missing {key}: {owner}",
+        )
+        return fallback
+    value = owner.get(key)
+    require(isinstance(value, bool), f"{source_name} {label} {key} invalid: {owner}")
     require(
         value == fallback,
         f"{source_name} {label} {key} mismatch: {value} != {fallback}",
