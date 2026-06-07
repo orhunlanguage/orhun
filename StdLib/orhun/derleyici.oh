@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.18.0"
+surum olsun "0.19.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -558,6 +558,38 @@ işlev ad_zorunlu_set_komutu_yaz(durum, ad, satir):
     operandli_komut_ekle(durum, "OP_SET_GLOBAL", satir, sabit)
     döndür 0
 
+işlev sinif_derle(durum, komut):
+    ad_sabit olsun sabit_ekle(durum, "metin", komut.ad)
+    operandli_komut_ekle(durum, "OP_SINIF", komut.satir, ad_sabit)
+    ad_atama_komutu_yaz(durum, komut.ad, komut.satir, doğru)
+    komut_ekle(durum, "OP_POP", komut.satir)
+
+    eğer komut.ebeveyn_var ise:
+        cagrilan_ad_yukle(durum, komut.ad, komut.satir)
+        cagrilan_ad_yukle(durum, komut.ebeveyn, komut.satir)
+        komut_ekle(durum, "OP_MIRAS_AL", komut.satir)
+        komut_ekle(durum, "OP_POP", komut.satir)
+
+    eğer uzunluk(komut.bloklar) eşit 0 ise:
+        döndür 0
+    govde olsun komut.bloklar[0]
+    i olsun 0
+    sürece i küçük uzunluk(govde.komutlar):
+        uye olsun govde.komutlar[i]
+        eğer uye.tur eşit_değil "Atama" ise:
+            hata_ayarla(durum, "Desteklenmeyen sinif uyesi: prototip simdilik yalnizca alan tanimlarini destekliyor.")
+            döndür 0
+        eğer uye.hedef_ozeti.tur eşit_değil "Kimlik" ise:
+            hata_ayarla(durum, "Desteklenmeyen sinif alani hedefi: " + uye.hedef_ozeti.tur)
+            döndür 0
+        cagrilan_ad_yukle(durum, komut.ad, uye.satir)
+        ifade_derle(durum, uye.ifade_ozeti)
+        alan_sabit olsun sabit_ekle(durum, "metin", uye.hedef_ozeti.ayrinti)
+        operandli_komut_ekle(durum, "OP_ALAN_YAZ", uye.satir, alan_sabit)
+        komut_ekle(durum, "OP_POP", uye.satir)
+        i olsun i + 1
+    döndür 0
+
 işlev komut_derle(durum, komut):
     eğer komut.tur eşit "Yazdir" ise:
         ifade_derle(durum, komut.ifade_ozeti)
@@ -672,6 +704,10 @@ işlev komut_derle(durum, komut):
         operandli_komut_ekle(durum, "OP_LISTE_OLUSTUR", komut.satir, uzunluk(komut.parametre_tipleri))
         operandli_komut_ekle(durum, "OP_CAGIR", komut.satir, 4)
         komut_ekle(durum, "OP_POP", komut.satir)
+        döndür 0
+
+    eğer komut.tur eşit "SinifTanim" ise:
+        sinif_derle(durum, komut)
         döndür 0
 
     eğer komut.tur eşit "Eger" ise:

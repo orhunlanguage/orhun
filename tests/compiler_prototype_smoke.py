@@ -160,6 +160,15 @@ PARITY_CASES = {
     "external_function_two_params": (
         'dış_işlev topla "ornek.dll" (a: int, b: int) -> int\n'
     ),
+    "class_fields": (
+        'tip Kutu:\n    ad olsun "Orhun"\n    deger olsun 3\n\n'
+        "k olsun yeni Kutu()\nyazdır k.ad\nyazdır k.deger\n"
+    ),
+    "class_field_inheritance": (
+        'tip Temel:\n    ad olsun "temel"\n\n'
+        "tip Alt (Temel):\n    deger olsun 2\n\n"
+        "a olsun yeni Alt()\nyazdır a.ad\nyazdır a.deger\n"
+    ),
 }
 
 

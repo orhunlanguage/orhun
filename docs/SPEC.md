@@ -541,6 +541,9 @@ and function-local temporary metadata.
 External function declarations are covered by compiler parity and lower to the
 existing `ffi_dis_islev_tanimla` policy surface with their library, return type,
 and parameter type list.
+Classes containing field declarations and basic inheritance setup are covered
+by compiler parity. Method compilation and `benim`/`üst` context handling remain
+future compiler-prototype work.
 `tests/compiler_prototype_smoke.py` compares opcode names, instruction pointers,
 source lines, operands, constant-pool entries, and aggregate counts against the
 C++ compiler. Unsupported constructs return an explicit error instead of
