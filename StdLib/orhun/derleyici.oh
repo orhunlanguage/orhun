@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.16.0"
+surum olsun "0.17.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -299,6 +299,79 @@ işlev isimsiz_islev_derle(durum, ifade):
     islev_komut_ekle(durum, ifade.satir, ad_sabit, ad, giris, min_arity, ifade.parametre_sayisi, islev_yerelleri)
     döndür 0
 
+işlev liste_uretec_derle(durum, ifade):
+    eğer uzunluk(ifade.altlar) küçük 2 ise:
+        hata_ayarla(durum, "Liste ureteci sonuc ve kaynak ifadesi bekliyor.")
+        döndür 0
+
+    sonuc_ad olsun gecici_ad_uret(durum, "__vm_uretec_sonuc")
+    kaynak_ad olsun gecici_ad_uret(durum, "__vm_uretec_kaynak")
+    indeks_ad olsun gecici_ad_uret(durum, "__vm_uretec_indeks")
+
+    operandli_komut_ekle(durum, "OP_LISTE_OLUSTUR", ifade.satir, 0)
+    ad_zorunlu_set_komutu_yaz(durum, sonuc_ad, ifade.satir)
+    komut_ekle(durum, "OP_POP", ifade.satir)
+
+    ifade_derle(durum, ifade.altlar[1])
+    ad_zorunlu_set_komutu_yaz(durum, kaynak_ad, ifade.satir)
+    komut_ekle(durum, "OP_POP", ifade.satir)
+
+    eğer değil ifade.kosul_var ise:
+        cagrilan_ad_yukle(durum, sonuc_ad, ifade.satir)
+        cagrilan_ad_yukle(durum, kaynak_ad, ifade.satir)
+        komut_ekle(durum, "OP_UZUNLUK", ifade.satir)
+        komut_ekle(durum, "OP_LISTE_REZERVE", ifade.satir)
+        komut_ekle(durum, "OP_POP", ifade.satir)
+
+    sabit_deger_yaz(durum, "sayi", 0, ifade.satir)
+    ad_zorunlu_set_komutu_yaz(durum, indeks_ad, ifade.satir)
+    komut_ekle(durum, "OP_POP", ifade.satir)
+
+    dongu_baslangici olsun durum.ip
+    cagrilan_ad_yukle(durum, indeks_ad, ifade.satir)
+    cagrilan_ad_yukle(durum, kaynak_ad, ifade.satir)
+    komut_ekle(durum, "OP_UZUNLUK", ifade.satir)
+    komut_ekle(durum, "OP_KUCUK", ifade.satir)
+    cikis_atlama olsun atlama_ekle(durum, "OP_ATLA_EGER_YANLIS", ifade.satir)
+    komut_ekle(durum, "OP_POP", ifade.satir)
+
+    cagrilan_ad_yukle(durum, kaynak_ad, ifade.satir)
+    cagrilan_ad_yukle(durum, indeks_ad, ifade.satir)
+    komut_ekle(durum, "OP_INDEKS_AL", ifade.satir)
+    ad_zorunlu_set_komutu_yaz(durum, ifade.degisken, ifade.satir)
+    komut_ekle(durum, "OP_POP", ifade.satir)
+
+    kosul_yanlis_atlama olsun -1
+    eğer ifade.kosul_var ise:
+        eğer uzunluk(ifade.altlar) küçük 3 ise:
+            hata_ayarla(durum, "Filtreli liste ureteci kosul ifadesi bekliyor.")
+            döndür 0
+        ifade_derle(durum, ifade.altlar[2])
+        kosul_yanlis_atlama olsun atlama_ekle(durum, "OP_ATLA_EGER_YANLIS", ifade.satir)
+        komut_ekle(durum, "OP_POP", ifade.satir)
+
+    cagrilan_ad_yukle(durum, sonuc_ad, ifade.satir)
+    ifade_derle(durum, ifade.altlar[0])
+    komut_ekle(durum, "OP_LISTE_PUSH", ifade.satir)
+    komut_ekle(durum, "OP_POP", ifade.satir)
+
+    eğer ifade.kosul_var ise:
+        kosul_son_atlama olsun atlama_ekle(durum, "OP_ATLA", ifade.satir)
+        atlama_yamala(durum, kosul_yanlis_atlama)
+        komut_ekle(durum, "OP_POP", ifade.satir)
+        atlama_yamala(durum, kosul_son_atlama)
+
+    cagrilan_ad_yukle(durum, indeks_ad, ifade.satir)
+    sabit_deger_yaz(durum, "sayi", 1, ifade.satir)
+    komut_ekle(durum, "OP_TOPLA", ifade.satir)
+    ad_zorunlu_set_komutu_yaz(durum, indeks_ad, ifade.satir)
+    komut_ekle(durum, "OP_POP", ifade.satir)
+    geri_atla_ekle(durum, ifade.satir, dongu_baslangici)
+    atlama_yamala(durum, cikis_atlama)
+    komut_ekle(durum, "OP_POP", ifade.satir)
+    cagrilan_ad_yukle(durum, sonuc_ad, ifade.satir)
+    döndür 0
+
 işlev ifade_derle(durum, ifade):
     eğer uzunluk(durum.hata) büyük 0 ise:
         döndür 0
@@ -363,6 +436,10 @@ işlev ifade_derle(durum, ifade):
             ifade_derle(durum, ifade.altlar[i])
             i olsun i + 1
         operandli_komut_ekle(durum, "OP_LISTE_OLUSTUR", ifade.satir, uzunluk(ifade.altlar))
+        döndür 0
+
+    eğer ifade.tur eşit "ListeUretec" ise:
+        liste_uretec_derle(durum, ifade)
         döndür 0
 
     eğer ifade.tur eşit "Sozluk" ise:

@@ -133,6 +133,26 @@ PARITY_CASES = {
         "kare olsun işlev(x, k olsun 2): x * k\n"
         "yazdır uygula(kare, 5)\n"
     ),
+    "list_comprehension": (
+        "sayilar olsun [1, 2, 3]\n"
+        "kareler olsun [x * x için x içinde sayilar]\n"
+        "yazdır kareler\n"
+    ),
+    "list_comprehension_filter": (
+        "sayilar olsun [1, 2, 3]\n"
+        "buyukler olsun [x için x içinde sayilar eğer x büyük 1]\n"
+        "yazdır buyukler\n"
+    ),
+    "list_comprehension_lambda": (
+        "f olsun işlev(x): x * 3\n"
+        "liste olsun [f(i) için i içinde [1, 2, 3] eğer i büyük 1]\n"
+        "yazdır liste\n"
+    ),
+    "function_list_comprehension": (
+        "işlev kareler(sayilar):\n"
+        "    döndür [x * x için x içinde sayilar eğer x büyük 1]\n\n"
+        "yazdır kareler([1, 2, 3])\n"
+    ),
 }
 
 
