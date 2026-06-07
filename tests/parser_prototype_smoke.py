@@ -421,7 +421,7 @@ def cxx_command_expression_summary(command: dict) -> dict:
 
 
 def empty_expression_summary() -> dict:
-    return {"tur": "", "op": "", "ayrinti": "", "altlar": []}
+    return {"tur": "", "satir": 0, "op": "", "ayrinti": "", "altlar": []}
 
 
 def cxx_expression_summary(expression: dict) -> dict:
@@ -430,6 +430,7 @@ def cxx_expression_summary(expression: dict) -> dict:
         return empty_expression_summary()
     summary = {
         "tur": kind,
+        "satir": expression.get("satir"),
         "op": expression.get("op", ""),
         "ayrinti": cxx_expression_detail(expression),
         "altlar": cxx_expression_children(expression),
@@ -654,6 +655,7 @@ def orhun_expression_summary(command: dict, source_file: Path) -> dict:
     require(isinstance(children, list), f"prototype expression children invalid for {source_file}")
     summary = {
         "tur": kind,
+        "satir": expression.get("satir"),
         "op": expression.get("op", ""),
         "ayrinti": expression.get("ayrinti", ""),
         "altlar": [orhun_expression_payload(child, source_file) for child in children],
@@ -668,6 +670,7 @@ def orhun_expression_payload(expression: object, source_file: Path) -> dict:
     require(isinstance(children, list), f"prototype child expression children invalid for {source_file}")
     summary = {
         "tur": expression.get("tur", ""),
+        "satir": expression.get("satir"),
         "op": expression.get("op", ""),
         "ayrinti": expression.get("ayrinti", ""),
         "altlar": [orhun_expression_payload(child, source_file) for child in children],

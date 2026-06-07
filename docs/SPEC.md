@@ -473,7 +473,7 @@ sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 ```
 
 The current prototype summarizes command node kinds, line numbers, primary
-expression summaries (`tur`, `op`, `ayrinti`, `altlar`), recursive expression
+expression summaries (`tur`, `satir`, `op`, `ayrinti`, `altlar`), recursive expression
 children, assignment metadata, total child-block counts, child block command
 counts, recursive child block command summaries, and result command/error
 and token counts, then compares them

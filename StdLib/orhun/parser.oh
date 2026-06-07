@@ -6,10 +6,10 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.51"
+surum olsun "0.3.52"
 
 işlev bos_ifade_ozeti():
-    döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
+    döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "altlar": []}
 
 işlev blok_sayilari_uret(bloklar):
     sayilar olsun []
@@ -892,6 +892,36 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
 
     döndür ""
 
+işlev ifade_satiri(tokenlar, baslangic, son, tur):
+    eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
+        döndür 0
+
+    eğer dis_parantezle_sarili_mi(tokenlar, baslangic, son) ise:
+        döndür ifade_satiri(tokenlar, baslangic + 1, son - 1, tur)
+
+    konum olsun baslangic
+    eğer tur eşit "IkiliIslem" ise:
+        operator_konumu olsun kok_operator_konumu(tokenlar, baslangic, son)
+        eğer operator_konumu büyük 0 veya operator_konumu eşit 0 ise:
+            konum olsun operator_konumu
+    eğer tur eşit "IslevCagri" ise:
+        parantez_konumu olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "(")
+        eğer parantez_konumu büyük 0 veya parantez_konumu eşit 0 ise:
+            konum olsun parantez_konumu
+    eğer tur eşit "IndeksErisim" veya tur eşit "DilimErisim" ise:
+        koseli_konumu olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "[")
+        eğer koseli_konumu büyük 0 veya koseli_konumu eşit 0 ise:
+            konum olsun koseli_konumu
+    eğer tur eşit "AlanErisim" veya tur eşit "BenimErisim" veya tur eşit "UstErisim" ise:
+        nokta_konumu olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, ".")
+        eğer nokta_konumu büyük 0 veya nokta_konumu eşit 0 ise:
+            konum olsun nokta_konumu
+    eğer tur eşit "GuvenliAlanErisim" ise:
+        soru_konumu olsun son_aralikta_deger_konumu(tokenlar, baslangic, son, "?")
+        eğer soru_konumu büyük 0 veya soru_konumu eşit 0 ise:
+            konum olsun soru_konumu
+    döndür guvenli_token(tokenlar, konum).satir
+
 işlev alt_ifade_ozeti(tokenlar, baslangic, son):
     döndür ifade_ozeti(tokenlar, baslangic, son)
 
@@ -1176,7 +1206,7 @@ işlev ifade_ozeti(tokenlar, baslangic, son):
     op olsun ""
     eğer tur eşit "IkiliIslem" veya tur eşit "TekliIslem" ise:
         op olsun ifade_ayrintisi(tokenlar, baslangic, son, tur)
-    sonuc olsun {"tur": tur, "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": ifade_altlari(tokenlar, baslangic, son, tur)}
+    sonuc olsun {"tur": tur, "satir": ifade_satiri(tokenlar, baslangic, son, tur), "op": op, "ayrinti": ifade_ayrintisi(tokenlar, baslangic, son, tur), "altlar": ifade_altlari(tokenlar, baslangic, son, tur)}
     eğer tur eşit "IsimsizIslev" ise:
         parametreler olsun baslik_parametreleri(tokenlar, baslangic)
         varsayilanlar olsun baslik_varsayilanlari(tokenlar, baslangic)
@@ -1295,7 +1325,7 @@ işlev komut_ifade_ozeti(tokenlar, konum):
     eğer token.tur eşit "ISLEM" ve islem_ifade_baslangici_mi(token.deger) ise:
         döndür ifade_ozeti(tokenlar, konum, satir_sonu)
 
-    döndür {"tur": tur, "op": "", "ayrinti": "", "altlar": []}
+    döndür bos_ifade_ozeti()
 
 işlev taninmayan_komut_hatasi(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
