@@ -570,7 +570,13 @@ def cxx_block_summaries(command: dict) -> list[dict]:
         if isinstance(block, dict):
             commands = block.get("komutlar")
             if isinstance(commands, list):
-                blocks.append({"komutlar": [cxx_node_summary(child) for child in commands]})
+                blocks.append(
+                    {
+                        "satir": block.get("satir"),
+                        "komut_sayisi": len(commands),
+                        "komutlar": [cxx_node_summary(child) for child in commands],
+                    }
+                )
     return blocks
 
 
@@ -866,8 +872,22 @@ def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
         require(isinstance(block, dict), f"prototype block is not an object for {source_file}")
         commands = block.get("komutlar")
         require(isinstance(commands, list), f"prototype block missing komutlar for {source_file}")
+        command_count = metadata_count(
+            block,
+            "komut_sayisi",
+            len(commands),
+            f"prototype {source_file}",
+            "block",
+        )
+        line = block.get("satir")
+        require(
+            isinstance(line, int) and line > 0,
+            f"prototype block line invalid for {source_file}: {block}",
+        )
         normalized.append(
             {
+                "satir": line,
+                "komut_sayisi": command_count,
                 "komutlar": [
                     orhun_node_summary(command, source_file)
                     for command in commands
