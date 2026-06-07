@@ -473,7 +473,8 @@ parser olsun dahil_et "orhun/parser.oh"
 sonuc olsun parser.ozetle("yazdır \"Merhaba\"\n")
 ```
 
-The current prototype summarizes command node kinds, line numbers, primary
+The current prototype exposes a `Program` root and `Block` structural nodes,
+then summarizes command node kinds, line numbers, primary
 expression summaries (`tur`, `satir`, `op`, `ayrinti`, `alt_sayisi`, `altlar`), recursive expression
 children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,

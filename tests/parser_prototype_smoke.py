@@ -572,6 +572,7 @@ def cxx_block_summaries(command: dict) -> list[dict]:
             if isinstance(commands, list):
                 blocks.append(
                     {
+                        "tur": block.get("tur"),
                         "satir": block.get("satir"),
                         "komut_sayisi": len(commands),
                         "komutlar": [cxx_node_summary(child) for child in commands],
@@ -629,6 +630,19 @@ def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
         f"prototype token count mismatch for {source_file}: {payload}",
     )
     return [orhun_node_summary(command, source_file) for command in commands]
+
+
+def validate_program_metadata(cxx_payload: dict, proto_payload: dict, source_file: Path) -> None:
+    ast = cxx_payload.get("ast")
+    require(isinstance(ast, dict), f"C++ parse payload missing ast for {source_file}")
+    require(
+        proto_payload.get("tur") == ast.get("tur") == "Program",
+        f"prototype program kind mismatch for {source_file}: {proto_payload}",
+    )
+    require(
+        proto_payload.get("satir") == ast.get("satir"),
+        f"prototype program line mismatch for {source_file}: {proto_payload}",
+    )
 
 
 def orhun_node_summary(command: dict, source_file: Path) -> dict:
@@ -872,6 +886,10 @@ def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
         require(isinstance(block, dict), f"prototype block is not an object for {source_file}")
         commands = block.get("komutlar")
         require(isinstance(commands, list), f"prototype block missing komutlar for {source_file}")
+        require(
+            block.get("tur") == "Block",
+            f"prototype block kind invalid for {source_file}: {block}",
+        )
         command_count = metadata_count(
             block,
             "komut_sayisi",
@@ -886,6 +904,7 @@ def orhun_block_summaries(blocks: object, source_file: Path) -> list[dict]:
         )
         normalized.append(
             {
+                "tur": "Block",
                 "satir": line,
                 "komut_sayisi": command_count,
                 "komutlar": [
@@ -1092,6 +1111,10 @@ def main() -> int:
                 f"prototype error command kinds mismatch for {case}: {proto_payload}",
             )
             require(
+                proto_payload.get("tur") == "",
+                f"prototype error root kind mismatch for {case}: {proto_payload}",
+            )
+            require(
                 proto_payload.get("hata_sayisi") == 1,
                 f"prototype error count mismatch for {case}: {proto_payload}",
             )
@@ -1106,6 +1129,7 @@ def main() -> int:
 
         cxx = cxx_top_level_nodes(cxx_payload, case)
         proto = orhun_parser_nodes(proto_payload, case)
+        validate_program_metadata(cxx_payload, proto_payload, case)
         require(
             cxx == proto,
             f"Parser prototype node mismatch for {case}\nC++: {cxx}\nOrhun: {proto}",

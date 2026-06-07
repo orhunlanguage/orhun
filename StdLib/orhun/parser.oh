@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.55"
+surum olsun "0.4.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -304,11 +304,11 @@ işlev komut_turleri_uret(komutlar):
         i olsun i + 1
     döndür liste
 
-işlev sonuc_ok(komutlar, token_sayisi):
-    döndür {"ok": doğru, "hata": "", "hata_sayisi": 0, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komut_turleri": komut_turleri_uret(komutlar), "komutlar": komutlar}
+işlev sonuc_ok(komutlar, token_sayisi, satir):
+    döndür {"ok": doğru, "hata": "", "hata_sayisi": 0, "tur": "Program", "satir": satir, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komut_turleri": komut_turleri_uret(komutlar), "komutlar": komutlar}
 
 işlev sonuc_hata(mesaj, token, token_sayisi):
-    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
+    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "tur": "", "satir": token.satir, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
 
 işlev token_yok():
     döndür {"tur": "DOSYA_SONU", "deger": "", "satir": 0, "sutun": 0}
@@ -1792,7 +1792,7 @@ işlev baslik_hatasi(tokenlar, konum):
 işlev blok_ozeti(tokenlar, konum, satir):
     i olsun yeni_satirlari_atla(tokenlar, konum)
     eğer guvenli_token(tokenlar, i).tur eşit_değil "GIRINTI" ise:
-        döndür {"satir": satir, "sayi": 0, "komut_sayisi": 0, "komutlar": [], "son": i}
+        döndür {"tur": "Block", "satir": satir, "sayi": 0, "komut_sayisi": 0, "komutlar": [], "son": i}
 
     i olsun i + 1
     derinlik olsun 1
@@ -1810,10 +1810,10 @@ işlev blok_ozeti(tokenlar, konum, satir):
                 derinlik olsun derinlik - 1
                 i olsun i + 1
                 eğer derinlik eşit 0 ise:
-                    döndür {"satir": satir, "sayi": sayi, "komut_sayisi": sayi, "komutlar": komutlar, "son": i}
+                    döndür {"tur": "Block", "satir": satir, "sayi": sayi, "komut_sayisi": sayi, "komutlar": komutlar, "son": i}
             değilse:
                 eğer token.tur eşit "DOSYA_SONU" ise:
-                    döndür {"satir": satir, "sayi": sayi, "komut_sayisi": sayi, "komutlar": komutlar, "son": i}
+                    döndür {"tur": "Block", "satir": satir, "sayi": sayi, "komut_sayisi": sayi, "komutlar": komutlar, "son": i}
                 değilse:
                     eğer token.tur eşit "YENI_SATIR" ise:
                         i olsun i + 1
@@ -1828,7 +1828,7 @@ işlev blok_ozeti(tokenlar, konum, satir):
                         değilse:
                             i olsun i + 1
 
-    döndür {"satir": satir, "sayi": sayi, "komut_sayisi": sayi, "komutlar": komutlar, "son": i}
+    döndür {"tur": "Block", "satir": satir, "sayi": sayi, "komut_sayisi": sayi, "komutlar": komutlar, "son": i}
 
 işlev satir_ici_blok_konumu(tokenlar, konum):
     token olsun guvenli_token(tokenlar, konum)
@@ -1857,13 +1857,13 @@ işlev bloklari(tokenlar, konum):
     satir_ici_konum olsun satir_ici_blok_konumu(tokenlar, konum)
 
     eğer satir_ici_konum büyük 0 veya satir_ici_konum eşit 0 ise:
-        bloklar.ekle({"satir": token.satir, "komut_sayisi": 1, "komutlar": [komut_dugumu(tokenlar, satir_ici_konum)]})
+        bloklar.ekle({"tur": "Block", "satir": token.satir, "komut_sayisi": 1, "komutlar": [komut_dugumu(tokenlar, satir_ici_konum)]})
         sonraki_konum olsun satir_sonuna_git(tokenlar, konum)
     değilse:
         ilk_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, konum), token.satir)
 
         eğer ilk_blok.sayi büyük 0 ise:
-            bloklar.ekle({"satir": ilk_blok.satir, "komut_sayisi": ilk_blok.komut_sayisi, "komutlar": ilk_blok.komutlar})
+            bloklar.ekle({"tur": ilk_blok.tur, "satir": ilk_blok.satir, "komut_sayisi": ilk_blok.komut_sayisi, "komutlar": ilk_blok.komutlar})
         sonraki_konum olsun ilk_blok.son
 
     i olsun yeni_satirlari_atla(tokenlar, sonraki_konum)
@@ -1871,15 +1871,15 @@ işlev bloklari(tokenlar, konum):
         eğer guvenli_token(tokenlar, i).tur eşit "ANAHTAR_KELIME" ve guvenli_token(tokenlar, i).deger eşit "değilse" ise:
             eğer degilse_eger_mi(tokenlar, i) ise:
                 eger_konum olsun i + 1
-                bloklar.ekle({"satir": guvenli_token(tokenlar, i).satir, "komut_sayisi": 1, "komutlar": [komut_dugumu(tokenlar, eger_konum)]})
+                bloklar.ekle({"tur": "Block", "satir": guvenli_token(tokenlar, i).satir, "komut_sayisi": 1, "komutlar": [komut_dugumu(tokenlar, eger_konum)]})
             değilse:
                 yanlis_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, i), guvenli_token(tokenlar, i).satir)
-                bloklar.ekle({"satir": yanlis_blok.satir, "komut_sayisi": yanlis_blok.komut_sayisi, "komutlar": yanlis_blok.komutlar})
+                bloklar.ekle({"tur": yanlis_blok.tur, "satir": yanlis_blok.satir, "komut_sayisi": yanlis_blok.komut_sayisi, "komutlar": yanlis_blok.komutlar})
 
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "deneme" ise:
         eğer guvenli_token(tokenlar, i).tur eşit "ANAHTAR_KELIME" ve guvenli_token(tokenlar, i).deger eşit "yakala" ise:
             yakala_blok olsun blok_ozeti(tokenlar, satir_sonuna_git(tokenlar, i), guvenli_token(tokenlar, i).satir)
-            bloklar.ekle({"satir": yakala_blok.satir, "komut_sayisi": yakala_blok.komut_sayisi, "komutlar": yakala_blok.komutlar})
+            bloklar.ekle({"tur": yakala_blok.tur, "satir": yakala_blok.satir, "komut_sayisi": yakala_blok.komut_sayisi, "komutlar": yakala_blok.komutlar})
 
     döndür bloklar
 
@@ -1910,7 +1910,7 @@ işlev ozetle_tokenlar(tokenlar):
                 i olsun i + 1
             değilse:
                 eğer token.tur eşit "DOSYA_SONU" ise:
-                    döndür sonuc_ok(komutlar, token_sayisi)
+                    döndür sonuc_ok(komutlar, token_sayisi, guvenli_token(tokenlar, 0).satir)
                 değilse:
                     eğer token.tur eşit "YENI_SATIR" veya derinlik büyük 0 ise:
                         i olsun i + 1
@@ -1930,7 +1930,7 @@ işlev ozetle_tokenlar(tokenlar):
                             komutlar.ekle(komut_dugumu(tokenlar, i))
                             i olsun satir_sonuna_git(tokenlar, i)
 
-    döndür sonuc_ok(komutlar, token_sayisi)
+    döndür sonuc_ok(komutlar, token_sayisi, guvenli_token(tokenlar, 0).satir)
 
 işlev ozetle(kaynak):
     döndür ozetle_tokenlar(lexer.tokenlestir(kaynak))
