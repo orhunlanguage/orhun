@@ -615,6 +615,10 @@ def orhun_parser_nodes(payload: dict, source_file: Path) -> list[dict]:
         f"prototype command count mismatch for {source_file}: {payload}",
     )
     require(
+        payload.get("komut_turleri") == [command.get("tur") for command in commands],
+        f"prototype command kinds mismatch for {source_file}: {payload}",
+    )
+    require(
         payload.get("token_sayisi") == payload.get("dogrulama_token_sayisi"),
         f"prototype token count mismatch for {source_file}: {payload}",
     )
@@ -1043,6 +1047,10 @@ def main() -> int:
             require(
                 proto_payload.get("komut_sayisi") == 0,
                 f"prototype error command count mismatch for {case}: {proto_payload}",
+            )
+            require(
+                proto_payload.get("komut_turleri") == [],
+                f"prototype error command kinds mismatch for {case}: {proto_payload}",
             )
             require(
                 proto_payload.get("hata_sayisi") == 1,

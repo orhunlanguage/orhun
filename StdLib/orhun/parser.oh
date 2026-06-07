@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.53"
+surum olsun "0.3.54"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -296,11 +296,19 @@ işlev komut_dugumu(tokenlar, konum):
         bloklar olsun bloklari(tokenlar, konum)
     döndür dugum(tur, token.satir, komut_ifade_ozeti(tokenlar, konum), bloklar, tokenlar, konum)
 
+işlev komut_turleri_uret(komutlar):
+    liste olsun []
+    i olsun 0
+    sürece i küçük uzunluk(komutlar):
+        liste.ekle(komutlar[i].tur)
+        i olsun i + 1
+    döndür liste
+
 işlev sonuc_ok(komutlar, token_sayisi):
-    döndür {"ok": doğru, "hata": "", "hata_sayisi": 0, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komutlar": komutlar}
+    döndür {"ok": doğru, "hata": "", "hata_sayisi": 0, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komut_turleri": komut_turleri_uret(komutlar), "komutlar": komutlar}
 
 işlev sonuc_hata(mesaj, token, token_sayisi):
-    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komutlar": []}
+    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
 
 işlev token_yok():
     döndür {"tur": "DOSYA_SONU", "deger": "", "satir": 0, "sutun": 0}
@@ -1876,12 +1884,7 @@ işlev bloklari(tokenlar, konum):
     döndür bloklar
 
 işlev turleri(sonuc):
-    liste olsun []
-    i olsun 0
-    sürece i küçük uzunluk(sonuc.komutlar):
-        liste.ekle(sonuc.komutlar[i].tur)
-        i olsun i + 1
-    döndür liste
+    döndür sonuc.komut_turleri
 
 işlev ozetle_tokenlar(tokenlar):
     token_sayisi olsun uzunluk(tokenlar)

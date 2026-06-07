@@ -9,6 +9,7 @@ yazdır sonuc.hata_sayisi
 yazdır sonuc.token_sayisi
 yazdır uzunluk(sonuc.komutlar)
 yazdır sonuc.komut_sayisi
+yazdır json.yaz(sonuc.komut_turleri)
 yazdır metin.birlestir(parser.turleri(sonuc), "|")
 yazdır sonuc.komutlar[0].blok_sayisi
 yazdır sonuc.komutlar[0].ad
