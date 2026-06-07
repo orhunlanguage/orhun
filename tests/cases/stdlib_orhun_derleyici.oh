@@ -10,7 +10,7 @@ yazdır sonuc.bytecode.sabit_sayisi
 yazdır json.yaz(sonuc.bytecode.komutlar)
 yazdır json.yaz(sonuc.bytecode.sabitler)
 
-desteklenmeyen olsun derleyici.derle("tekrarla 2 kez:\n    yazdır \"a\"\n")
+desteklenmeyen olsun derleyici.derle("tip Kutu:\n    yazdır \"a\"\n")
 yazdır desteklenmeyen.durum
 yazdır desteklenmeyen.hata_sayisi
 yazdır metin.icerir(desteklenmeyen.hata.mesaj, "Desteklenmeyen")

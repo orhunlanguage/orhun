@@ -698,6 +698,49 @@ std::string bytecodeSabitlerJson(const BytecodeChunk &chunk) {
   return ss.str();
 }
 
+std::string bytecodeSabitMetin(const BytecodeChunk &chunk,
+                              std::uint16_t sabitIndeksi) {
+  if (sabitIndeksi >= chunk.sabitler.size()) {
+    throw std::runtime_error("Bozuk bytecode: metin sabiti indeksi gecersiz.");
+  }
+  const auto *metin = std::get_if<std::string>(&chunk.sabitler[sabitIndeksi].veri);
+  if (metin == nullptr) {
+    throw std::runtime_error("Bozuk bytecode: metin sabiti bekleniyor.");
+  }
+  return *metin;
+}
+
+std::string bytecodeIslevJson(const BytecodeChunk &chunk, std::size_t ip) {
+  const std::uint16_t adSabit = bytecodeU16(chunk, ip + 1);
+  const std::uint16_t minArity = bytecodeU16(chunk, ip + 3);
+  const std::uint16_t maxArity = bytecodeU16(chunk, ip + 5);
+  const std::uint16_t giris = bytecodeU16(chunk, ip + 7);
+  const std::uint16_t localSayisi = bytecodeU16(chunk, ip + 9);
+  const std::uint16_t baglamArg = bytecodeU16(chunk, ip + 11);
+  const std::uint16_t localAdSayisi = bytecodeU16(chunk, ip + 13);
+
+  std::ostringstream ss;
+  ss << "{\"ad_sabit\":" << adSabit << ",\"ad\":\""
+     << jsonKacis(bytecodeSabitMetin(chunk, adSabit))
+     << "\",\"min_arity\":" << minArity << ",\"max_arity\":" << maxArity
+     << ",\"giris\":" << giris << ",\"local_sayisi\":" << localSayisi
+     << ",\"baglam_arg\":" << baglamArg
+     << ",\"local_adlari\":[";
+  for (std::uint16_t i = 0; i < localAdSayisi; ++i) {
+    if (i > 0) {
+      ss << ",";
+    }
+    const std::size_t pairIp = ip + 15 + static_cast<std::size_t>(i) * 4;
+    const std::uint16_t localIndeks = bytecodeU16(chunk, pairIp);
+    const std::uint16_t localAdSabit = bytecodeU16(chunk, pairIp + 2);
+    ss << "{\"indeks\":" << localIndeks << ",\"ad_sabit\":" << localAdSabit
+       << ",\"ad\":\""
+       << jsonKacis(bytecodeSabitMetin(chunk, localAdSabit)) << "\"}";
+  }
+  ss << "]}";
+  return ss.str();
+}
+
 std::string bytecodeKomutlarJson(const BytecodeChunk &chunk,
                                  std::size_t *komutSayisi = nullptr) {
   std::ostringstream ss;
@@ -717,6 +760,9 @@ std::string bytecodeKomutlarJson(const BytecodeChunk &chunk,
        << "\",\"satir\":" << chunk.satirlar.at(ip);
     if (uzunluk == 3) {
       ss << ",\"operand\":" << bytecodeU16(chunk, ip + 1);
+    }
+    if (op == OpCode::OP_ISLEV_OLUSTUR) {
+      ss << ",\"islev\":" << bytecodeIslevJson(chunk, ip);
     }
     ss << "}";
     ++sayi;

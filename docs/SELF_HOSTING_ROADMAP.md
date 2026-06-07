@@ -103,9 +103,17 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.1.0; sabitler, global kimlik okuma/atama,
-temel ikili islemler ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
+hazirlandi. `orhun/derleyici.oh` 0.10.0; sabitler, global kimlik okuma/atama,
+temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
+cagrilari, indeks/alan/guvenli alan okumalari, `eger/degilse`, basit `surece`
+ve `tekrarla` donguleri ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
 sabit havuzu parity'si uretiyor.
+Zorunlu/varsayilan parametreli islev tanimlari, yerel tanim/okuma/yazma, acik/ortuk donus ve
+`OP_ISLEV_OLUSTUR` local-ad metadata'si de ilk parity kapsaminda.
+Dogudan literal sayi/metin/mantik islemleri ve tekli islemler C++ ile ayni
+sabit katlama kurallarini uygular.
+Sabit dogrulukla belirlenen `eger` dallari, `surece yanlis` ve sifir/negatif
+`tekrarla` govdeleri bytecode uretmeden elenir.
 
 Hedefler:
 

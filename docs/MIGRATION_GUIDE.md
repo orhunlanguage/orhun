@@ -158,3 +158,14 @@
 - Derleme hatalarında komut `1` ile çıkar, `durum: "fail"` döndürür ve
   `bytecode` alanını `null` yapar.
 - İngilizce `bytecode` komutu uyumluluk takma adıdır.
+
+## 15. Self-hosting: `orhun/derleyici.oh`
+- `orhun/derleyici.oh`, parser prototipinin yapısal IR çıktısını çözümlenmiş
+  bytecode özetine dönüştüren ilk Orhun-yazılı derleyici prototipidir.
+- Desteklenen subset; temel ifadeler, koleksiyonlar, global/local değişkenler,
+  dallanma/döngüler, işlevler, varsayılan parametreler ve ilk sabit katlama
+  kurallarını içerir.
+- `tests/compiler_prototype_smoke.py`, prototip çıktısını C++ derleyicisinin
+  `baytkod --json` çıktısıyla birebir karşılaştırır.
+- Desteklenmeyen yapılar sessizce yanlış bytecode üretmek yerine açık hata
+  döndürür.

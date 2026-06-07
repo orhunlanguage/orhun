@@ -510,7 +510,17 @@ It consumes the structural IR from `orhun/parser.oh` and emits the same decoded
 bytecode shape exposed by C++ `baytkod --json`.
 
 The initial supported subset contains number, string, and boolean constants,
-global identifier reads and assignments, basic binary operations, and `yazdır`.
+global identifier reads and assignments, basic binary and unary operations,
+list and dictionary literals, simple global function calls, index access,
+field and safe-field reads, `eğer/değilse`, basic `sürece` loops, and `yazdır`.
+Counted `tekrarla ... kez` loops are also covered by compiler parity.
+Functions with required/default parameters and local assignments, explicit/implicit
+returns, and function-creation/local-name metadata are covered by the initial
+function subset. Nested functions remain outside it.
+Direct literal number, string, boolean, and unary expressions follow the C++
+compiler's initial constant-folding rules.
+Constant-truthiness branches and loops follow the C++ compiler's initial
+dead-code elimination behavior.
 `tests/compiler_prototype_smoke.py` compares opcode names, instruction pointers,
 source lines, operands, constant-pool entries, and aggregate counts against the
 C++ compiler. Unsupported constructs return an explicit error instead of
@@ -567,7 +577,9 @@ Stable channel defaults:
 - `baytkod --json` exposes the C++ compiler output as a decoded, machine-readable
   bytecode contract for self-hosting parity checks. Its successful payload
   contains bytecode size, instruction and constant counts, decoded instructions,
-  source lines, operands, and primitive constants. Compiler errors return exit
+  source lines, operands, and primitive constants. `OP_ISLEV_OLUSTUR`
+  instructions also expose function name/constant, arity, entry IP, local count,
+  context argument count, and local-name mappings. Compiler errors return exit
   code `1`, set `durum` to `fail`, and leave `bytecode` as `null`. The English
   `bytecode` command is a compatibility alias. This is an inspection and parity
   surface; it does not write build artifacts.

@@ -64,6 +64,7 @@ def validate_success(payload: dict, source: Path) -> None:
     )
 
     previous_ip = -1
+    function_count = 0
     for command in commands:
         require(isinstance(command, dict), f"{source}: command must be an object")
         ip = command.get("ip")
@@ -83,6 +84,41 @@ def validate_success(payload: dict, source: Path) -> None:
                 isinstance(command["operand"], int) and command["operand"] >= 0,
                 f"{source}: invalid operand at ip {ip}",
             )
+        if command["op"] == "OP_ISLEV_OLUSTUR":
+            function_count += 1
+            function = command.get("islev")
+            require(isinstance(function, dict), f"{source}: function metadata missing")
+            for field in (
+                "ad_sabit",
+                "min_arity",
+                "max_arity",
+                "giris",
+                "local_sayisi",
+                "baglam_arg",
+            ):
+                require(
+                    isinstance(function.get(field), int) and function[field] >= 0,
+                    f"{source}: invalid function field {field}",
+                )
+            require(
+                isinstance(function.get("ad"), str) and function["ad"],
+                f"{source}: function name missing",
+            )
+            local_names = function.get("local_adlari")
+            require(
+                isinstance(local_names, list),
+                f"{source}: function local names missing",
+            )
+            require(
+                all(
+                    isinstance(item, dict)
+                    and isinstance(item.get("indeks"), int)
+                    and isinstance(item.get("ad_sabit"), int)
+                    and isinstance(item.get("ad"), str)
+                    for item in local_names
+                ),
+                f"{source}: invalid function local name metadata",
+            )
         previous_ip = ip
 
     require(commands[-2]["op"] == "OP_BOS", f"{source}: program must end with OP_BOS")
@@ -96,6 +132,9 @@ def validate_success(payload: dict, source: Path) -> None:
         )
         if constant["tur"] != "bos":
             require("deger" in constant, f"{source}: constant value missing")
+
+    if source.name == "function_return.oh":
+        require(function_count > 0, f"{source}: function metadata was not exercised")
 
 
 def validate_error(payload: dict, source: Path) -> None:

@@ -13,6 +13,68 @@ PARITY_CASES = {
     "global_string": 'ad olsun "Orhun"\nyazdır ad\n',
     "global_binary": "a olsun 2\nb olsun 3\nyazdır a + b\n",
     "mixed_binary": "a olsun 7\nyazdır a - 2\nyazdır a eşit 7\n",
+    "unary": "a olsun 2\nb olsun yanlış\nyazdır -a\nyazdır değil b\n",
+    "list": "liste olsun [1, 2]\nyazdır liste\n",
+    "dictionary": 'yazdır {"ad": "Orhun", "surum": 2}\n',
+    "function_call": "yazdır uzunluk([1, 2])\n",
+    "not_equal": "a olsun 1\nb olsun 2\nyazdır a eşit_değil b\n",
+    "index_access": "liste olsun [10, 20]\nyazdır liste[0]\n",
+    "literal_index": "yazdır [10, 20][1]\n",
+    "field_access": 'ayar olsun {"ad": "Orhun"}\nyazdır ayar.ad\n',
+    "safe_field_access": 'ayar olsun {"ad": "Orhun"}\nyazdır ayar?.ad\n',
+    "literal_field": 'yazdır {"ad": "Orhun"}.ad\n',
+    "if": 'x olsun doğru\neğer x ise:\n    yazdır "evet"\n',
+    "if_else": (
+        'x olsun doğru\neğer x ise:\n    yazdır "evet"\n'
+        'değilse:\n    yazdır "hayir"\n'
+    ),
+    "while": (
+        "x olsun 0\nsürece x küçük 2:\n"
+        "    yazdır x\n    x olsun x + 1\n"
+    ),
+    "repeat": 'tekrarla 2 kez:\n    yazdır "a"\n',
+    "nested_if": (
+        "x olsun doğru\neğer x ise:\n"
+        "    eğer x ise:\n        yazdır \"ic\"\n"
+        "değilse:\n    yazdır \"dis\"\n"
+    ),
+    "function_no_params": (
+        'işlev selam():\n    yazdır "merhaba"\n\nselam()\n'
+    ),
+    "function_return": (
+        "işlev cevap():\n    döndür 42\n\nyazdır cevap()\n"
+    ),
+    "function_param": (
+        "işlev iki_kat(x):\n    döndür x * 2\n\nyazdır iki_kat(4)\n"
+    ),
+    "function_local": (
+        "işlev yaz_iki():\n    a olsun 2\n    yazdır a\n\nyaz_iki()\n"
+    ),
+    "function_params_local": (
+        "işlev topla(a, b):\n    sonuc olsun a + b\n"
+        "    döndür sonuc\n\nyazdır topla(2, 3)\n"
+    ),
+    "function_default": (
+        'işlev selam(ad olsun "dünya"):\n    döndür ad\n\n'
+        "yazdır selam()\n"
+    ),
+    "function_required_default": (
+        "işlev topla(a, b olsun 2):\n    döndür a + b\n\n"
+        "yazdır topla(3)\n"
+    ),
+    "constant_number": "yazdır 7 % 3\nyazdır 4 büyük 2\n",
+    "constant_nested": "yazdır 1 + 2 * 3\n",
+    "constant_unary": "yazdır -5\nyazdır değil yanlış\n",
+    "constant_string": 'yazdır "or" + "hun"\nyazdır "a" eşit_değil "b"\n',
+    "constant_boolean": "yazdır doğru ve yanlış\nyazdır doğru veya yanlış\n",
+    "constant_if_true": (
+        'eğer doğru ise:\n    yazdır "evet"\ndeğilse:\n    yazdır "hayir"\n'
+    ),
+    "constant_if_false": (
+        'eğer yanlış ise:\n    yazdır "evet"\ndeğilse:\n    yazdır "hayir"\n'
+    ),
+    "constant_while_false": 'sürece yanlış:\n    yazdır "olmaz"\n',
+    "constant_repeat_zero": 'tekrarla 0 kez:\n    yazdır "olmaz"\n',
 }
 
 
@@ -107,7 +169,7 @@ def main() -> int:
 
         unsupported = tmpdir / "unsupported.oh"
         unsupported.write_text(
-            'tekrarla 2 kez:\n    yazdır "a"\n',
+            'tip Kutu:\n    yazdır "merhaba"\n',
             encoding="utf-8",
             newline="\n",
         )
