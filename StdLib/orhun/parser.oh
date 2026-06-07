@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.3.50"
+surum olsun "0.3.51"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "op": "", "ayrinti": "", "altlar": []}
@@ -296,11 +296,11 @@ işlev komut_dugumu(tokenlar, konum):
         bloklar olsun bloklari(tokenlar, konum)
     döndür dugum(tur, token.satir, komut_ifade_ozeti(tokenlar, konum), bloklar, tokenlar, konum)
 
-işlev sonuc_ok(komutlar):
-    döndür {"ok": doğru, "hata": "", "hata_sayisi": 0, "komut_sayisi": uzunluk(komutlar), "komutlar": komutlar}
+işlev sonuc_ok(komutlar, token_sayisi):
+    döndür {"ok": doğru, "hata": "", "hata_sayisi": 0, "token_sayisi": token_sayisi, "komut_sayisi": uzunluk(komutlar), "komutlar": komutlar}
 
-işlev sonuc_hata(mesaj, token):
-    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "komut_sayisi": 0, "komutlar": []}
+işlev sonuc_hata(mesaj, token, token_sayisi):
+    döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komutlar": []}
 
 işlev token_yok():
     döndür {"tur": "DOSYA_SONU", "deger": "", "satir": 0, "sutun": 0}
@@ -1853,9 +1853,10 @@ işlev turleri(sonuc):
     döndür liste
 
 işlev ozetle_tokenlar(tokenlar):
+    token_sayisi olsun uzunluk(tokenlar)
     eğer lexer.hata_var_mi(tokenlar) ise:
         ilk_hata olsun lexer.ilk_hata(tokenlar)
-        döndür sonuc_hata(ilk_hata.deger, ilk_hata)
+        döndür sonuc_hata(ilk_hata.deger, ilk_hata, token_sayisi)
 
     komutlar olsun []
     derinlik olsun 0
@@ -1875,7 +1876,7 @@ işlev ozetle_tokenlar(tokenlar):
                 i olsun i + 1
             değilse:
                 eğer token.tur eşit "DOSYA_SONU" ise:
-                    döndür sonuc_ok(komutlar)
+                    döndür sonuc_ok(komutlar, token_sayisi)
                 değilse:
                     eğer token.tur eşit "YENI_SATIR" veya derinlik büyük 0 ise:
                         i olsun i + 1
@@ -1885,17 +1886,17 @@ işlev ozetle_tokenlar(tokenlar):
                         değilse:
                             baslik_hata olsun baslik_hatasi(tokenlar, i)
                             eğer uzunluk(baslik_hata) büyük 0 ise:
-                                döndür sonuc_hata(baslik_hata, token)
+                                döndür sonuc_hata(baslik_hata, token, token_sayisi)
                             deneme_hata olsun deneme_yakala_hatasi(tokenlar, i)
                             eğer uzunluk(deneme_hata.mesaj) büyük 0 ise:
-                                döndür sonuc_hata(deneme_hata.mesaj, deneme_hata.token)
+                                döndür sonuc_hata(deneme_hata.mesaj, deneme_hata.token, token_sayisi)
                             tur olsun komut_turu(tokenlar, i)
                             eğer uzunluk(tur) eşit 0 ise:
-                                döndür sonuc_hata("Komut turu taninamadi: " + token.deger, token)
+                                döndür sonuc_hata("Komut turu taninamadi: " + token.deger, token, token_sayisi)
                             komutlar.ekle(komut_dugumu(tokenlar, i))
                             i olsun satir_sonuna_git(tokenlar, i)
 
-    döndür sonuc_ok(komutlar)
+    döndür sonuc_ok(komutlar, token_sayisi)
 
 işlev ozetle(kaynak):
     döndür ozetle_tokenlar(lexer.tokenlestir(kaynak))
