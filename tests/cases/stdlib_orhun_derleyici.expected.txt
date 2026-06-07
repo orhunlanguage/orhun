@@ -1,0 +1,11 @@
+0.1.0
+ok
+0
+13
+7
+3
+[{"ip":0,"op":"OP_SABIT","operand":0,"satir":1},{"ip":3,"op":"OP_SET_GLOBAL","operand":1,"satir":1},{"ip":6,"op":"OP_POP","satir":1},{"ip":7,"op":"OP_GET_GLOBAL","operand":2,"satir":2},{"ip":10,"op":"OP_YAZDIR","satir":2},{"ip":11,"op":"OP_BOS","satir":1},{"ip":12,"op":"OP_DON","satir":1}]
+[{"deger":"Orhun","tur":"metin"},{"deger":"ad","tur":"metin"},{"deger":"ad","tur":"metin"}]
+fail
+1
+1

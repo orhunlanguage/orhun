@@ -1,0 +1,139 @@
+# Orhun ile yazilmis bytecode derleyici prototipi.
+#
+# Bu modul parser prototipinin yapisal IR'ini C++ VM opcode ozetine donusturur.
+# Ilk kapsam global atamalar, sabitler, kimlikler, temel ikili islemler ve
+# yazdir komutudur. Hedef, kapsami parity fixture'lariyla guvenle buyutmektir.
+
+parser olsun dahil_et "orhun/parser.oh"
+
+surum olsun "0.1.0"
+
+işlev durum_yeni():
+    döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": ""}
+
+işlev hata_ayarla(durum, mesaj):
+    eğer uzunluk(durum.hata) eşit 0 ise:
+        durum["hata"] = mesaj
+
+işlev komut_ekle(durum, op, satir):
+    durum.komutlar.ekle({"ip": durum.ip, "op": op, "satir": satir})
+    durum["ip"] = durum.ip + 1
+
+işlev operandli_komut_ekle(durum, op, satir, operand):
+    durum.komutlar.ekle({"ip": durum.ip, "op": op, "satir": satir, "operand": operand})
+    durum["ip"] = durum.ip + 3
+
+işlev sabit_ekle(durum, tur, deger):
+    konum olsun uzunluk(durum.sabitler)
+    durum.sabitler.ekle({"tur": tur, "deger": deger})
+    döndür konum
+
+işlev operator_opcode(op):
+    eğer op eşit "+" ise:
+        döndür "OP_TOPLA"
+    eğer op eşit "-" ise:
+        döndür "OP_CIKAR"
+    eğer op eşit "*" ise:
+        döndür "OP_CARP"
+    eğer op eşit "/" ise:
+        döndür "OP_BOL"
+    eğer op eşit "%" ise:
+        döndür "OP_MOD"
+    eğer op eşit "eşit" veya op eşit "==" ise:
+        döndür "OP_ESIT"
+    eğer op eşit "büyük" veya op eşit ">" ise:
+        döndür "OP_BUYUK"
+    eğer op eşit "küçük" veya op eşit "<" ise:
+        döndür "OP_KUCUK"
+    eğer op eşit "ve" ise:
+        döndür "OP_VE"
+    eğer op eşit "veya" ise:
+        döndür "OP_VEYA"
+    döndür ""
+
+işlev ifade_derle(durum, ifade):
+    eğer uzunluk(durum.hata) büyük 0 ise:
+        döndür 0
+
+    eğer ifade.tur eşit "Sayi" ise:
+        sabit olsun sabit_ekle(durum, "sayi", sayiya_cevir(ifade.ayrinti))
+        operandli_komut_ekle(durum, "OP_SABIT", ifade.satir, sabit)
+        döndür 0
+
+    eğer ifade.tur eşit "Metin" ise:
+        sabit olsun sabit_ekle(durum, "metin", ifade.ayrinti)
+        operandli_komut_ekle(durum, "OP_SABIT", ifade.satir, sabit)
+        döndür 0
+
+    eğer ifade.tur eşit "Mantik" ise:
+        eğer ifade.ayrinti eşit "doğru" ise:
+            komut_ekle(durum, "OP_DOGRU", ifade.satir)
+        değilse:
+            komut_ekle(durum, "OP_YANLIS", ifade.satir)
+        döndür 0
+
+    eğer ifade.tur eşit "Kimlik" ise:
+        sabit olsun sabit_ekle(durum, "metin", ifade.ayrinti)
+        operandli_komut_ekle(durum, "OP_GET_GLOBAL", ifade.satir, sabit)
+        döndür 0
+
+    eğer ifade.tur eşit "IkiliIslem" ise:
+        eğer uzunluk(ifade.altlar) eşit_değil 2 ise:
+            hata_ayarla(durum, "Ikili islem iki alt ifade bekliyor.")
+            döndür 0
+        ifade_derle(durum, ifade.altlar[0])
+        ifade_derle(durum, ifade.altlar[1])
+        opcode olsun operator_opcode(ifade.op)
+        eğer uzunluk(opcode) eşit 0 ise:
+            hata_ayarla(durum, "Desteklenmeyen ikili operator: " + ifade.op)
+            döndür 0
+        komut_ekle(durum, opcode, ifade.satir)
+        döndür 0
+
+    hata_ayarla(durum, "Desteklenmeyen ifade turu: " + ifade.tur)
+    döndür 0
+
+işlev komut_derle(durum, komut):
+    eğer komut.tur eşit "Yazdir" ise:
+        ifade_derle(durum, komut.ifade_ozeti)
+        eğer uzunluk(durum.hata) eşit 0 ise:
+            komut_ekle(durum, "OP_YAZDIR", komut.satir)
+        döndür 0
+
+    eğer komut.tur eşit "Atama" ise:
+        eğer komut.hedef_ozeti.tur eşit_değil "Kimlik" ise:
+            hata_ayarla(durum, "Ilk prototip yalnizca kimlik atamalarini destekliyor.")
+            döndür 0
+        ifade_derle(durum, komut.ifade_ozeti)
+        eğer uzunluk(durum.hata) büyük 0 ise:
+            döndür 0
+        sabit olsun sabit_ekle(durum, "metin", komut.hedef_ozeti.ayrinti)
+        operandli_komut_ekle(durum, "OP_SET_GLOBAL", komut.satir, sabit)
+        komut_ekle(durum, "OP_POP", komut.satir)
+        döndür 0
+
+    hata_ayarla(durum, "Desteklenmeyen komut turu: " + komut.tur)
+    döndür 0
+
+işlev basarisiz(mesaj):
+    döndür {"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": mesaj}, "bytecode": 0}
+
+işlev ir_derle(ir):
+    eğer değil ir.ok ise:
+        döndür basarisiz(ir.hata.mesaj)
+
+    durum olsun durum_yeni()
+    i olsun 0
+    sürece i küçük uzunluk(ir.komutlar):
+        komut_derle(durum, ir.komutlar[i])
+        eğer uzunluk(durum.hata) büyük 0 ise:
+            döndür basarisiz(durum.hata)
+        i olsun i + 1
+
+    komut_ekle(durum, "OP_BOS", ir.satir)
+    komut_ekle(durum, "OP_DON", ir.satir)
+    bytecode olsun {"kod_boyutu": durum.ip, "komut_sayisi": uzunluk(durum.komutlar), "sabit_sayisi": uzunluk(durum.sabitler), "komutlar": durum.komutlar, "sabitler": durum.sabitler}
+    döndür {"durum": "ok", "hata_sayisi": 0, "bytecode": bytecode}
+
+işlev derle(kaynak):
+    döndür ir_derle(parser.ozetle(kaynak))

@@ -428,6 +428,7 @@ Current built-in module surfaces include:
 - `orhun/paket.oh`
 - `orhun/lexer.oh`
 - `orhun/parser.oh`
+- `orhun/derleyici.oh`
 
 Safety-sensitive modules must keep policy checks enabled by default.
 
@@ -501,6 +502,19 @@ non-trailing required parameters after default values, and multiline dictionary
 key errors. Those error fixtures also compare the reported line, expected-token
 hint, unknown command name, and typo suggestion against the C++ parser. It is
 not yet the production parser.
+
+## Orhun-Source Compiler Prototype
+
+`orhun/derleyici.oh` is the first Orhun-written bytecode compiler prototype.
+It consumes the structural IR from `orhun/parser.oh` and emits the same decoded
+bytecode shape exposed by C++ `baytkod --json`.
+
+The initial supported subset contains number, string, and boolean constants,
+global identifier reads and assignments, basic binary operations, and `yazdır`.
+`tests/compiler_prototype_smoke.py` compares opcode names, instruction pointers,
+source lines, operands, constant-pool entries, and aggregate counts against the
+C++ compiler. Unsupported constructs return an explicit error instead of
+silently emitting incorrect bytecode. It is not yet the production compiler.
 
 ## CLI Contract
 

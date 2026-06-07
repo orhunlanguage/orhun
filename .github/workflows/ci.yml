@@ -275,6 +275,19 @@ jobs:
         if: runner.os == 'macOS'
         run: python3 tests/bytecode_json_smoke.py ./build/orhun_test
 
+      - name: Compiler prototype smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/compiler_prototype_smoke.py .\build\orhun_test.exe
+
+      - name: Compiler prototype smoke (Linux)
+        if: runner.os == 'Linux'
+        run: python3 tests/compiler_prototype_smoke.py ./build/orhun_test
+
+      - name: Compiler prototype smoke (macOS)
+        if: runner.os == 'macOS'
+        run: python3 tests/compiler_prototype_smoke.py ./build/orhun_test
+
       - name: Lock v3 smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

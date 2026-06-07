@@ -186,12 +186,13 @@ self-hosting plan.
 - Bytecode compiler: `Compiler.cpp`
 - Standard library helpers: `Yerlesik.h`, `StdLib/`, `StdLib/orhun/`
   (`temel.oh`, `sonuc.oh`, `koleksiyon.oh`, `metin.oh`, `paket.oh`,
-  `lexer.oh`, `parser.oh`)
+  `lexer.oh`, `parser.oh`, `derleyici.oh`)
 - Examples: `examples/`
 - Tests and fixtures: `tests/`
 - Lexer parity fixtures: `tests/lexer_parity/`
 - Parser AST JSON fixtures: `tests/ast_json/`
 - Bytecode JSON contract smoke: `tests/bytecode_json_smoke.py`
+- Compiler prototype parity smoke: `tests/compiler_prototype_smoke.py`
 - Roadmap smoke aggregate: `tests/roadmap_smoke.py`
 - Parser prototype parity smoke: `tests/parser_prototype_smoke.py`
 - Closure capture analysis smoke: `tests/closure_capture_analysis_smoke.py`

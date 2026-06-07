@@ -1,0 +1,16 @@
+derleyici olsun dahil_et "orhun/derleyici.oh"
+
+sonuc olsun derleyici.derle("ad olsun \"Orhun\"\nyazdır ad\n")
+yazdır derleyici.surum
+yazdır sonuc.durum
+yazdır sonuc.hata_sayisi
+yazdır sonuc.bytecode.kod_boyutu
+yazdır sonuc.bytecode.komut_sayisi
+yazdır sonuc.bytecode.sabit_sayisi
+yazdır json.yaz(sonuc.bytecode.komutlar)
+yazdır json.yaz(sonuc.bytecode.sabitler)
+
+desteklenmeyen olsun derleyici.derle("tekrarla 2 kez:\n    yazdır \"a\"\n")
+yazdır desteklenmeyen.durum
+yazdır desteklenmeyen.hata_sayisi
+yazdır metin.icerir(desteklenmeyen.hata.mesaj, "Desteklenmeyen")
