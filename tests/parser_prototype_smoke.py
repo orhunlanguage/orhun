@@ -931,6 +931,11 @@ def empty_coverage() -> dict[str, int]:
         "block_count_zero": 0,
         "block_count_one": 0,
         "block_count_multi": 0,
+        "block_line_zero": 0,
+        "block_line_nonzero": 0,
+        "block_commands_zero": 0,
+        "block_commands_one": 0,
+        "block_commands_multi": 0,
         "assignment_nodes": 0,
         "multi_assignment_nodes": 0,
     }
@@ -1018,6 +1023,20 @@ def collect_node_coverage(node: dict, coverage: dict[str, int]) -> None:
         for block in blocks:
             if not isinstance(block, dict):
                 continue
+            line = block.get("satir")
+            if isinstance(line, int):
+                if line == 0:
+                    coverage["block_line_zero"] += 1
+                elif line > 0:
+                    coverage["block_line_nonzero"] += 1
+            command_count = block.get("komut_sayisi")
+            if isinstance(command_count, int):
+                if command_count == 0:
+                    coverage["block_commands_zero"] += 1
+                elif command_count == 1:
+                    coverage["block_commands_one"] += 1
+                elif command_count > 1:
+                    coverage["block_commands_multi"] += 1
             commands = block.get("komutlar", [])
             if isinstance(commands, list):
                 for command in commands:
@@ -1120,6 +1139,13 @@ def main() -> int:
         f"{coverage['block_count_zero']}/"
         f"{coverage['block_count_one']}/"
         f"{coverage['block_count_multi']}, "
+        "block lines zero/nonzero: "
+        f"{coverage['block_line_zero']}/"
+        f"{coverage['block_line_nonzero']}, "
+        "block commands zero/one/multi: "
+        f"{coverage['block_commands_zero']}/"
+        f"{coverage['block_commands_one']}/"
+        f"{coverage['block_commands_multi']}, "
         "assignments single/multi: "
         f"{coverage['assignment_nodes']}/{coverage['multi_assignment_nodes']})."
     )
