@@ -32,6 +32,7 @@ development commit.
 - Mismatched tags are rejected before an archive can be produced.
 - Tag-triggered release builds run on Windows, Linux, and macOS and publish
   deterministic archives plus SHA-256 verification files.
+- Release assets receive signed GitHub/Sigstore build-provenance attestations.
 - Pre-1.0 and explicitly suffixed pre-release versions are published as GitHub
   prereleases.
 

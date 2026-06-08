@@ -102,6 +102,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     steps:
       - name: Checkout release tag
         uses: actions/checkout@v4
@@ -118,6 +121,11 @@ jobs:
           python3 tools/release_package.py checksums \
             --directory artifacts/release \
             --output artifacts/release/SHA256SUMS
+
+      - name: Attest release assets
+        uses: actions/attest@v4
+        with:
+          subject-path: artifacts/release/*
 
       - name: Publish GitHub release
         env:

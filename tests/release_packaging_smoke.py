@@ -37,6 +37,20 @@ def digest(path: Path) -> str:
 def main() -> int:
     repo = Path(__file__).resolve().parents[1]
     version = (repo / "VERSION").read_text(encoding="utf-8").strip()
+    workflow = (repo / ".github" / "workflows" / "release.yml").read_text(
+        encoding="utf-8"
+    )
+    for fragment in (
+        'tags: ["v*.*.*"]',
+        "tests/roadmap_smoke.py",
+        "tools/release_package.py create",
+        "actions/attest@v4",
+        "id-token: write",
+        "attestations: write",
+        "artifact-metadata: write",
+        "gh release create",
+    ):
+        require(fragment in workflow, f"Release workflow missing contract: {fragment}")
 
     with tempfile.TemporaryDirectory(prefix="orhun_release_smoke_") as raw_temp:
         temp = Path(raw_temp)
@@ -160,7 +174,10 @@ def main() -> int:
         require(wrong_tag.returncode != 0, "Mismatched release tag must be rejected")
         require("must exactly match" in wrong_tag.stderr, "Wrong-tag error must be clear")
 
-    print("Release packaging smoke passed (deterministic archives, checksums, tag gate).")
+    print(
+        "Release packaging smoke passed "
+        "(deterministic archives, checksums, tag gate, provenance workflow)."
+    )
     return 0
 
 

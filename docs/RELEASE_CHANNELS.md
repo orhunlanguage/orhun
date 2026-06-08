@@ -29,8 +29,12 @@
   taşınabilir derleyici bundle'ını doğrular ve sürümlü arşiv üretir.
 - Her arşiv için ayrı `.sha256` dosyası ve tüm arşivleri kapsayan
   `SHA256SUMS` yayınlanır.
+- Release asset'leri kısa ömürlü OIDC/Sigstore sertifikası kullanan
+  GitHub artifact attestation ile imzalı build provenance kaydına bağlanır.
 - `0.x` ve ön sürüm etiketleri GitHub üzerinde prerelease olarak işaretlenir.
 
 SHA-256 dosyaları aktarım bütünlüğünü doğrular, ancak yayın sahibinin kimliğini
-kanıtlayan kriptografik imzanın yerini tutmaz. İmzalama anahtarı güvenli yayın
-altyapısına eklenene kadar yayınlar "imzalı" olarak tanımlanmaz.
+kanıtlayan provenance doğrulamasının yerini tutmaz. Kullanıcılar indirdikleri
+asset'i `gh attestation verify <dosya> --repo orhunlanguage/orhun` ile
+doğrulayabilir. Platform code-signing ve kurulum paketi imzalama ayrı bir
+gelecek adımdır.

@@ -175,9 +175,15 @@ the source-free compiler toolchain, and publishes deterministic compiler
 archives with SHA-256 verification files.
 
 Release assets are published on
-[GitHub Releases](https://github.com/orhunlanguage/orhun/releases). They are not
-cryptographically signed yet; checksum verification is the current integrity
-mechanism.
+[GitHub Releases](https://github.com/orhunlanguage/orhun/releases). Every asset
+gets a signed GitHub/Sigstore build-provenance attestation and SHA-256
+verification data. Archives are not platform code-signed yet.
+
+Verify a downloaded asset with GitHub CLI:
+
+```bash
+gh attestation verify orhun-compiler-0.8.0-linux-x64.tar.gz --repo orhunlanguage/orhun
+```
 
 Program arguments are available as `sistem.argumanlar`:
 

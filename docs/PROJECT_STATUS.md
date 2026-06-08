@@ -76,6 +76,8 @@ These percentages are planning estimates, not promises.
 - Matching version tags run the full gate on all three platforms and publish
   deterministic versioned compiler archives, per-archive SHA-256 files, and a
   combined `SHA256SUMS` manifest as GitHub Release assets.
+- Release assets receive signed GitHub/Sigstore build-provenance attestations
+  without storing a long-lived signing key in the repository.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.
@@ -89,7 +91,7 @@ These percentages are planning estimates, not promises.
   parser path.
 - Grow compiler parity beyond the current test corpus and reduce the remaining
   C++ serialization/runtime bridge behind the portable Orhun compiler CLI.
-- Add cryptographic signing to the versioned release assets.
+- Add platform code-signing and installer signing to versioned releases.
 - Make release binaries easier to install on Windows, Linux, and macOS.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.
