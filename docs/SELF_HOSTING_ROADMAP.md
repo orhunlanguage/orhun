@@ -149,6 +149,8 @@ dogrular; C++ tarafindaki 3 bilincli hata fixture'i ayri izlenir.
 bytecode ciktisini siki dogrulamadan sonra C++ VM'de calistirir. Bootstrap smoke
 testi bicimlendirilmis metin, ic ice islev, OOP/ust ve hata yakalama programlarini
 bu kopruyle yurutup dogrudan `vm-kati` ciktisiyla karsilastirir.
+Deneysel `orhun orhun-vm <dosya.oh>` komutu ayni hatti ara JSON dosyasi olmadan
+tek komutta calistirir.
 
 Hedefler:
 

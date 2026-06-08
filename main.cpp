@@ -3118,6 +3118,37 @@ int komutBytecodeJsonCalistir(const std::string &jsonDosyaYolu) {
   return 0;
 }
 
+int komutOrhunVm(const std::string &kaynakYolu) {
+  namespace fs = std::filesystem;
+  if (kaynakYolu.size() < 3 ||
+      kaynakYolu.substr(kaynakYolu.size() - 3) != ".oh") {
+    throw std::runtime_error("Hata: orhun-vm komutu .oh dosyasi bekliyor.");
+  }
+
+  const std::string tamYol = fs::absolute(kaynakYolu).generic_u8string();
+  const std::string surucu =
+      "derleyici olsun dahil_et \"orhun/derleyici.oh\"\n"
+      "kaynak olsun dosya.oku(\"" +
+      jsonKacis(tamYol) +
+      "\")\n"
+      "yazdır json.yaz(derleyici.derle(kaynak))\n";
+
+  std::ostringstream yakalanan;
+  std::streambuf *eskiCout = std::cout.rdbuf(yakalanan.rdbuf());
+  try {
+    kodCalistirVM(surucu);
+  } catch (...) {
+    std::cout.rdbuf(eskiCout);
+    throw;
+  }
+  std::cout.rdbuf(eskiCout);
+
+  const BytecodeChunk chunk = bytecodeJsonCoz(yakalanan.str());
+  VM vm;
+  vm.calistir(chunk);
+  return 0;
+}
+
 int komutDerle(const std::string &kaynakYolu, const std::string &calisanExeYolu,
                const std::string &ciktiTemel) {
   namespace fs = std::filesystem;
@@ -4839,7 +4870,8 @@ int main(int argc, char *argv[]) {
       return deger == "fmt" || deger == "lex" || deger == "tokenler" ||
              deger == "parse" || deger == "ast" || deger == "baytkod" ||
              deger == "bytecode" || deger == "baytkod-yurut" ||
-             deger == "bytecode-run" ||
+             deger == "bytecode-run" || deger == "orhun-vm" ||
+             deger == "bootstrap-vm" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
@@ -5118,6 +5150,14 @@ int main(int argc, char *argv[]) {
             "Hata: vm-kati komutu icin .oh dosyasi bekleniyor.");
       }
       return dosyaCalistirVM(argv[2], true);
+    }
+
+    if (komut == "orhun-vm" || komut == "bootstrap-vm") {
+      if (argc != 3) {
+        throw std::runtime_error(
+            "Hata: orhun-vm komutu tek bir .oh dosyasi bekliyor.");
+      }
+      return komutOrhunVm(argv[2]);
     }
 
     if (komut == "yorumla") {

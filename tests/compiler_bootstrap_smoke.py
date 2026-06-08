@@ -67,6 +67,17 @@ def main() -> int:
                 f"bootstrap output mismatch for {fixture}\n"
                 f"bridge={combined(bridge)!r}\ndirect={combined(direct)!r}",
             )
+            command = "bootstrap-vm" if fixture == FIXTURES[0] else "orhun-vm"
+            single_command = run_cmd([str(binary), command, str(source)], repo)
+            require(
+                single_command.returncode == 0,
+                f"orhun-vm failed for {fixture}: {combined(single_command)}",
+            )
+            require(
+                combined(single_command) == combined(direct),
+                f"orhun-vm output mismatch for {fixture}\n"
+                f"orhun-vm={combined(single_command)!r}\ndirect={combined(direct)!r}",
+            )
 
         invalid = tmpdir / "invalid.bytecode.json"
         invalid.write_text(
@@ -91,7 +102,8 @@ def main() -> int:
         )
 
     print(
-        f"Compiler bootstrap smoke passed ({len(FIXTURES)} executed parity, "
+        f"Compiler bootstrap smoke passed ({len(FIXTURES)} bridge and "
+        f"{len(FIXTURES)} orhun-vm parity, "
         "1 rejected invalid payload)."
     )
     return 0

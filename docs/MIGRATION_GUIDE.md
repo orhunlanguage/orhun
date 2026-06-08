@@ -178,3 +178,5 @@
 - Bilinmeyen opcode, eksik alan, geçersiz U16 operand, uyuşmayan IP/sayım ve
   bozuk işlev metadata'sı çalıştırmadan önce reddedilir.
 - İngilizce `bytecode-run` komutu uyumluluk takma adıdır.
+- `orhun orhun-vm <dosya.oh>`, aynı bootstrap hattını ara JSON dosyası olmadan
+  tek komutta çalıştırır. İngilizce uyumluluk takma adı `bootstrap-vm`'dir.

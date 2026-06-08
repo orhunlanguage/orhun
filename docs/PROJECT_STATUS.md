@@ -44,6 +44,8 @@ These percentages are planning estimates, not promises.
   runtime cases, guarded by a full-case sweep.
 - Strict decoded-bytecode execution bridge from the Orhun-written compiler to
   the C++ VM, guarded by end-to-end bootstrap tests.
+- Experimental single-command `orhun-vm` path through the Orhun-written
+  compiler and validated C++ VM bridge.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.

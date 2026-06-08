@@ -145,6 +145,7 @@ orhun lex dosya.oh --json
 orhun parse dosya.oh --json
 orhun baytkod dosya.oh --json
 orhun baytkod-yurut derlenmis.bytecode.json
+orhun orhun-vm dosya.oh
 orhun hiz dosya.oh --json
 orhun lsp --stdio
 orhun paket dogrula
