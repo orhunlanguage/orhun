@@ -624,6 +624,12 @@ Stable channel defaults:
   compiles the target through `orhun/derleyici.oh`, validates the decoded
   bytecode contract, and executes it through the C++ VM. `bootstrap-vm` is the
   English compatibility alias.
+- `orhun-derle <dosya.oh> [cikti]` compiles through the Orhun-written compiler
+  and writes the same `.obc`, packaged executable, and metadata artifacts as
+  `derle`. `bootstrap-compile` is the English compatibility alias.
+- The guarded bootstrap path can compile `StdLib/orhun/derleyici.oh` itself
+  into an `.obc` artifact byte-identical to the C++ compiler output. This is a
+  self-source bootstrap milestone, not yet a standalone compiler CLI.
 
 ## Compatibility Rules
 

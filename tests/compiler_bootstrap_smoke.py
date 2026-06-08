@@ -101,9 +101,92 @@ def main() -> int:
             "invalid bytecode JSON rejection must explain the opcode error",
         )
 
+        artifact_source = repo / "tests" / "cases" / "function_returned_named.oh"
+        orhun_base = tmpdir / "orhun_artifact"
+        cxx_base = tmpdir / "cxx_artifact"
+        orhun_compile = run_cmd(
+            [str(binary), "orhun-derle", str(artifact_source), str(orhun_base)],
+            repo,
+        )
+        cxx_compile = run_cmd(
+            [str(binary), "derle", str(artifact_source), str(cxx_base)],
+            repo,
+        )
+        require(
+            orhun_compile.returncode == 0,
+            f"orhun-derle failed: {combined(orhun_compile)}",
+        )
+        require(
+            cxx_compile.returncode == 0,
+            f"C++ derle failed: {combined(cxx_compile)}",
+        )
+        for suffix in (".obc", ".obc.meta.json"):
+            orhun_artifact = orhun_base.with_suffix(suffix)
+            cxx_artifact = cxx_base.with_suffix(suffix)
+            require(orhun_artifact.exists(), f"missing artifact: {orhun_artifact}")
+            require(cxx_artifact.exists(), f"missing artifact: {cxx_artifact}")
+            require(
+                orhun_artifact.read_bytes() == cxx_artifact.read_bytes(),
+                f"artifact mismatch for {suffix}",
+            )
+
+        artifact_obc = run_cmd(
+            [str(binary), "obc", str(orhun_base.with_suffix(".obc"))],
+            repo,
+        )
+        artifact_exe = run_cmd([str(orhun_base.with_suffix(".exe"))], repo)
+        artifact_direct = run_cmd(
+            [str(binary), "vm-kati", str(artifact_source)],
+            repo,
+        )
+        require(
+            artifact_obc.returncode == 0,
+            f"artifact OBC failed: {combined(artifact_obc)}",
+        )
+        require(
+            artifact_exe.returncode == 0,
+            f"artifact exe failed: {combined(artifact_exe)}",
+        )
+        require(
+            combined(artifact_obc) == combined(artifact_direct)
+            and combined(artifact_exe) == combined(artifact_direct),
+            "orhun-derle artifacts must match direct VM output",
+        )
+
+        compiler_source = repo / "StdLib" / "orhun" / "derleyici.oh"
+        self_orhun_base = tmpdir / "self_orhun_compiler"
+        self_cxx_base = tmpdir / "self_cxx_compiler"
+        self_orhun = run_cmd(
+            [
+                str(binary),
+                "orhun-derle",
+                str(compiler_source),
+                str(self_orhun_base),
+            ],
+            repo,
+        )
+        self_cxx = run_cmd(
+            [str(binary), "derle", str(compiler_source), str(self_cxx_base)],
+            repo,
+        )
+        require(
+            self_orhun.returncode == 0,
+            f"Orhun compiler self-source compile failed: {combined(self_orhun)}",
+        )
+        require(
+            self_cxx.returncode == 0,
+            f"C++ compiler self-source compile failed: {combined(self_cxx)}",
+        )
+        require(
+            self_orhun_base.with_suffix(".obc").read_bytes()
+            == self_cxx_base.with_suffix(".obc").read_bytes(),
+            "Orhun compiler self-source OBC must match C++ compiler artifact",
+        )
+
     print(
         f"Compiler bootstrap smoke passed ({len(FIXTURES)} bridge and "
         f"{len(FIXTURES)} orhun-vm parity, "
+        "1 artifact parity, 1 self-source artifact parity, "
         "1 rejected invalid payload)."
     )
     return 0

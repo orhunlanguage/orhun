@@ -23,7 +23,7 @@ These percentages are planning estimates, not promises.
 | Working experimental language / MVP | 55-60% | Orhun already has a lexer, parser, interpreter, bytecode compiler, VM, stdlib surface, package/security flows, tests, and tooling. |
 | 1.0 stable language | 35-40% | Needs a stable spec, compatibility policy, release binaries, cleaner docs, stronger package flow, and hardened performance/security gates. |
 | 2.1.0 production-ready product bar | 20-25% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
-| Full self-hosting / independent compiler path | ~35% | Orhun lexer/parser prototypes and the Orhun-written compiler are tested against C++; the compiler has exact bytecode parity across every current runtime case that the C++ compiler accepts, and its decoded output can now execute through the C++ VM bridge. |
+| Full self-hosting / independent compiler path | ~38% | The Orhun-written compiler has exact bytecode parity across every current runtime case accepted by C++, its output executes through the C++ VM bridge, and it can compile its own source into a byte-identical bootstrap artifact. A standalone compiler CLI and runtime replacement remain. |
 
 ## What Is Already Real
 
@@ -46,6 +46,10 @@ These percentages are planning estimates, not promises.
   the C++ VM, guarded by end-to-end bootstrap tests.
 - Experimental single-command `orhun-vm` path through the Orhun-written
   compiler and validated C++ VM bridge.
+- Experimental `orhun-derle` artifact path with byte-identical `.obc` output
+  against the C++ compiler for guarded bootstrap fixtures.
+- Bootstrap self-source compile: `StdLib/orhun/derleyici.oh` compiles through
+  `orhun-derle` into the same `.obc` bytes as the C++ compiler.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.

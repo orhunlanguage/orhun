@@ -151,6 +151,9 @@ testi bicimlendirilmis metin, ic ice islev, OOP/ust ve hata yakalama programlari
 bu kopruyle yurutup dogrudan `vm-kati` ciktisiyla karsilastirir.
 Deneysel `orhun orhun-vm <dosya.oh>` komutu ayni hatti ara JSON dosyasi olmadan
 tek komutta calistirir.
+Deneysel `orhun orhun-derle <dosya.oh> [cikti]` komutu Orhun derleyici yolundan
+`.obc`, paketli calistirilabilir dosya ve metadata uretir; bootstrap testi C++
+derleyici artifact'lariyla byte duzeyinde esitligi dogrular.
 
 Hedefler:
 
@@ -165,6 +168,11 @@ Basari olcutu:
   bytecode parity saglanir.
 
 ## Faz 4: Kendi Kendini Derleyen Orhun
+
+Durum: basladi; `orhun orhun-derle StdLib/orhun/derleyici.oh <cikti>` calisir
+ve C++ derleyicinin ayni kaynak icin urettigi `.obc` ile byte duzeyinde ayni
+bootstrap artifact'ini uretir. Bu artifact henuz tek basina kaynak kabul eden
+bagimsiz bir derleyici CLI'i degildir.
 
 Hedefler:
 

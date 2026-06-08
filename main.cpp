@@ -3118,11 +3118,11 @@ int komutBytecodeJsonCalistir(const std::string &jsonDosyaYolu) {
   return 0;
 }
 
-int komutOrhunVm(const std::string &kaynakYolu) {
+BytecodeChunk orhunDerleyiciyleDerle(const std::string &kaynakYolu) {
   namespace fs = std::filesystem;
   if (kaynakYolu.size() < 3 ||
       kaynakYolu.substr(kaynakYolu.size() - 3) != ".oh") {
-    throw std::runtime_error("Hata: orhun-vm komutu .oh dosyasi bekliyor.");
+    throw std::runtime_error("Hata: Orhun derleyici yolu .oh dosyasi bekliyor.");
   }
 
   const std::string tamYol = fs::absolute(kaynakYolu).generic_u8string();
@@ -3143,21 +3143,21 @@ int komutOrhunVm(const std::string &kaynakYolu) {
   }
   std::cout.rdbuf(eskiCout);
 
-  const BytecodeChunk chunk = bytecodeJsonCoz(yakalanan.str());
+  return bytecodeJsonCoz(yakalanan.str());
+}
+
+int komutOrhunVm(const std::string &kaynakYolu) {
+  const BytecodeChunk chunk = orhunDerleyiciyleDerle(kaynakYolu);
   VM vm;
   vm.calistir(chunk);
   return 0;
 }
 
-int komutDerle(const std::string &kaynakYolu, const std::string &calisanExeYolu,
-               const std::string &ciktiTemel) {
+int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
+                          const std::string &kaynakYolu,
+                          const std::string &calisanExeYolu,
+                          const std::string &ciktiTemel) {
   namespace fs = std::filesystem;
-  if (kaynakYolu.size() < 3 ||
-      kaynakYolu.substr(kaynakYolu.size() - 3) != ".oh") {
-    throw std::runtime_error("Hata: derle komutu .oh dosyasi bekler.");
-  }
-
-  const BytecodeChunk chunk = bytecodeDerle(dosyaOku(kaynakYolu));
   const std::vector<std::uint8_t> payload = chunkSerilestir(chunk);
 
   fs::path temel =
@@ -3194,6 +3194,23 @@ int komutDerle(const std::string &kaynakYolu, const std::string &calisanExeYolu,
   std::cout << "Paketli exe uretildi: " << exeYolu.string() << "\n";
   std::cout << "Metadata yazildi: " << metaYolu.string() << "\n";
   return 0;
+}
+
+int komutDerle(const std::string &kaynakYolu, const std::string &calisanExeYolu,
+               const std::string &ciktiTemel) {
+  if (kaynakYolu.size() < 3 ||
+      kaynakYolu.substr(kaynakYolu.size() - 3) != ".oh") {
+    throw std::runtime_error("Hata: derle komutu .oh dosyasi bekler.");
+  }
+  return derlemeCiktilariniYaz(bytecodeDerle(dosyaOku(kaynakYolu)), kaynakYolu,
+                              calisanExeYolu, ciktiTemel);
+}
+
+int komutOrhunDerle(const std::string &kaynakYolu,
+                    const std::string &calisanExeYolu,
+                    const std::string &ciktiTemel) {
+  return derlemeCiktilariniYaz(orhunDerleyiciyleDerle(kaynakYolu), kaynakYolu,
+                              calisanExeYolu, ciktiTemel);
 }
 
 std::string evetHayir(bool deger) { return deger ? "evet" : "hayir"; }
@@ -4871,7 +4888,8 @@ int main(int argc, char *argv[]) {
              deger == "parse" || deger == "ast" || deger == "baytkod" ||
              deger == "bytecode" || deger == "baytkod-yurut" ||
              deger == "bytecode-run" || deger == "orhun-vm" ||
-             deger == "bootstrap-vm" ||
+             deger == "bootstrap-vm" || deger == "orhun-derle" ||
+             deger == "bootstrap-compile" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
@@ -5183,6 +5201,15 @@ int main(int argc, char *argv[]) {
       }
       const std::string ciktiTemel = argc >= 4 ? argv[3] : "";
       return komutDerle(argv[2], argv[0], ciktiTemel);
+    }
+
+    if (komut == "orhun-derle" || komut == "bootstrap-compile") {
+      if (argc < 3 || argc > 4) {
+        throw std::runtime_error(
+            "Hata: orhun-derle <kaynak.oh> [cikti] kullanin.");
+      }
+      const std::string ciktiTemel = argc == 4 ? argv[3] : "";
+      return komutOrhunDerle(argv[2], argv[0], ciktiTemel);
     }
 
     if (komut == "hiz") {
