@@ -64,6 +64,8 @@ These percentages are planning estimates, not promises.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.
+- Consistent `sistem.argumanlar` program arguments across direct VM,
+  interpreter, OBC, packaged executable, and bootstrap execution paths.
 
 ## Main Remaining Work
 

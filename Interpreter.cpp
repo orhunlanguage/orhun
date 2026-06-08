@@ -1487,7 +1487,8 @@ WinHttpApi &winHttpApi() {
 #endif
 } // namespace
 
-Interpreter::Interpreter() {
+Interpreter::Interpreter(std::vector<std::string> programArgumanlari)
+    : programArgumanlari_(std::move(programArgumanlari)) {
   gomuluIslevleriYukle();
   yerlesikModulleriYukle();
 }
@@ -3450,6 +3451,12 @@ void Interpreter::yerlesikModulleriYukle() {
   globalHafiza_["json"] = OrhunDegeri(std::move(json));
 
   OrhunDegeri::SozlukVeri sistem;
+  OrhunDegeri::ListeVeri programArgumanlari;
+  programArgumanlari.reserve(programArgumanlari_.size());
+  for (const std::string &arguman : programArgumanlari_) {
+    programArgumanlari.emplace_back(arguman);
+  }
+  sistem["argumanlar"] = OrhunDegeri(std::move(programArgumanlari));
   sistem["komut"] = OrhunDegeri("__islev_ref__:sistem.komut");
   globalHafiza_["sistem"] = OrhunDegeri(std::move(sistem));
 

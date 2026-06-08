@@ -114,7 +114,7 @@ inline bool OrhunDegeri::operator==(const OrhunDegeri &diger) const {
 
 class Interpreter {
 public:
-  Interpreter();
+  explicit Interpreter(std::vector<std::string> programArgumanlari = {});
   ~Interpreter();
 
   // Program veya herhangi bir komut düğümünü çalıştırır.
@@ -146,6 +146,7 @@ private:
       std::function<OrhunDegeri(const std::vector<OrhunDegeri> &, std::size_t)>;
 
   DegiskenTablosu globalHafiza_;
+  std::vector<std::string> programArgumanlari_;
   std::vector<KapsamPtr> yerelKapsamYigini_;
   int donguDerinligi_ = 0;
 

@@ -201,3 +201,6 @@
 - `orhun bootstrap-calistir <toolchain-dizini> <kaynak.oh>`, aynı doğrulanmış
   toolchain ile hedefi strict modda derleyip VM'de çalıştırır. İngilizce
   uyumluluk takma adı `bootstrap-run`'dır.
+- Kullanıcı programlarına kaynak/komut sonrasında verilen değerler artık
+  `sistem.argumanlar` listesinde bulunur. `orhun-vm` yolunda çalışma zamanı
+  argümanlarını modül seçeneklerinden ayırmak için `--` kullanılır.

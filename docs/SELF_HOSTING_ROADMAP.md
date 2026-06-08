@@ -187,6 +187,9 @@ dogrular; derleme ve calistirma komutlari da once ayni denetimi yapar.
 ortam degiskeni gerektirmeden kati `obc-only` modunda kullanir.
 `orhun bootstrap-calistir <toolchain> <kaynak.oh>`, ayni zincirle hedefi
 derleyip VM'de calistirir.
+`sistem.argumanlar`, dogrudan, paketli ve bootstrap calistirma yollarinda ayni
+program argumani sozlesmesini saglar; Orhun ile yazilacak bagimsiz derleyici
+CLI'inin kaynak/cikti yollarini okuyabilmesi icin gereken primitive hazirdir.
 
 Hedefler:
 

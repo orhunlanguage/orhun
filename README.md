@@ -158,6 +158,12 @@ orhun lsp --stdio
 orhun paket dogrula
 ```
 
+Program arguments are available as `sistem.argumanlar`:
+
+```bash
+orhun dosya.oh ilk "iki kelime"
+```
+
 ## Test
 
 Windows:

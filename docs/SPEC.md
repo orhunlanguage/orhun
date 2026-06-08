@@ -432,6 +432,14 @@ Current built-in module surfaces include:
 
 Safety-sensitive modules must keep policy checks enabled by default.
 
+`sistem.argumanlar` is a list containing only the arguments passed after the
+program source or runtime command. The runtime executable and source path are
+not included. Global Orhun options such as `--turkce-kati` are interpreted only
+when they appear before the command/source, so the same text can still be a
+program argument after it. Direct source execution, `vm`, `vm-kati`, `yorumla`,
+`obc`, packaged executables, `orhun-vm -- <arguments>`, and
+`bootstrap-calistir` expose the same argument list.
+
 ## Orhun-Source Lexer Prototype
 
 `orhun/lexer.oh` exposes the first self-hosting lexer prototype. Its public

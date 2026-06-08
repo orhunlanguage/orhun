@@ -386,7 +386,10 @@ Value jsondanVmDegerine(VM &vm, const yerlesik::JsonDeger &deger) {
 
 } // namespace
 
-VM::VM() { sifirla(); }
+VM::VM(std::vector<std::string> programArgumanlari)
+    : programArgumanlari_(std::move(programArgumanlari)) {
+  sifirla();
+}
 
 void VM::sifirla() {
   chunk_ = nullptr;
@@ -1218,6 +1221,12 @@ void VM::yerlesikNativesYukle() {
   globaller_["sunucu"] = Value::nesne(sunucu);
 
   auto *sistem = memory_.allocate<ObjDict>();
+  std::vector<Value> programArgumanlari;
+  programArgumanlari.reserve(programArgumanlari_.size());
+  for (const std::string &arguman : programArgumanlari_) {
+    programArgumanlari.push_back(yeniString(arguman));
+  }
+  sistem->alanlar["argumanlar"] = yeniListe(std::move(programArgumanlari));
   sistem->alanlar["komut"] = nativeOlustur(
       "sistem.komut", 1, [](VM &vm, const std::vector<Value> &a) -> Value {
         const std::string komut = vm.metneCevir(a[0]);

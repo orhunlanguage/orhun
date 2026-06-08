@@ -117,6 +117,17 @@ std::vector<std::uint8_t> dosyaOkuIkili(const std::string &dosyaYolu) {
                                    std::istreambuf_iterator<char>());
 }
 
+std::vector<std::string> cliProgramArgumanlari(int argc, char *argv[],
+                                              int baslangic) {
+  std::vector<std::string> argumanlar;
+  argumanlar.reserve(
+      static_cast<std::size_t>(std::max(0, argc - baslangic)));
+  for (int i = baslangic; i < argc; ++i) {
+    argumanlar.emplace_back(argv[i]);
+  }
+  return argumanlar;
+}
+
 void dosyaYaz(const std::string &dosyaYolu, const std::string &icerik) {
   std::ofstream dosya(dosyaYolu, std::ios::binary | std::ios::trunc);
   if (!dosya.is_open()) {
@@ -180,10 +191,11 @@ bool kodCalistir(const std::string &kaynakKod, Interpreter &yorumlayici,
 }
 
 bool kodCalistirVM(const std::string &kaynakKod,
+                   const std::vector<std::string> &programArgumanlari = {},
                    std::string *hataMesaji = nullptr) {
   try {
     BytecodeChunk chunk = bytecodeDerle(kaynakKod);
-    VM vm;
+    VM vm(programArgumanlari);
     vm.calistir(chunk);
     return true;
   } catch (const std::exception &ex) {
@@ -302,14 +314,16 @@ bool paketPayloadOku(const std::string &calisanExeYolu,
   return true;
 }
 
-bool gomuluPaketiCalistir(const std::string &calisanExeYolu) {
+bool gomuluPaketiCalistir(
+    const std::string &calisanExeYolu,
+    const std::vector<std::string> &programArgumanlari = {}) {
   std::vector<std::uint8_t> payload;
   if (!paketPayloadOku(calisanExeYolu, payload)) {
     return false;
   }
 
   BytecodeChunk chunk = chunkCoz(payload);
-  VM vm;
+  VM vm(programArgumanlari);
   vm.calistir(chunk);
   return true;
 }
@@ -2790,7 +2804,9 @@ bool vmFallbackIzinliHata(const std::string &hata) {
   return false;
 }
 
-int dosyaCalistirVM(const std::string &dosyaYolu, bool katiMod) {
+int dosyaCalistirVM(
+    const std::string &dosyaYolu, bool katiMod,
+    const std::vector<std::string> &programArgumanlari = {}) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error(
         "Hata: VM calistirma icin .oh dosyasi bekleniyor.");
@@ -2798,12 +2814,12 @@ int dosyaCalistirVM(const std::string &dosyaYolu, bool katiMod) {
 
   const std::string kod = dosyaOku(dosyaYolu);
   if (katiMod) {
-    kodCalistirVM(kod);
+    kodCalistirVM(kod, programArgumanlari);
     return 0;
   }
 
   try {
-    kodCalistirVM(kod);
+    kodCalistirVM(kod, programArgumanlari);
   } catch (const std::exception &ex) {
     if (katiMod || !vmFallbackAcikMi() || !vmFallbackIzinliHata(ex.what())) {
       throw;
@@ -2816,20 +2832,22 @@ int dosyaCalistirVM(const std::string &dosyaYolu, bool katiMod) {
                    "kapatabilirsiniz.\n";
       uyariYazildi = true;
     }
-    Interpreter yorumlayici;
+    Interpreter yorumlayici(programArgumanlari);
     kodCalistir(kod, yorumlayici);
   }
   return 0;
 }
 
-int dosyaCalistirYorumlayici(const std::string &dosyaYolu) {
+int dosyaCalistirYorumlayici(
+    const std::string &dosyaYolu,
+    const std::vector<std::string> &programArgumanlari = {}) {
   if (dosyaYolu.size() < 3 || dosyaYolu.substr(dosyaYolu.size() - 3) != ".oh") {
     throw std::runtime_error(
         "Hata: yorumla komutu icin .oh dosyasi bekleniyor.");
   }
 
   const std::string kod = dosyaOku(dosyaYolu);
-  Interpreter yorumlayici;
+  Interpreter yorumlayici(programArgumanlari);
   kodCalistir(kod, yorumlayici);
   return 0;
 }
@@ -3145,10 +3163,12 @@ int komutHiz(const std::string &dosyaYolu, int tekrar, bool jsonCikti,
   }
 }
 
-int komutObcCalistir(const std::string &obcDosyaYolu) {
+int komutObcCalistir(
+    const std::string &obcDosyaYolu,
+    const std::vector<std::string> &programArgumanlari = {}) {
   const std::vector<std::uint8_t> ham = dosyaOkuIkili(obcDosyaYolu);
   BytecodeChunk chunk = chunkCoz(ham);
-  VM vm;
+  VM vm(programArgumanlari);
   vm.calistir(chunk);
   return 0;
 }
@@ -3188,9 +3208,11 @@ BytecodeChunk orhunDerleyiciyleDerle(const std::string &kaynakYolu) {
   return bytecodeJsonCoz(yakalanan.str());
 }
 
-int komutOrhunVm(const std::string &kaynakYolu) {
+int komutOrhunVm(
+    const std::string &kaynakYolu,
+    const std::vector<std::string> &programArgumanlari = {}) {
   const BytecodeChunk chunk = orhunDerleyiciyleDerle(kaynakYolu);
-  VM vm;
+  VM vm(programArgumanlari);
   vm.calistir(chunk);
   return 0;
 }
@@ -3486,9 +3508,10 @@ int komutBootstrapDerle(const std::string &toolchainKoku,
 }
 
 int komutBootstrapCalistir(const std::string &toolchainKoku,
-                           const std::string &kaynakYolu) {
+                           const std::string &kaynakYolu,
+                           const std::vector<std::string> &programArgumanlari) {
   bootstrapToolchainEtkinlestir(toolchainKoku);
-  return komutOrhunVm(kaynakYolu);
+  return komutOrhunVm(kaynakYolu, programArgumanlari);
 }
 
 std::string evetHayir(bool deger) { return deger ? "evet" : "hayir"; }
@@ -5127,12 +5150,19 @@ int main(int argc, char *argv[]) {
 #endif
 
   try {
+    // Paketli uygulama kendi komut satirinin sahibidir. Orhun'un global CLI
+    // secenekleri dahil tum argumanlar degistirilmeden gomulu programa gider.
+    if (gomuluPaketiCalistir(argv[0], cliProgramArgumanlari(argc, argv, 1))) {
+      return 0;
+    }
+
     std::optional<bool> turkceKatiCli;
-    int yazma = 1;
-    for (int i = 1; i < argc; ++i) {
-      const std::string secenek = argv[i];
+    int ilkKomut = 1;
+    while (ilkKomut < argc) {
+      const std::string secenek = argv[ilkKomut];
       if (secenek == "--turkce-kati") {
         turkceKatiCli = true;
+        ++ilkKomut;
         continue;
       }
       if (secenek.rfind("--turkce-kati=", 0) == 0) {
@@ -5143,46 +5173,31 @@ int main(int argc, char *argv[]) {
         if (deger == "1" || deger == "true" || deger == "on" ||
             deger == "evet") {
           turkceKatiCli = true;
+          ++ilkKomut;
           continue;
         }
         if (deger == "0" || deger == "false" || deger == "off" ||
             deger == "hayir" || deger == "no") {
           turkceKatiCli = false;
+          ++ilkKomut;
           continue;
         }
         throw std::runtime_error(
             "Hata: --turkce-kati yalnizca true/false (veya 1/0) alir.");
       }
-      argv[yazma++] = argv[i];
+      break;
     }
-    argc = yazma;
+    const int kalanArgumanSayisi = argc - ilkKomut;
+    for (int i = 0; i < kalanArgumanSayisi; ++i) {
+      argv[i + 1] = argv[ilkKomut + i];
+    }
+    argc = kalanArgumanSayisi + 1;
 
     const bool turkceKatiEtkin =
         turkceKatiCli.value_or(doctorOrtamDegiskeniAcik("ORHUN_TURKCE_KATI"));
     Lexer::setTurkceKatiVarsayilan(turkceKatiEtkin);
 
-    auto dahiliKomutMu = [](const std::string &deger) {
-      return deger == "fmt" || deger == "lex" || deger == "tokenler" ||
-             deger == "parse" || deger == "ast" || deger == "baytkod" ||
-             deger == "bytecode" || deger == "baytkod-yurut" ||
-             deger == "bytecode-run" || deger == "orhun-vm" ||
-             deger == "bootstrap-vm" || deger == "orhun-derle" ||
-             deger == "bootstrap-compile" || deger == "bootstrap-hazirla" ||
-             deger == "bootstrap-prepare" || deger == "bootstrap-derle" ||
-             deger == "bootstrap-build" || deger == "bootstrap-calistir" ||
-             deger == "bootstrap-run" || deger == "bootstrap-dogrula" ||
-             deger == "bootstrap-verify" ||
-             deger == "paket" || deger == "vm" || deger == "vm-kati" ||
-             deger == "yorumla" ||
-             deger == "obc" || deger == "derle" || deger == "hiz" ||
-             deger == "lint" || deger == "lsp" || deger == "doctor" ||
-             deger == "surum";
-    };
-
     if (argc < 2) {
-      if (gomuluPaketiCalistir(argv[0])) {
-        return 0;
-      }
       return replCalistir();
     }
 
@@ -5441,7 +5456,8 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error(
             "Hata: vm komutu icin .oh dosyasi bekleniyor.");
       }
-      return dosyaCalistirVM(argv[2], false);
+      return dosyaCalistirVM(argv[2], false,
+                            cliProgramArgumanlari(argc, argv, 3));
     }
 
     if (komut == "vm-kati") {
@@ -5449,23 +5465,34 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error(
             "Hata: vm-kati komutu icin .oh dosyasi bekleniyor.");
       }
-      return dosyaCalistirVM(argv[2], true);
+      return dosyaCalistirVM(argv[2], true,
+                            cliProgramArgumanlari(argc, argv, 3));
     }
 
     if (komut == "orhun-vm" || komut == "bootstrap-vm") {
-      if (argc < 3 || argc > 4) {
+      if (argc < 3) {
         throw std::runtime_error(
             "Hata: orhun-vm <kaynak.oh> "
-            "[--source|--obc-first|--obc-only] kullanin.");
+            "[--source|--obc-first|--obc-only] [-- argumanlar...] kullanin.");
       }
-      const std::optional<std::string> modulModu =
-          argc == 4 ? cliModulModuCoz(argv[3]) : std::nullopt;
-      if (argc == 4 && !modulModu.has_value()) {
-        throw std::runtime_error("Hata: bilinmeyen orhun-vm secenegi: " +
-                                 std::string(argv[3]));
+      std::optional<std::string> modulModu;
+      int argumanBaslangici = argc;
+      for (int i = 3; i < argc; ++i) {
+        const std::string secenek = argv[i];
+        if (secenek == "--") {
+          argumanBaslangici = i + 1;
+          break;
+        }
+        const std::optional<std::string> adayMod = cliModulModuCoz(secenek);
+        if (!adayMod.has_value() || modulModu.has_value()) {
+          throw std::runtime_error("Hata: bilinmeyen orhun-vm secenegi: " +
+                                   secenek);
+        }
+        modulModu = adayMod;
       }
       cliModulModunuAyarla(modulModu);
-      return komutOrhunVm(argv[2]);
+      return komutOrhunVm(
+          argv[2], cliProgramArgumanlari(argc, argv, argumanBaslangici));
     }
 
     if (komut == "yorumla") {
@@ -5473,7 +5500,8 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error(
             "Hata: yorumla komutu icin .oh dosyasi bekleniyor.");
       }
-      return dosyaCalistirYorumlayici(argv[2]);
+      return dosyaCalistirYorumlayici(argv[2],
+                                     cliProgramArgumanlari(argc, argv, 3));
     }
 
     if (komut == "obc") {
@@ -5481,7 +5509,7 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error(
             "Hata: obc komutu icin .obc dosyasi bekleniyor.");
       }
-      return komutObcCalistir(argv[2]);
+      return komutObcCalistir(argv[2], cliProgramArgumanlari(argc, argv, 3));
     }
 
     if (komut == "derle") {
@@ -5544,12 +5572,13 @@ int main(int argc, char *argv[]) {
     }
 
     if (komut == "bootstrap-calistir" || komut == "bootstrap-run") {
-      if (argc != 4) {
+      if (argc < 4) {
         throw std::runtime_error(
             "Hata: bootstrap-calistir <toolchain-dizini> <kaynak.oh> "
-            "kullanin.");
+            "[argumanlar...] kullanin.");
       }
-      return komutBootstrapCalistir(argv[2], argv[3]);
+      return komutBootstrapCalistir(argv[2], argv[3],
+                                    cliProgramArgumanlari(argc, argv, 4));
     }
 
     if (komut == "bootstrap-dogrula" || komut == "bootstrap-verify") {
@@ -5693,16 +5722,9 @@ int main(int argc, char *argv[]) {
       return komutDoctor(jsonCikti);
     }
 
-    // Paketli exe, dahili komut dışındaki çağrılarda gömülü payload'ı
-    // çalıştırır. Böylece "oyun.exe --mod hızlı" gibi kullanımda ana script
-    // devreye girer.
-    if (!dahiliKomutMu(komut) && gomuluPaketiCalistir(argv[0])) {
-      return 0;
-    }
-
     // Varsayilan motor VM'dir; desteklenmeyen ozellikte otomatik Interpreter
     // fallback yapilir.
-    return dosyaCalistirVM(komut, false);
+    return dosyaCalistirVM(komut, false, cliProgramArgumanlari(argc, argv, 2));
   } catch (const CliCikisHatasi &ex) {
     std::cerr << ex.what() << '\n';
     return ex.kod();

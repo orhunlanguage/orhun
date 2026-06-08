@@ -18,7 +18,7 @@ class DynamicLibrary;
 // Stack tabanli bytecode sanal makinesi (Faz 2 runtime + GC).
 class VM {
 public:
-  VM();
+  explicit VM(std::vector<std::string> programArgumanlari = {});
 
   void sifirla();
   void calistir(const BytecodeChunk &chunk);
@@ -94,6 +94,7 @@ private:
   std::vector<Value> geciciArgumanBuffer_;
   std::vector<Value> geciciBirlesikArgumanBuffer_;
   std::vector<std::unique_ptr<BytecodeChunk>> modulChunklari_;
+  std::vector<std::string> programArgumanlari_;
 
   MemoryManager memory_;
   std::size_t gcEsigi_ = 1024;

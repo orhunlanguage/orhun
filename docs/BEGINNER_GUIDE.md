@@ -103,6 +103,20 @@ Gelisim sirasinda kati VM yolunu da deneyebilirsin:
 orhun vm-kati ilk.oh
 ```
 
+## 9. Program Argumanlarini Oku
+
+```orhun
+yaz sistem.argumanlar
+```
+
+Programa arguman vermek icin kaynak dosyasindan sonra yaz:
+
+```bash
+orhun ilk.oh Yusuf --hizli
+```
+
+Bu durumda `sistem.argumanlar`, `["Yusuf", "--hizli"]` olur.
+
 ## Sonraki Adim
 
 - `examples/` klasorundeki ornekleri calistir.
