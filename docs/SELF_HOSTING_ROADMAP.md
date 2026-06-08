@@ -208,7 +208,8 @@ Hedefler:
 - Orhun compiler kaynagi Orhun ile derlenebilir.
 - Release surecinde C++ bootstrap sadece ilk araci uretir.
 - Sonraki asamada Orhun compiler kendi yeni surumunu uretebilir.
-- Uc-asamali self-rebuild kapisi Windows/Linux/macOS release CI'inda calisir.
+- CI tarafinda dogrulanan tasinabilir compiler bundle'lari imzali ve surumlu
+  release asset'lerine donusturulur.
 
 Basari olcutu:
 

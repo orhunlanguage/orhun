@@ -288,18 +288,48 @@ jobs:
         if: runner.os == 'macOS'
         run: python3 tests/compiler_prototype_smoke.py ./build/orhun_test
 
-      - name: Compiler bootstrap smoke (Windows)
+      - name: Compiler bootstrap + self-rebuild smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: py -3 tests/compiler_bootstrap_smoke.py .\build\orhun_test.exe
 
-      - name: Compiler bootstrap smoke (Linux)
+      - name: Compiler bootstrap + self-rebuild smoke (Linux)
         if: runner.os == 'Linux'
         run: python3 tests/compiler_bootstrap_smoke.py ./build/orhun_test
 
-      - name: Compiler bootstrap smoke (macOS)
+      - name: Compiler bootstrap + self-rebuild smoke (macOS)
         if: runner.os == 'macOS'
         run: python3 tests/compiler_bootstrap_smoke.py ./build/orhun_test
+
+      - name: Build validated compiler bundle (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\build\orhun_test.exe bootstrap-hazirla build/bootstrap-release-seed
+          .\build\orhun_test.exe bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
+          .\build\orhun_test.exe bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
+
+      - name: Build validated compiler bundle (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          ./build/orhun_test bootstrap-hazirla build/bootstrap-release-seed
+          ./build/orhun_test bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
+          ./build/orhun_test bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
+
+      - name: Build validated compiler bundle (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          ./build/orhun_test bootstrap-hazirla build/bootstrap-release-seed
+          ./build/orhun_test bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
+          ./build/orhun_test bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
+
+      - name: Upload validated compiler bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: orhun-compiler-bundle-${{ runner.os }}
+          path: artifacts/compiler-bundle
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Lock v3 smoke (Windows)
         if: runner.os == 'Windows'

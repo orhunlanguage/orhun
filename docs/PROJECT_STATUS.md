@@ -69,6 +69,10 @@ These percentages are planning estimates, not promises.
 - `bootstrap-yeniden-uret` performs a seed -> stage 2 -> stage 3 rebuild and
   rejects the result unless every generated compiler artifact is byte-identical
   across the final two stages.
+- The compiler bootstrap and self-rebuild gate runs on Windows, Ubuntu, and
+  macOS in both the main CI and nightly matrices.
+- Main CI builds and uploads validated source-free portable compiler bundles
+  for Windows, Linux, and macOS after the self-rebuild gate passes.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.
@@ -82,8 +86,7 @@ These percentages are planning estimates, not promises.
   parser path.
 - Grow compiler parity beyond the current test corpus and reduce the remaining
   C++ serialization/runtime bridge behind the portable Orhun compiler CLI.
-- Run the reproducible self-rebuild gate in release CI across Windows, Linux,
-  and macOS.
+- Promote validated CI compiler bundles into signed/versioned release assets.
 - Make release binaries easy on Windows, Linux, and macOS.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.

@@ -345,18 +345,18 @@ jobs:
         run: |
           python3 tests/compiler_prototype_sweep.py ./build/orhun_test
 
-      - name: Compiler bootstrap smoke (Windows)
+      - name: Compiler bootstrap + self-rebuild smoke (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           py -3 tests/compiler_bootstrap_smoke.py .\build\orhun_test.exe
 
-      - name: Compiler bootstrap smoke (Linux)
+      - name: Compiler bootstrap + self-rebuild smoke (Linux)
         if: runner.os == 'Linux'
         run: |
           python3 tests/compiler_bootstrap_smoke.py ./build/orhun_test
 
-      - name: Compiler bootstrap smoke (macOS)
+      - name: Compiler bootstrap + self-rebuild smoke (macOS)
         if: runner.os == 'macOS'
         run: |
           python3 tests/compiler_bootstrap_smoke.py ./build/orhun_test
