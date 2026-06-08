@@ -237,6 +237,83 @@ def main() -> int:
                 f"manifest CRC mismatch for {module}",
             )
 
+        valid_verify = run_cmd(
+            [str(binary), "bootstrap-dogrula", str(obc_stdlib)],
+            repo,
+        )
+        require(
+            valid_verify.returncode == 0,
+            f"bootstrap verification failed: {combined(valid_verify)}",
+        )
+        require(
+            "Bootstrap toolchain dogrulandi:" in combined(valid_verify),
+            "bootstrap verification must report success",
+        )
+
+        original_manifest_text = manifest_path.read_text(encoding="utf-8")
+        bad_crc_manifest = json.loads(original_manifest_text)
+        bad_crc_manifest["modules"][0]["payload_crc32"] = "00000000"
+        manifest_path.write_text(
+            json.dumps(bad_crc_manifest, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        bad_crc_verify = run_cmd(
+            [str(binary), "bootstrap-verify", str(obc_stdlib)],
+            repo,
+        )
+        require(
+            bad_crc_verify.returncode != 0,
+            "bootstrap verification must reject manifest CRC mismatch",
+        )
+        require(
+            "payload CRC32 uyusmuyor" in combined(bad_crc_verify),
+            "bootstrap CRC rejection must explain the mismatch",
+        )
+        manifest_path.write_text(
+            original_manifest_text,
+            encoding="utf-8",
+            newline="\n",
+        )
+
+        parser_artifact = obc_orhun / "parser.obc"
+        original_parser_payload = parser_artifact.read_bytes()
+        invalid_parser_payload = bytearray(original_parser_payload)
+        invalid_parser_payload[0] ^= 0xFF
+        parser_artifact.write_bytes(invalid_parser_payload)
+        bad_obc_manifest = json.loads(original_manifest_text)
+        parser_entry = next(
+            entry
+            for entry in bad_obc_manifest["modules"]
+            if entry["module"] == "orhun/parser.oh"
+        )
+        parser_entry["payload_crc32"] = (
+            f"{zlib.crc32(invalid_parser_payload) & 0xFFFFFFFF:08x}"
+        )
+        manifest_path.write_text(
+            json.dumps(bad_obc_manifest, ensure_ascii=False),
+            encoding="utf-8",
+            newline="\n",
+        )
+        bad_obc_verify = run_cmd(
+            [str(binary), "bootstrap-dogrula", str(obc_stdlib)],
+            repo,
+        )
+        require(
+            bad_obc_verify.returncode != 0,
+            "bootstrap verification must reject invalid OBC payload",
+        )
+        require(
+            "bytecode gecersiz" in combined(bad_obc_verify),
+            "bootstrap OBC rejection must explain the invalid bytecode",
+        )
+        parser_artifact.write_bytes(original_parser_payload)
+        manifest_path.write_text(
+            original_manifest_text,
+            encoding="utf-8",
+            newline="\n",
+        )
+
         obc_only_env = os.environ.copy()
         obc_only_env["ORHUN_STDLIB_PATH"] = str(obc_stdlib)
         obc_only = run_cmd(
@@ -315,6 +392,19 @@ def main() -> int:
         )
 
         (obc_orhun / "parser.obc").unlink()
+        missing_verify = run_cmd(
+            [str(binary), "bootstrap-dogrula", str(obc_stdlib)],
+            repo,
+        )
+        require(
+            missing_verify.returncode != 0,
+            "bootstrap verification must reject incomplete toolchains",
+        )
+        require(
+            "bootstrap toolchain modulu bulunamadi" in combined(missing_verify),
+            "bootstrap verification missing-module error must explain the issue",
+        )
+
         missing_standalone = run_cmd(
             [
                 str(binary),
@@ -379,8 +469,8 @@ def main() -> int:
         "1 artifact parity, 1 self-source artifact parity, "
         "1 prepared obc-only module chain, 1 source-free strict compile, "
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
-        "1 source override, "
-        "4 rejected invalid inputs)."
+        "1 standalone bootstrap verification, 1 source override, "
+        "7 rejected invalid inputs)."
     )
     return 0
 

@@ -180,6 +180,9 @@ derleme fallback'i yapmadan calisir; eksik modul artifact'i acik hata verir.
 ve `--obc-first` CLI politikalarini destekler.
 `orhun bootstrap-hazirla <dizin>`, uc modulu kaynak dosyasi icermeyen bir
 toolchain klasorune ve CRC tasiyan makine-okur manifeste donusturur.
+`orhun bootstrap-dogrula <toolchain>`, manifest sozlesmesini, tam modul
+listesini, payload boyut/CRC degerlerini ve OBC yapisini hedef calistirmadan
+dogrular; derleme ve calistirma komutlari da once ayni denetimi yapar.
 `orhun bootstrap-derle <toolchain> <kaynak.oh> [cikti]`, hazirlanan toolchain'i
 ortam degiskeni gerektirmeden kati `obc-only` modunda kullanir.
 `orhun bootstrap-calistir <toolchain> <kaynak.oh>`, ayni zincirle hedefi

@@ -55,6 +55,8 @@ These percentages are planning estimates, not promises.
   falling back to C++ source compilation.
 - `bootstrap-hazirla` produces that source-free three-module toolchain and a
   CRC-bearing machine-readable manifest in one command.
+- `bootstrap-dogrula` validates the complete prepared-toolchain contract,
+  payload integrity, and OBC structure before distribution or execution.
 - `bootstrap-derle` consumes a prepared toolchain in strict `obc-only` mode
   without requiring environment-variable setup.
 - `bootstrap-calistir` uses the same prepared toolchain contract for a

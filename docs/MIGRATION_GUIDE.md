@@ -192,6 +192,9 @@
 - `orhun bootstrap-hazirla <dizin>`, kaynak dosyası içermeyen lexer/parser/
   derleyici `.obc` zincirini ve `bootstrap.manifest.json` dosyasını üretir.
   İngilizce uyumluluk takma adı `bootstrap-prepare`'dır.
+- `orhun bootstrap-dogrula <toolchain-dizini>`, manifest sözleşmesini, modül
+  kümesini, boyut/CRC değerlerini ve OBC yapısını çalıştırmadan denetler.
+  İngilizce uyumluluk takma adı `bootstrap-verify`'dır.
 - `orhun bootstrap-derle <toolchain-dizini> <kaynak.oh> [çıktı]`, hazırlanmış
   toolchain'i `obc-only` politikasında kullanır; ortam değişkeni gerektirmez.
   İngilizce uyumluluk takma adı `bootstrap-build`'dir.

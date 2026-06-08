@@ -642,6 +642,10 @@ Stable channel defaults:
 - `bootstrap-hazirla <directory>` writes source-free `lexer.obc`,
   `parser.obc`, and `derleyici.obc` modules plus a CRC-bearing
   `bootstrap.manifest.json`. `bootstrap-prepare` is its compatibility alias.
+- `bootstrap-dogrula <toolchain-directory>` validates the manifest contract,
+  exact module set, payload sizes, CRC32 values, and OBC structure without
+  compiling or executing a target. `bootstrap-verify` is its compatibility
+  alias. Bootstrap build and run commands perform the same validation first.
 - `bootstrap-derle <toolchain-directory> <source.oh> [output]` consumes a
   prepared toolchain in strict `obc-only` mode without environment-variable
   setup. `bootstrap-build` is its compatibility alias.

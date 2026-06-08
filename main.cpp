@@ -3310,23 +3310,169 @@ int komutBootstrapHazirla(const std::string &ciktiKoku) {
   return 0;
 }
 
-void bootstrapToolchainEtkinlestir(const std::string &toolchainKoku) {
+[[noreturn]] void bootstrapManifestHatasi(const std::string &mesaj) {
+  throw std::runtime_error("Hata: bootstrap manifesti gecersiz: " + mesaj);
+}
+
+const yerlesik::JsonDeger::Sozluk &
+bootstrapSozlukBekle(const yerlesik::JsonDeger &deger,
+                     std::string_view baglam) {
+  const auto *ptr =
+      std::get_if<yerlesik::JsonDeger::SozlukPtr>(&deger.veri);
+  if (ptr == nullptr || *ptr == nullptr) {
+    bootstrapManifestHatasi(std::string(baglam) + " sozluk olmali.");
+  }
+  return **ptr;
+}
+
+const yerlesik::JsonDeger::Liste &
+bootstrapListeBekle(const yerlesik::JsonDeger &deger,
+                    std::string_view baglam) {
+  const auto *ptr = std::get_if<yerlesik::JsonDeger::ListePtr>(&deger.veri);
+  if (ptr == nullptr || *ptr == nullptr) {
+    bootstrapManifestHatasi(std::string(baglam) + " liste olmali.");
+  }
+  return **ptr;
+}
+
+const yerlesik::JsonDeger &
+bootstrapAlanBekle(const yerlesik::JsonDeger::Sozluk &sozluk,
+                   std::string_view ad, std::string_view baglam) {
+  const auto it = sozluk.find(std::string(ad));
+  if (it == sozluk.end()) {
+    bootstrapManifestHatasi(std::string(baglam) + "." + std::string(ad) +
+                            " alani eksik.");
+  }
+  return it->second;
+}
+
+std::string bootstrapMetinBekle(const yerlesik::JsonDeger &deger,
+                                std::string_view baglam) {
+  const auto *metin = std::get_if<std::string>(&deger.veri);
+  if (metin == nullptr) {
+    bootstrapManifestHatasi(std::string(baglam) + " metin olmali.");
+  }
+  return *metin;
+}
+
+std::size_t bootstrapBoyutBekle(const yerlesik::JsonDeger &deger,
+                                std::string_view baglam) {
+  const auto *sayi = std::get_if<double>(&deger.veri);
+  if (sayi == nullptr || !std::isfinite(*sayi) || *sayi < 0.0 ||
+      std::floor(*sayi) != *sayi ||
+      *sayi > static_cast<double>(std::numeric_limits<std::size_t>::max())) {
+    bootstrapManifestHatasi(std::string(baglam) +
+                            " negatif olmayan tam sayi olmali.");
+  }
+  return static_cast<std::size_t>(*sayi);
+}
+
+std::string bootstrapCrc32Hex(const std::vector<std::uint8_t> &payload) {
+  std::ostringstream ss;
+  ss << std::hex << std::setfill('0') << std::setw(8)
+     << crc32Hesapla(payload);
+  return ss.str();
+}
+
+void bootstrapToolchainDogrula(const std::string &toolchainKoku) {
   namespace fs = std::filesystem;
   const fs::path kok = fs::absolute(toolchainKoku);
-  if (!orhunNormalDosyaMi(kok / "bootstrap.manifest.json")) {
+  const fs::path manifestYolu = kok / "bootstrap.manifest.json";
+  if (!orhunNormalDosyaMi(manifestYolu)) {
     throw std::runtime_error(
         "Hata: bootstrap toolchain manifesti bulunamadi: " +
-        (kok / "bootstrap.manifest.json").string());
+        manifestYolu.string());
   }
-  for (const char *modul : {"lexer", "parser", "derleyici"}) {
-    const fs::path artifact =
-        kok / "orhun" / (std::string(modul) + ".obc");
+
+  yerlesik::JsonDeger manifest;
+  try {
+    manifest = yerlesik::jsonCoz(dosyaOku(manifestYolu.string()));
+  } catch (const std::exception &ex) {
+    bootstrapManifestHatasi(std::string("JSON okunamadi: ") + ex.what());
+  }
+
+  const auto &kokSozluk = bootstrapSozlukBekle(manifest, "kok");
+  const std::string format = bootstrapMetinBekle(
+      bootstrapAlanBekle(kokSozluk, "format", "kok"), "kok.format");
+  if (format != "orhun-bootstrap-v1") {
+    bootstrapManifestHatasi("kok.format 'orhun-bootstrap-v1' olmali.");
+  }
+  const std::string modulModu = bootstrapMetinBekle(
+      bootstrapAlanBekle(kokSozluk, "module_mode", "kok"),
+      "kok.module_mode");
+  if (modulModu != "obc-only") {
+    bootstrapManifestHatasi("kok.module_mode 'obc-only' olmali.");
+  }
+
+  const auto &moduller = bootstrapListeBekle(
+      bootstrapAlanBekle(kokSozluk, "modules", "kok"), "kok.modules");
+  const std::map<std::string, std::string> beklenenModuller = {
+      {"orhun/lexer.oh", "orhun/lexer.obc"},
+      {"orhun/parser.oh", "orhun/parser.obc"},
+      {"orhun/derleyici.oh", "orhun/derleyici.obc"},
+  };
+  if (moduller.size() != beklenenModuller.size()) {
+    bootstrapManifestHatasi("kok.modules tam olarak uc modul icermeli.");
+  }
+
+  std::set<std::string> gorulenModuller;
+  for (std::size_t i = 0; i < moduller.size(); ++i) {
+    const std::string baglam = "kok.modules[" + std::to_string(i) + "]";
+    const auto &kayit = bootstrapSozlukBekle(moduller[i], baglam);
+    const std::string modul = bootstrapMetinBekle(
+        bootstrapAlanBekle(kayit, "module", baglam), baglam + ".module");
+    const auto beklenen = beklenenModuller.find(modul);
+    if (beklenen == beklenenModuller.end()) {
+      bootstrapManifestHatasi(baglam + ".module bilinmiyor: " + modul);
+    }
+    if (!gorulenModuller.insert(modul).second) {
+      bootstrapManifestHatasi(baglam + ".module yinelenmis: " + modul);
+    }
+
+    const std::string artifactAdi = bootstrapMetinBekle(
+        bootstrapAlanBekle(kayit, "artifact", baglam), baglam + ".artifact");
+    if (artifactAdi != beklenen->second) {
+      bootstrapManifestHatasi(baglam + ".artifact beklenen yolla uyusmuyor.");
+    }
+    const std::size_t beklenenBoyut = bootstrapBoyutBekle(
+        bootstrapAlanBekle(kayit, "payload_size", baglam),
+        baglam + ".payload_size");
+    const std::string beklenenCrc = bootstrapMetinBekle(
+        bootstrapAlanBekle(kayit, "payload_crc32", baglam),
+        baglam + ".payload_crc32");
+
+    const fs::path artifact = kok / fs::path(artifactAdi);
     if (!orhunNormalDosyaMi(artifact)) {
       throw std::runtime_error("Hata: bootstrap toolchain modulu bulunamadi: " +
                                artifact.string());
     }
+    const std::vector<std::uint8_t> payload = dosyaOkuIkili(artifact.string());
+    if (payload.size() != beklenenBoyut) {
+      bootstrapManifestHatasi(modul + " payload boyutu uyusmuyor.");
+    }
+    if (bootstrapCrc32Hex(payload) != beklenenCrc) {
+      bootstrapManifestHatasi(modul + " payload CRC32 uyusmuyor.");
+    }
+    try {
+      static_cast<void>(chunkCoz(payload));
+    } catch (const std::exception &ex) {
+      bootstrapManifestHatasi(modul + " bytecode gecersiz: " + ex.what());
+    }
   }
+}
 
+int komutBootstrapDogrula(const std::string &toolchainKoku) {
+  namespace fs = std::filesystem;
+  bootstrapToolchainDogrula(toolchainKoku);
+  std::cout << "Bootstrap toolchain dogrulandi: "
+            << fs::absolute(toolchainKoku).string() << "\n";
+  return 0;
+}
+
+void bootstrapToolchainEtkinlestir(const std::string &toolchainKoku) {
+  namespace fs = std::filesystem;
+  const fs::path kok = fs::absolute(toolchainKoku);
+  bootstrapToolchainDogrula(toolchainKoku);
   cliOrtamDegiskeniniAyarla("ORHUN_STDLIB_PATH", kok.string());
   cliModulModunuAyarla(std::string("obc-only"));
 }
@@ -5024,7 +5170,8 @@ int main(int argc, char *argv[]) {
              deger == "bootstrap-compile" || deger == "bootstrap-hazirla" ||
              deger == "bootstrap-prepare" || deger == "bootstrap-derle" ||
              deger == "bootstrap-build" || deger == "bootstrap-calistir" ||
-             deger == "bootstrap-run" ||
+             deger == "bootstrap-run" || deger == "bootstrap-dogrula" ||
+             deger == "bootstrap-verify" ||
              deger == "paket" || deger == "vm" || deger == "vm-kati" ||
              deger == "yorumla" ||
              deger == "obc" || deger == "derle" || deger == "hiz" ||
@@ -5403,6 +5550,14 @@ int main(int argc, char *argv[]) {
             "kullanin.");
       }
       return komutBootstrapCalistir(argv[2], argv[3]);
+    }
+
+    if (komut == "bootstrap-dogrula" || komut == "bootstrap-verify") {
+      if (argc != 3) {
+        throw std::runtime_error(
+            "Hata: bootstrap-dogrula <toolchain-dizini> kullanin.");
+      }
+      return komutBootstrapDogrula(argv[2]);
     }
 
     if (komut == "hiz") {
