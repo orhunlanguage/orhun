@@ -159,6 +159,13 @@ orhun lsp --stdio
 orhun paket dogrula
 ```
 
+Portable compiler bundles can emit JSON or complete artifacts:
+
+```bash
+build/derleyici-paketi/orhun-derleyici.exe dosya.oh
+build/derleyici-paketi/orhun-derleyici.exe --derle dosya.oh cikti
+```
+
 Program arguments are available as `sistem.argumanlar`:
 
 ```bash

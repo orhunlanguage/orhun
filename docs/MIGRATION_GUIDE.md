@@ -205,7 +205,9 @@
 - `orhun bootstrap-derleyici-paketle <toolchain-dizini> <çıktı-dizini>`,
   kaynak-kodsuz taşınabilir `orhun-derleyici` çalıştırılabilir dosyasını ve
   kardeş strict toolchain'ini üretir. İngilizce uyumluluk takma adı
-  `bootstrap-compiler-bundle`'dır.
+  `bootstrap-compiler-bundle`'dır. Üretilen derleyici tek kaynak argümanıyla
+  bytecode JSON, `--derle <kaynak.oh> [çıktı]` ile `.obc`, paketli
+  çalıştırılabilir dosya ve metadata üretir.
 - Kullanıcı programlarına kaynak/komut sonrasında verilen değerler artık
   `sistem.argumanlar` listesinde bulunur. `orhun-vm` yolunda çalışma zamanı
   argümanlarını modül seçeneklerinden ayırmak için `--` kullanılır.

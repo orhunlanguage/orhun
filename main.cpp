@@ -57,6 +57,9 @@ private:
 };
 
 void bootstrapToolchainDogrula(const std::string &toolchainKoku);
+int komutOrhunDerle(const std::string &kaynakYolu,
+                    const std::string &calisanExeYolu,
+                    const std::string &ciktiTemel);
 
 std::optional<std::string> cliModulModuCoz(const std::string &secenek) {
   if (secenek == "--source") {
@@ -331,6 +334,26 @@ bool gomuluPaketiCalistir(
     bootstrapToolchainDogrula(komsuStdlib.string());
     cliOrtamDegiskeniniAyarla("ORHUN_STDLIB_PATH", komsuStdlib.string());
     cliModulModunuAyarla(std::string("obc-only"));
+  }
+
+  const fs::path calisanExe = fs::absolute(calisanExeYolu);
+  const std::string exeAdi = calisanExe.filename().u8string();
+  const bool bootstrapDerleyiciMi =
+      (exeAdi == "orhun-derleyici.exe" || exeAdi == "orhun-derleyici") &&
+      orhunNormalDosyaMi(calisanExe.parent_path() /
+                         "bootstrap-compiler.manifest.json");
+  if (bootstrapDerleyiciMi && !programArgumanlari.empty() &&
+      (programArgumanlari[0] == "--derle" ||
+       programArgumanlari[0] == "--compile")) {
+    if (programArgumanlari.size() < 2 || programArgumanlari.size() > 3) {
+      throw std::runtime_error(
+          "Hata: orhun-derleyici --derle <kaynak.oh> [cikti] kullanin.");
+    }
+    const std::string ciktiTemel =
+        programArgumanlari.size() == 3 ? programArgumanlari[2] : "";
+    static_cast<void>(
+        komutOrhunDerle(programArgumanlari[1], calisanExeYolu, ciktiTemel));
+    return true;
   }
 
   BytecodeChunk chunk = chunkCoz(payload);

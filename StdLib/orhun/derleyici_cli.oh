@@ -5,7 +5,7 @@ derleyici olsun dahil_et "orhun/derleyici.oh"
 surum olsun "0.1.0"
 
 eğer uzunluk(sistem.argumanlar) küçük 1 ise:
-    yazdır json.yaz({"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": "Kullanim: orhun-derleyici <kaynak.oh>"}, "bytecode": 0})
+    yazdır json.yaz({"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": "Kullanim: orhun-derleyici <kaynak.oh> veya orhun-derleyici --derle <kaynak.oh> [cikti]"}, "bytecode": 0})
 değilse:
     kaynak olsun dosya.oku(sistem.argumanlar[0])
     yazdır json.yaz(derleyici.derle(kaynak))

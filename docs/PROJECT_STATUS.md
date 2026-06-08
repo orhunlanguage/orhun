@@ -23,7 +23,7 @@ These percentages are planning estimates, not promises.
 | Working experimental language / MVP | 55-60% | Orhun already has a lexer, parser, interpreter, bytecode compiler, VM, stdlib surface, package/security flows, tests, and tooling. |
 | 1.0 stable language | 35-40% | Needs a stable spec, compatibility policy, release binaries, cleaner docs, stronger package flow, and hardened performance/security gates. |
 | 2.1.0 production-ready product bar | 20-25% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
-| Full self-hosting / independent compiler path | ~47% | The Orhun-written compiler has exact bytecode parity across every current runtime case accepted by C++, can compile its own source into a byte-identical bootstrap artifact, and ships as a source-free portable compiler bundle backed by precompiled compiler/parser/lexer modules. Direct `.obc` emission from that standalone CLI and a runtime replacement remain. |
+| Full self-hosting / independent compiler path | ~52% | The Orhun-written compiler has exact bytecode parity across every current runtime case accepted by C++, can compile its own source into a byte-identical bootstrap artifact, and ships as a source-free portable compiler bundle that directly emits byte-identical `.obc` and packaged executables. The serialization bridge and runtime are still C++, and a reproducible self-rebuild release chain remains. |
 
 ## What Is Already Real
 
@@ -64,7 +64,8 @@ These percentages are planning estimates, not promises.
   source-free compiler-module run path.
 - `bootstrap-derleyici-paketle` creates a portable source-free
   `orhun-derleyici` executable bundle that discovers and validates its sibling
-  strict toolchain before emitting bytecode JSON.
+  strict toolchain before emitting bytecode JSON or complete `.obc`, packaged
+  executable, and metadata artifacts.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.
@@ -76,8 +77,8 @@ These percentages are planning estimates, not promises.
 - Stabilize the language specification and migration policy.
 - Keep growing parser parity until the Orhun parser can replace more of the C++
   parser path.
-- Grow compiler parity beyond the current test corpus and teach the portable
-  Orhun-written compiler CLI to emit `.obc` artifacts directly.
+- Grow compiler parity beyond the current test corpus and reduce the remaining
+  C++ serialization/runtime bridge behind the portable Orhun compiler CLI.
 - Make release binaries easy on Windows, Linux, and macOS.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.

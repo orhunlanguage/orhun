@@ -668,7 +668,9 @@ Stable channel defaults:
   `bootstrap-compiler-bundle` is its compatibility alias. The executable
   validates and activates the sibling strict toolchain automatically, then
   emits Orhun compiler bytecode JSON for the source path passed as its first
-  program argument.
+  program argument. `orhun-derleyici --derle <source.oh> [output]` uses the
+  same Orhun-written compiler and the runtime serialization bridge to emit
+  `.obc`, packaged executable, and metadata artifacts directly.
 
 ## Compatibility Rules
 

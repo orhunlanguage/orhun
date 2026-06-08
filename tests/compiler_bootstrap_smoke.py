@@ -451,6 +451,39 @@ def main() -> int:
             "bundled compiler output must execute like direct VM output",
         )
 
+        bundled_artifact = tmpdir / "bundled_direct_artifact"
+        bundled_direct_compile = run_cmd(
+            [
+                str(bundle_exe),
+                "--derle",
+                str(artifact_source),
+                str(bundled_artifact),
+            ],
+            tmpdir,
+        )
+        require(
+            bundled_direct_compile.returncode == 0,
+            "bundled compiler direct artifact mode failed: "
+            + combined(bundled_direct_compile),
+        )
+        require(
+            bundled_artifact.with_suffix(".obc").read_bytes()
+            == cxx_base.with_suffix(".obc").read_bytes(),
+            "bundled compiler direct OBC must match C++ compiler artifact",
+        )
+        bundled_direct_exe = run_cmd(
+            [str(bundled_artifact.with_suffix(".exe"))],
+            tmpdir,
+        )
+        require(
+            bundled_direct_exe.returncode == 0,
+            f"bundled compiler packaged artifact failed: {combined(bundled_direct_exe)}",
+        )
+        require(
+            combined(bundled_direct_exe) == combined(artifact_direct),
+            "bundled compiler packaged artifact must match direct VM output",
+        )
+
         bundle_parser = compiler_bundle / "StdLib" / "orhun" / "parser.obc"
         bundle_parser.write_bytes(bundle_parser.read_bytes()[:-1])
         corrupt_bundle = run_cmd(
@@ -545,7 +578,8 @@ def main() -> int:
         "1 prepared obc-only module chain, 1 source-free strict compile, "
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
-        "1 source override, 8 rejected invalid inputs)."
+        "1 bundled direct artifact compile, 1 source override, "
+        "8 rejected invalid inputs)."
     )
     return 0
 
