@@ -208,8 +208,9 @@ Hedefler:
 - Orhun compiler kaynagi Orhun ile derlenebilir.
 - Release surecinde C++ bootstrap sadece ilk araci uretir.
 - Sonraki asamada Orhun compiler kendi yeni surumunu uretebilir.
-- CI tarafinda dogrulanan tasinabilir compiler bundle'lari imzali ve surumlu
-  release asset'lerine donusturulur.
+- CI tarafinda dogrulanan tasinabilir compiler bundle'lari surumlu ve SHA-256
+  dogrulamali release asset'lerine donusturulur; guvenli imzalama altyapisi
+  eklendiginde kriptografik olarak da imzalanir.
 
 Basari olcutu:
 

@@ -167,6 +167,18 @@ build/derleyici-paketi/orhun-derleyici.exe dosya.oh
 build/derleyici-paketi/orhun-derleyici.exe --derle dosya.oh cikti
 ```
 
+## Releases
+
+Version tags must exactly match `VERSION`, for example `v0.8.0`. Pushing a
+matching tag runs the full release gate on Windows, Linux, and macOS, rebuilds
+the source-free compiler toolchain, and publishes deterministic compiler
+archives with SHA-256 verification files.
+
+Release assets are published on
+[GitHub Releases](https://github.com/orhunlanguage/orhun/releases). They are not
+cryptographically signed yet; checksum verification is the current integrity
+mechanism.
+
 Program arguments are available as `sistem.argumanlar`:
 
 ```bash
@@ -227,6 +239,7 @@ self-hosting plan.
 - LSP smoke: `tests/lsp_smoke.py`
 - VS Code tooling smoke: `tests/vscode_syntax_smoke.py`
 - VS Code tooling: `tools/vscode-orhun`
+- Deterministic release packager: `tools/release_package.py`
 - Migration notes: `docs/MIGRATION_GUIDE.md`
 - Beginner guide: `docs/BEGINNER_GUIDE.md`
 - Language specification: `docs/SPEC.md`

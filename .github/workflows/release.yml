@@ -1,0 +1,140 @@
+name: Orhun Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build-assets:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+
+      - name: Install build tools (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y g++ python3
+
+      - name: Build and test release binary (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./tests/run_tests.ps1 -Output build/orhun_release.exe
+
+      - name: Build and test release binary (Linux)
+        if: runner.os == 'Linux'
+        run: bash tests/run_tests.sh g++ build/orhun_release
+
+      - name: Build and test release binary (macOS)
+        if: runner.os == 'macOS'
+        run: bash tests/run_tests.sh clang++ build/orhun_release
+
+      - name: VM strict parity (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./tests/vm_parity.ps1 -Output build/orhun_release.exe
+
+      - name: VM strict parity (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: bash tests/vm_parity.sh ${{ runner.os == 'macOS' && 'clang++' || 'g++' }} build/orhun_release
+
+      - name: Full roadmap gate (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3 tests/roadmap_smoke.py .\build\orhun_release.exe
+
+      - name: Full roadmap gate (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: python3 tests/roadmap_smoke.py ./build/orhun_release
+
+      - name: Build validated compiler bundle (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\build\orhun_release.exe bootstrap-hazirla build/bootstrap-release-seed
+          .\build\orhun_release.exe bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
+          .\build\orhun_release.exe bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
+          .\build\orhun_release.exe bootstrap-dogrula artifacts/compiler-bundle/StdLib
+
+      - name: Build validated compiler bundle (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          ./build/orhun_release bootstrap-hazirla build/bootstrap-release-seed
+          ./build/orhun_release bootstrap-yeniden-uret build/bootstrap-release-seed build/bootstrap-release
+          ./build/orhun_release bootstrap-derleyici-paketle build/bootstrap-release artifacts/compiler-bundle
+          ./build/orhun_release bootstrap-dogrula artifacts/compiler-bundle/StdLib
+
+      - name: Create release archive (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          py -3 tools/release_package.py create `
+            --bundle artifacts/compiler-bundle `
+            --output artifacts/release `
+            --platform "${{ runner.os }}-${{ runner.arch }}" `
+            --tag "${{ github.ref_name }}"
+
+      - name: Create release archive (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          python3 tools/release_package.py create \
+            --bundle artifacts/compiler-bundle \
+            --output artifacts/release \
+            --platform "${{ runner.os }}-${{ runner.arch }}" \
+            --tag "${{ github.ref_name }}"
+
+      - name: Upload release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ runner.os }}-${{ runner.arch }}
+          path: artifacts/release/*
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    needs: build-assets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: artifacts/release
+          merge-multiple: true
+
+      - name: Create combined checksum manifest
+        run: |
+          python3 tools/release_package.py checksums \
+            --directory artifacts/release \
+            --output artifacts/release/SHA256SUMS
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(tr -d '\r\n' < VERSION)"
+          tag="${GITHUB_REF_NAME}"
+          prerelease=()
+          if [[ "${version}" == 0.* || "${version}" == *-* ]]; then
+            prerelease+=(--prerelease)
+          fi
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            gh release upload "${tag}" artifacts/release/* --clobber
+          else
+            gh release create "${tag}" artifacts/release/* \
+              --verify-tag \
+              --generate-notes \
+              --title "Orhun ${tag}" \
+              "${prerelease[@]}"
+          fi

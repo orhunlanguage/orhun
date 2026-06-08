@@ -23,7 +23,7 @@ These percentages are planning estimates, not promises.
 | Working experimental language / MVP | 55-60% | Orhun already has a lexer, parser, interpreter, bytecode compiler, VM, stdlib surface, package/security flows, tests, and tooling. |
 | 1.0 stable language | 35-40% | Needs a stable spec, compatibility policy, release binaries, cleaner docs, stronger package flow, and hardened performance/security gates. |
 | 2.1.0 production-ready product bar | 20-25% | Needs 1.0 stability plus ecosystem confidence: installers, docs, examples, package policy, support process, performance gates, and broad CI/nightly coverage. |
-| Full self-hosting / independent compiler path | ~58% | The Orhun-written compiler has exact bytecode parity across every current runtime case accepted by C++, ships as a source-free portable compiler bundle that directly emits byte-identical artifacts, and passes a three-stage byte-identical self-rebuild gate. The serialization bridge and runtime are still C++, and this gate still needs release/CI hardening across platforms. |
+| Full self-hosting / independent compiler path | ~60% | The Orhun-written compiler has exact bytecode parity across every current runtime case accepted by C++, ships as a source-free portable compiler bundle that directly emits byte-identical artifacts, passes a three-stage byte-identical self-rebuild gate, and has a tag-triggered multi-platform release path. The serialization bridge and runtime are still C++. |
 
 ## What Is Already Real
 
@@ -73,6 +73,9 @@ These percentages are planning estimates, not promises.
   macOS in both the main CI and nightly matrices.
 - Main CI builds and uploads validated source-free portable compiler bundles
   for Windows, Linux, and macOS after the self-rebuild gate passes.
+- Matching version tags run the full gate on all three platforms and publish
+  deterministic versioned compiler archives, per-archive SHA-256 files, and a
+  combined `SHA256SUMS` manifest as GitHub Release assets.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.
@@ -86,8 +89,8 @@ These percentages are planning estimates, not promises.
   parser path.
 - Grow compiler parity beyond the current test corpus and reduce the remaining
   C++ serialization/runtime bridge behind the portable Orhun compiler CLI.
-- Promote validated CI compiler bundles into signed/versioned release assets.
-- Make release binaries easy on Windows, Linux, and macOS.
+- Add cryptographic signing to the versioned release assets.
+- Make release binaries easier to install on Windows, Linux, and macOS.
 - Strengthen package manager UX, security checks, lockfile behavior, and docs.
 - Add beginner learning material and larger example projects.
 - Add performance gates for representative workloads.

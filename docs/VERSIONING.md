@@ -25,6 +25,16 @@ be documented in `docs/MIGRATION_GUIDE.md`.
 Version numbers should change in a release commit, not after every normal
 development commit.
 
+## Release Tag Contract
+
+- Release tags use `vMAJOR.MINOR.PATCH`.
+- A release tag must exactly match the repository `VERSION` value.
+- Mismatched tags are rejected before an archive can be produced.
+- Tag-triggered release builds run on Windows, Linux, and macOS and publish
+  deterministic archives plus SHA-256 verification files.
+- Pre-1.0 and explicitly suffixed pre-release versions are published as GitHub
+  prereleases.
+
 ## 2.1.0 Product Bar
 
 `2.1.0` should mean Orhun is no longer just a beta-style experiment. Before
