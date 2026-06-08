@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.21.0"
+surum olsun "0.22.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -372,6 +372,43 @@ işlev liste_uretec_derle(durum, ifade):
     cagrilan_ad_yukle(durum, sonuc_ad, ifade.satir)
     döndür 0
 
+işlev paralel_yap_derle(durum, ifade):
+    eğer uzunluk(ifade.paralel_komutlar) eşit 0 ise:
+        hata_ayarla(durum, "Paralel yap ifadesi en az bir komut icermelidir.")
+        döndür 0
+
+    cagrilan_ad_yukle(durum, "gorev.baslat_plan", ifade.satir)
+    i olsun 0
+    sürece i küçük uzunluk(ifade.paralel_komutlar):
+        komut olsun ifade.paralel_komutlar[i]
+        eğer komut.tur eşit_değil "IfadeKomut" ise:
+            hata_ayarla(durum, "Paralel yap yalnizca cagri komutlarini destekler.")
+            döndür 0
+        cagri olsun komut.ifade_ozeti
+        eğer cagri.tur eşit_değil "IslevCagri" veya uzunluk(cagri.altlar) eşit_değil 1 ise:
+            hata_ayarla(durum, "Paralel yap adimlari tek argumanli cagri olmalidir.")
+            döndür 0
+
+        adim_turu olsun ""
+        eğer cagri.ad eşit "bekle" veya cagri.ad eşit "gorev.baslat_bekle" ise:
+            adim_turu olsun "bekle"
+        eğer cagri.ad eşit "sistem.komut" veya cagri.ad eşit "gorev.baslat_komut" ise:
+            adim_turu olsun "komut"
+        eğer uzunluk(adim_turu) eşit 0 ise:
+            hata_ayarla(durum, "Desteklenmeyen paralel yap cagrisi: " + cagri.ad)
+            döndür 0
+
+        sabit_deger_yaz(durum, "metin", "tur", ifade.satir)
+        sabit_deger_yaz(durum, "metin", adim_turu, ifade.satir)
+        sabit_deger_yaz(durum, "metin", "arg", ifade.satir)
+        ifade_derle(durum, cagri.altlar[0])
+        operandli_komut_ekle(durum, "OP_SOZLUK_OLUSTUR", ifade.satir, 2)
+        i olsun i + 1
+
+    operandli_komut_ekle(durum, "OP_LISTE_OLUSTUR", ifade.satir, uzunluk(ifade.paralel_komutlar))
+    operandli_komut_ekle(durum, "OP_CAGIR", ifade.satir, 1)
+    döndür 0
+
 işlev ifade_derle(durum, ifade):
     eğer uzunluk(durum.hata) büyük 0 ise:
         döndür 0
@@ -440,6 +477,10 @@ işlev ifade_derle(durum, ifade):
 
     eğer ifade.tur eşit "ListeUretec" ise:
         liste_uretec_derle(durum, ifade)
+        döndür 0
+
+    eğer ifade.tur eşit "ParalelYap" ise:
+        paralel_yap_derle(durum, ifade)
         döndür 0
 
     eğer ifade.tur eşit "Sozluk" ise:

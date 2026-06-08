@@ -545,6 +545,9 @@ Classes containing field declarations, methods, and inheritance setup are
 covered by compiler parity. Method metadata includes `benim`/`üst` context
 arguments and default-parameter local offsets; field reads/writes and super
 method calls are also covered.
+`paralel yap` expressions are covered by compiler parity. The Orhun parser IR
+exposes their structural `paralel_komutlar`, which the compiler lowers to the
+same task-plan dictionaries and `gorev.baslat_plan` call as the C++ compiler.
 `tests/compiler_prototype_smoke.py` compares opcode names, instruction pointers,
 source lines, operands, constant-pool entries, and aggregate counts against the
 C++ compiler. It includes focused generated programs plus larger checked-in

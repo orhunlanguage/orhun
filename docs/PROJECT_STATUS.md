@@ -38,8 +38,8 @@ These percentages are planning estimates, not promises.
 - Formatter, linter, LSP, VS Code tooling, package/lock verification, and CI.
 - Orhun-written lexer/parser prototypes and a bytecode compiler subset covering
   expressions, collections, control flow, functions, closures, lambdas,
-  list comprehensions, external declarations, class fields/methods/inheritance,
-  locals, and optimizations with parity smoke tests.
+  list comprehensions, parallel task plans, external declarations, class
+  fields/methods/inheritance, locals, and optimizations with parity smoke tests.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.

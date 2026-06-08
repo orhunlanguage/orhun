@@ -1,4 +1,4 @@
-0.4.0
+0.5.0
 1
 0
 Program
@@ -74,7 +74,7 @@ x
 {"alt_sayisi":1,"altlar":[{"alt_sayisi":2,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"a","op":"","satir":1,"tur":"Kimlik"},{"alt_sayisi":0,"altlar":[],"ayrinti":"b","op":"","satir":1,"tur":"Kimlik"}],"ayrinti":"+","op":"+","satir":1,"tur":"IkiliIslem"}],"ayrinti":"a,b","op":"","parametre_sayisi":2,"parametreler":["a","b"],"satir":1,"tur":"IsimsizIslev","varsayilan_sayisi":1,"varsayilanlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"","op":"","satir":0,"tur":""},{"alt_sayisi":0,"altlar":[],"ayrinti":"2","op":"","satir":1,"tur":"Sayi"}]}
 {"alt_sayisi":1,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"5","op":"","satir":1,"tur":"Sayi"}],"ayrinti":"-","op":"-","satir":1,"tur":"TekliIslem"}
 {"alt_sayisi":1,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"yanlış","op":"","satir":2,"tur":"Mantik"}],"ayrinti":"değil","op":"değil","satir":2,"tur":"TekliIslem"}
-{"alt_sayisi":0,"altlar":[],"ayrinti":"","komut_sayisi":1,"op":"","satir":1,"tur":"ParalelYap"}
+{"alt_sayisi":0,"altlar":[],"ayrinti":"","komut_sayisi":1,"op":"","paralel_komutlar":[{"blok_sayilari":[],"blok_sayisi":0,"bloklar":[],"ifade_ozeti":{"alt_sayisi":0,"altlar":[],"ayrinti":"sur","op":"","satir":1,"tur":"Metin"},"ifade_turu":"Metin","satir":1,"tur":"Yazdir"}],"satir":1,"tur":"ParalelYap"}
 {"alt_sayisi":1,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"Ad?","op":"","satir":1,"tur":"Metin"}],"ayrinti":"","op":"","satir":1,"tur":"Sor"}
 {"alt_sayisi":0,"altlar":[],"ayrinti":"orhun/temel.oh","op":"","satir":2,"tur":"DahilEt"}
 IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
@@ -84,7 +84,7 @@ IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
 {"alt_sayisi":1,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"1","op":"","satir":4,"tur":"Sayi"}],"arguman_sayisi":1,"ayrinti":"Kutu","op":"","satir":4,"sinif":"Kutu","tur":"YeniNesne"}
 {"alan":"deger","alt_sayisi":0,"altlar":[],"ayrinti":"deger","op":"","satir":5,"tur":"BenimErisim"}
 {"alt_sayisi":0,"altlar":[],"ayrinti":"kur","metod":"kur","op":"","satir":6,"tur":"UstErisim"}
-{"alt_sayisi":0,"altlar":[],"ayrinti":"","komut_sayisi":1,"op":"","satir":7,"tur":"ParalelYap"}
+{"alt_sayisi":0,"altlar":[],"ayrinti":"","komut_sayisi":1,"op":"","paralel_komutlar":[{"blok_sayilari":[],"blok_sayisi":0,"bloklar":[],"ifade_ozeti":{"alt_sayisi":0,"altlar":[],"ayrinti":"sur","op":"","satir":7,"tur":"Metin"},"ifade_turu":"Metin","satir":7,"tur":"Yazdir"}],"satir":7,"tur":"ParalelYap"}
 IfadeKomut|IfadeKomut|IfadeKomut|IfadeKomut
 {"alt_sayisi":1,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"5","op":"","satir":1,"tur":"Sayi"}],"ayrinti":"-","op":"-","satir":1,"tur":"TekliIslem"}
 {"alt_sayisi":2,"altlar":[{"alt_sayisi":0,"altlar":[],"ayrinti":"1","op":"","satir":2,"tur":"Sayi"},{"alt_sayisi":0,"altlar":[],"ayrinti":"2","op":"","satir":2,"tur":"Sayi"}],"ayrinti":"","oge_sayisi":2,"op":"","satir":2,"tur":"Liste"}

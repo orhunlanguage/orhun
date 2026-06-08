@@ -58,7 +58,7 @@ seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutu
 parity saglandi. Parser prototipi 142 basarili AST
 fixture ve 63 hata fixture seviyesine tasindi.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.4.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.5.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -70,7 +70,7 @@ komut sayilarini, tekrarla sayi ozetlerini,
 anonim islev parametre ve varsayilan arguman ozetlerini, inline anonim islev
 govde ifadesini, liste uretec degiskenini ve kosul varligini, sozluk
 anahtarlarini, liste/sozluk oge sayilarini, dilim erisim sinir varligini,
-paralel yap govde komut sayisini, liste/sozluk literal postfix ozetlerini,
+paralel yap govde komut sayisini ve yapisal komutlarini, liste/sozluk literal postfix ozetlerini,
 alan/ust erisim adlarini, islev cagri adlarini, yeni nesne sinif adlarini ve
 arguman sayilarini C++ AST ile
 karsilastiriyor.
@@ -103,7 +103,7 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.21.0; sabitler, global kimlik okuma/atama,
+hazirlandi. `orhun/derleyici.oh` 0.22.0; sabitler, global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
 cagrilari, indeks/alan/guvenli alan okumalari, `eger/degilse`, basit `surece`
 ve `tekrarla` donguleri ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
@@ -135,10 +135,12 @@ mevcut FFI politika yuzeyine derlenir.
 Alan tanimli siniflar, metodlar, temel kalitim kurulumu, `benim` alan
 okuma/yazma ve `ust` metod cagrilari parity kapsamindadir. Metod metadata'si
 baglam argumanlarini ve varsayilan parametre ofsetlerini C++ ile ayni uretir.
-Compiler prototype smoke su anda 85 programda C++ bytecode ozetini birebir
+`paralel yap` adimlari yapisal parser IR'indan gorev plan sozluklerine
+indirgenir ve parity kapsamindadir.
+Compiler prototype smoke su anda 88 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
-liste-ureteci/lambda fixture'larini da dogrudan karsilastirir; desteklenmeyen
-yapilar icin acik hata bekler.
+liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
+desteklenmeyen yapilar icin acik hata bekler.
 
 Hedefler:
 

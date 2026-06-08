@@ -228,6 +228,13 @@ PARITY_CASES = {
         "işlev carpani_uret(k):\n    döndür işlev(x): x * k\n\n"
         "iki_kat olsun carpani_uret(2)\nyazdır iki_kat(5)\n"
     ),
+    "parallel_wait": (
+        "gorev olsun paralel yap:\n    bekle(0)\n    bekle(1)\n"
+        "yazdır gorev\n"
+    ),
+    "parallel_command": (
+        'gorev olsun paralel yap: sistem.komut("echo orhun")\n'
+    ),
 }
 
 PARITY_FIXTURES = (
@@ -239,6 +246,7 @@ PARITY_FIXTURES = (
     "tests/cases/oop_super.oh",
     "tests/cases/default_args_method_super.oh",
     "tests/cases/vm_list_comp_lambda_filter.oh",
+    "tests/cases/vm_paralel_yap.oh",
 )
 
 

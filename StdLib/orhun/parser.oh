@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.4.0"
+surum olsun "0.5.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -1150,6 +1150,18 @@ işlev paralel_yap_komut_sayisi(tokenlar, baslangic, son):
     blok olsun blok_ozeti(tokenlar, son, guvenli_token(tokenlar, baslangic).satir)
     döndür blok.sayi
 
+işlev paralel_yap_komutlari(tokenlar, baslangic, son):
+    iki_nokta olsun aralikta_deger_konumu(tokenlar, baslangic, son, ":")
+    eğer iki_nokta küçük 0 ise:
+        döndür []
+    satir_ici_baslangic olsun iki_nokta + 1
+    eğer satir_ici_baslangic küçük son ve değil satir_sonu_mu(guvenli_token(tokenlar, satir_ici_baslangic)) ise:
+        eğer uzunluk(komut_turu(tokenlar, satir_ici_baslangic)) büyük 0 ise:
+            döndür [komut_dugumu(tokenlar, satir_ici_baslangic)]
+        döndür []
+    blok olsun blok_ozeti(tokenlar, son, guvenli_token(tokenlar, baslangic).satir)
+    döndür blok.komutlar
+
 işlev isimsiz_islev_govde_baslangici(tokenlar, baslangic, son):
     i olsun baslangic
     derinlik olsun 0
@@ -1241,6 +1253,7 @@ işlev ifade_ozeti(tokenlar, baslangic, son):
         sonuc["metod"] = noktadan_sonraki_kimlik(tokenlar, baslangic, son)
     eğer tur eşit "ParalelYap" ise:
         sonuc["komut_sayisi"] = paralel_yap_komut_sayisi(tokenlar, baslangic, son)
+        sonuc["paralel_komutlar"] = paralel_yap_komutlari(tokenlar, baslangic, son)
     eğer tur eşit "YeniNesne" ise:
         sonuc["sinif"] = yeni_sinif_adi(tokenlar, baslangic, son)
         sonuc["arguman_sayisi"] = uzunluk(yeni_nesne_altlari(tokenlar, baslangic, son))
