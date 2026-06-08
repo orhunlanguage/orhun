@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.22.0"
+surum olsun "0.24.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -198,14 +198,16 @@ işlev ikili_sabit_derle(durum, ifade):
 işlev tekli_sabit_derle(durum, ifade):
     eğer uzunluk(ifade.altlar) eşit_değil 1 ise:
         döndür yanlış
+    eğer ifade.op eşit "değil" ise:
+        dogruluk olsun sabit_dogruluk(ifade.altlar[0])
+        eğer dogruluk.ok ise:
+            sabit_deger_yaz(durum, "mantik", değil dogruluk.deger, ifade.satir)
+            döndür doğru
     deger olsun sabit_ifade(ifade.altlar[0])
     eğer değil deger.ok ise:
         döndür yanlış
     eğer ifade.op eşit "-" ve deger.tur eşit "sayi" ise:
         sabit_deger_yaz(durum, "sayi", -deger.deger, ifade.satir)
-        döndür doğru
-    eğer ifade.op eşit "değil" ve deger.tur eşit "mantik" ise:
-        sabit_deger_yaz(durum, "mantik", değil deger.deger, ifade.satir)
         döndür doğru
     döndür yanlış
 
@@ -264,6 +266,102 @@ işlev cagrilan_ad_yukle(durum, ad, satir):
         operandli_komut_ekle(durum, "OP_ALAN_AL", satir, sabit)
         i olsun i + 1
     döndür 0
+
+işlev bosluk_karakteri_mi(k):
+    döndür k eşit " " veya k eşit "\n" veya k eşit "\t" veya k eşit "\r"
+
+işlev metin_kirp(kaynak):
+    sol olsun 0
+    sol_devam olsun doğru
+    sürece sol_devam ve sol küçük uzunluk(kaynak):
+        eğer bosluk_karakteri_mi(kaynak[sol]) ise:
+            sol olsun sol + 1
+        değilse:
+            sol_devam olsun yanlış
+    sag olsun uzunluk(kaynak)
+    sag_devam olsun doğru
+    sürece sag_devam ve sag büyük sol:
+        eğer bosluk_karakteri_mi(kaynak[sag - 1]) ise:
+            sag olsun sag - 1
+        değilse:
+            sag_devam olsun yanlış
+    döndür kaynak[sol:sag]
+
+işlev yer_tutucu_yolu_gecerli_mi(yol):
+    eğer uzunluk(yol) eşit 0 ise:
+        döndür yanlış
+    gecersiz olsun " {}[]()\"':,;+-*/%=!?<>\\|&@#$^~`"
+    i olsun 0
+    sürece i küçük uzunluk(yol):
+        eğer uzunluk(parcala(gecersiz, yol[i])) büyük 1 ise:
+            döndür yanlış
+        i olsun i + 1
+    döndür doğru
+
+işlev metin_parcasi_ekle(durum, kaynak, baslangic, son, satir):
+    eğer son küçük baslangic veya son eşit baslangic ise:
+        döndür 0
+    sabit_deger_yaz(durum, "metin", kaynak[baslangic:son], satir)
+    komut_ekle(durum, "OP_TOPLA", satir)
+    döndür 0
+
+işlev sonraki_karakter_esit_mi(kaynak, konum, beklenen):
+    eğer konum + 1 büyük uzunluk(kaynak) veya konum + 1 eşit uzunluk(kaynak) ise:
+        döndür yanlış
+    döndür kaynak[konum + 1] eşit beklenen
+
+işlev kapanis_suslusu_bul(kaynak, baslangic):
+    i olsun baslangic
+    sürece i küçük uzunluk(kaynak):
+        eğer kaynak[i] eşit "}" ise:
+            döndür i
+        i olsun i + 1
+    döndür -1
+
+işlev bicimli_metin_derle(durum, kaynak, satir):
+    suslu_var olsun yanlış
+    i olsun 0
+    sürece i küçük uzunluk(kaynak):
+        eğer kaynak[i] eşit "{" veya kaynak[i] eşit "}" ise:
+            suslu_var olsun doğru
+        i olsun i + 1
+    eğer değil suslu_var ise:
+        döndür yanlış
+
+    sabit_deger_yaz(durum, "metin", "", satir)
+    parca_baslangic olsun 0
+    i olsun 0
+    sürece i küçük uzunluk(kaynak):
+        eğer kaynak[i] eşit "{" ve sonraki_karakter_esit_mi(kaynak, i, "{") ise:
+            metin_parcasi_ekle(durum, kaynak, parca_baslangic, i, satir)
+            sabit_deger_yaz(durum, "metin", "{", satir)
+            komut_ekle(durum, "OP_TOPLA", satir)
+            i olsun i + 2
+            parca_baslangic olsun i
+        değilse eğer kaynak[i] eşit "}" ve sonraki_karakter_esit_mi(kaynak, i, "}") ise:
+            metin_parcasi_ekle(durum, kaynak, parca_baslangic, i, satir)
+            sabit_deger_yaz(durum, "metin", "}", satir)
+            komut_ekle(durum, "OP_TOPLA", satir)
+            i olsun i + 2
+            parca_baslangic olsun i
+        değilse eğer kaynak[i] eşit "{" ise:
+            kapanis olsun kapanis_suslusu_bul(kaynak, i + 1)
+            eğer kapanis büyük -1 ise:
+                yol olsun metin_kirp(kaynak[i + 1:kapanis])
+                eğer yer_tutucu_yolu_gecerli_mi(yol) ise:
+                    metin_parcasi_ekle(durum, kaynak, parca_baslangic, i, satir)
+                    cagrilan_ad_yukle(durum, yol, satir)
+                    komut_ekle(durum, "OP_TOPLA", satir)
+                    i olsun kapanis + 1
+                    parca_baslangic olsun i
+                değilse:
+                    i olsun i + 1
+            değilse:
+                i olsun i + 1
+        değilse:
+            i olsun i + 1
+    metin_parcasi_ekle(durum, kaynak, parca_baslangic, uzunluk(kaynak), satir)
+    döndür doğru
 
 işlev dahil_et_derle(durum, dosya, satir):
     sabit olsun sabit_ekle(durum, "metin", "dahil_et")
@@ -419,6 +517,8 @@ işlev ifade_derle(durum, ifade):
         döndür 0
 
     eğer ifade.tur eşit "Metin" ise:
+        eğer bicimli_metin_derle(durum, ifade.ayrinti, ifade.satir) ise:
+            döndür 0
         sabit olsun sabit_ekle(durum, "metin", ifade.ayrinti)
         operandli_komut_ekle(durum, "OP_SABIT", ifade.satir, sabit)
         döndür 0

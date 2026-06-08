@@ -247,6 +247,14 @@ PARITY_FIXTURES = (
     "tests/cases/default_args_method_super.oh",
     "tests/cases/vm_list_comp_lambda_filter.oh",
     "tests/cases/vm_paralel_yap.oh",
+    "tests/cases/compiler_unary_fold.oh",
+    "tests/cases/f_string.oh",
+    "tests/cases/f_string_escape.oh",
+    "tests/cases/json_parse.oh",
+    "tests/cases/list_comp_filter.oh",
+    "tests/cases/stdlib_errors.oh",
+    "tests/cases/stdlib_orhun_paket.oh",
+    "tests/cases/stdlib_orhun_parser.oh",
 )
 
 

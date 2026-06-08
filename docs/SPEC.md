@@ -545,6 +545,8 @@ Classes containing field declarations, methods, and inheritance setup are
 covered by compiler parity. Method metadata includes `benim`/`üst` context
 arguments and default-parameter local offsets; field reads/writes and super
 method calls are also covered.
+Interpolated strings, escaped braces, and constant truthiness folding are
+covered by compiler parity.
 `paralel yap` expressions are covered by compiler parity. The Orhun parser IR
 exposes their structural `paralel_komutlar`, which the compiler lowers to the
 same task-plan dictionaries and `gorev.baslat_plan` call as the C++ compiler.
