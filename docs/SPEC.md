@@ -634,6 +634,10 @@ Stable channel defaults:
   `orhun-obc-v2` metadata records payload size, CRC32, and SHA-256.
   `orhun-obc-v1` metadata remains verifiable through size and CRC32.
   `obc-verify` is the English compatibility alias.
+- Newly generated packaged executables use an `ORHNPKG2` trailer containing
+  payload size, CRC32, and SHA-256. `paketli-dogrula <packaged-file>` validates
+  the trailer and embedded OBC without executing it; `packaged-verify` is its
+  English compatibility alias. Legacy `ORHNPKG1` packages remain readable.
 - `orhun-vm <dosya.oh>` is the experimental single-command bootstrap path. It
   compiles the target through `orhun/derleyici.oh`, validates the decoded
   bytecode contract, and executes it through the C++ VM. `bootstrap-vm` is the

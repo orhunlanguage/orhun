@@ -48,6 +48,11 @@
 - `orhun obc-dogrula <dosya.obc> [metadata.json]`, OBC yapısını ve metadata
   bütünlüğünü doğrular. İngilizce uyumluluk takma adı `obc-verify`'dır.
 - Eski `orhun-obc-v1` metadata dosyaları CRC32 ile doğrulanmaya devam eder.
+- Yeni paketli çalıştırılabilir dosyalar, gömülü payload boyutu, CRC32 ve
+  SHA-256 taşıyan `ORHNPKG2` trailer'ı kullanır.
+- `orhun paketli-dogrula <paketli-dosya>`, payload bütünlüğünü ve OBC yapısını
+  çalıştırmadan doğrular. İngilizce uyumluluk takma adı `packaged-verify`'dır.
+- Eski `ORHNPKG1` paketleri doğrulanmaya ve çalıştırılmaya devam eder.
 
 ## 5. Benchmark Semantiği (`orhun hiz`)
 - Yeni ölçüm seçenekleri:

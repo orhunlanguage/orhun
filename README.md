@@ -146,6 +146,7 @@ orhun parse dosya.oh --json
 orhun baytkod dosya.oh --json
 orhun baytkod-yurut derlenmis.bytecode.json
 orhun obc-dogrula derlenmis.obc
+orhun paketli-dogrula derlenmis.exe
 orhun orhun-vm dosya.oh
 orhun orhun-vm dosya.oh --obc-only
 orhun orhun-derle dosya.oh cikti

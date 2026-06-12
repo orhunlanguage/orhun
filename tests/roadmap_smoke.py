@@ -85,6 +85,7 @@ def main() -> int:
         ("VM closure extras", [py, "tests/vm_closure_extra_smoke.py", str(binary)]),
         ("input alias", [py, "tests/input_alias_smoke.py", str(binary)]),
         ("OBC metadata", [py, "tests/obc_metadata_smoke.py", str(binary)]),
+        ("packaged integrity", [py, "tests/packaged_integrity_smoke.py", str(binary)]),
         ("program arguments", [py, "tests/program_arguments_smoke.py", str(binary)]),
         ("beginner docs", [py, "tests/beginner_docs_smoke.py"]),
         ("examples", [py, "tests/examples_smoke.py", str(binary)]),

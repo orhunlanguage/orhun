@@ -44,7 +44,8 @@
 
 namespace {
 
-constexpr char kPaketSihir[8] = {'O', 'R', 'H', 'N', 'P', 'K', 'G', '1'};
+constexpr char kPaketSihirV1[8] = {'O', 'R', 'H', 'N', 'P', 'K', 'G', '1'};
+constexpr char kPaketSihirV2[8] = {'O', 'R', 'H', 'N', 'P', 'K', 'G', '2'};
 
 class CliCikisHatasi : public std::runtime_error {
 public:
@@ -298,6 +299,9 @@ void paketliExeUret(const std::string &calisanExeYolu,
                     const std::string &ciktiExeYolu,
                     const std::vector<std::uint8_t> &payload) {
   namespace fs = std::filesystem;
+  if (payload.size() > std::numeric_limits<std::uint32_t>::max()) {
+    throw std::runtime_error("Hata: Paket payload boyutu U32 sinirini asiyor.");
+  }
   fs::copy_file(fs::absolute(calisanExeYolu), fs::path(ciktiExeYolu),
                 fs::copy_options::overwrite_existing);
 
@@ -313,9 +317,12 @@ void paketliExeUret(const std::string &calisanExeYolu,
 
   const std::uint32_t boyut = static_cast<std::uint32_t>(payload.size());
   const std::uint32_t crc = crc32Hesapla(payload);
-  cikti.write(kPaketSihir, static_cast<std::streamsize>(sizeof(kPaketSihir)));
+  const std::string sha256 = security::sha256Hex(payload);
+  cikti.write(kPaketSihirV2,
+              static_cast<std::streamsize>(sizeof(kPaketSihirV2)));
   streamU32Yaz(cikti, boyut);
   streamU32Yaz(cikti, crc);
+  cikti.write(sha256.data(), static_cast<std::streamsize>(sha256.size()));
   cikti.flush();
   if (!cikti.good()) {
     throw std::runtime_error("Hata: Paket exe yazimi tamamlanamadi: " +
@@ -324,7 +331,8 @@ void paketliExeUret(const std::string &calisanExeYolu,
 }
 
 bool paketPayloadOku(const std::string &calisanExeYolu,
-                     std::vector<std::uint8_t> &payload) {
+                     std::vector<std::uint8_t> &payload,
+                     std::string *paketFormati = nullptr) {
   std::ifstream dosya(calisanExeYolu, std::ios::binary);
   if (!dosya.is_open()) {
     return false;
@@ -332,46 +340,78 @@ bool paketPayloadOku(const std::string &calisanExeYolu,
 
   dosya.seekg(0, std::ios::end);
   const std::streamoff toplamBoyut = dosya.tellg();
-  constexpr std::streamoff trailerBoyutu = 8 + 4 + 4;
-  if (toplamBoyut < trailerBoyutu) {
-    return false;
+  if (toplamBoyut < 0) {
+    throw std::runtime_error("Paket bozuk: dosya boyutu okunamadi.");
   }
+  constexpr std::streamoff trailerV1Boyutu = 8 + 4 + 4;
+  constexpr std::streamoff trailerV2Boyutu = trailerV1Boyutu + 64;
 
-  dosya.seekg(toplamBoyut - trailerBoyutu, std::ios::beg);
-  std::uint8_t trailer[16] = {};
-  dosya.read(reinterpret_cast<char *>(trailer), trailerBoyutu);
-  if (dosya.gcount() != trailerBoyutu) {
-    return false;
-  }
+  const auto payloadDogrula =
+      [&](std::streamoff trailerBoyutu, std::uint32_t payloadBoyutu,
+          std::uint32_t crcBeklenen,
+          const std::optional<std::string> &shaBeklenen) -> bool {
+    if (static_cast<std::uint64_t>(payloadBoyutu) >
+        static_cast<std::uint64_t>(toplamBoyut - trailerBoyutu)) {
+      throw std::runtime_error("Paket bozuk: payload boyutu gecersiz.");
+    }
+    const std::streamoff payloadBaslangic =
+        toplamBoyut - trailerBoyutu -
+        static_cast<std::streamoff>(payloadBoyutu);
+    dosya.seekg(payloadBaslangic, std::ios::beg);
+    payload.resize(payloadBoyutu);
+    if (payloadBoyutu > 0) {
+      dosya.read(reinterpret_cast<char *>(payload.data()),
+                 static_cast<std::streamsize>(payloadBoyutu));
+      if (static_cast<std::uint32_t>(dosya.gcount()) != payloadBoyutu) {
+        throw std::runtime_error("Paket bozuk: payload okunamadi.");
+      }
+    }
+    if (crc32Hesapla(payload) != crcBeklenen) {
+      throw std::runtime_error("Paket bozuk: CRC32 dogrulamasi basarisiz.");
+    }
+    if (shaBeklenen.has_value() &&
+        security::sha256Hex(payload) != *shaBeklenen) {
+      throw std::runtime_error("Paket bozuk: SHA256 dogrulamasi basarisiz.");
+    }
+    return true;
+  };
 
-  if (!std::equal(std::begin(kPaketSihir), std::end(kPaketSihir), trailer)) {
-    return false;
-  }
-
-  const std::uint32_t payloadBoyutu = hamdanU32(trailer + 8);
-  const std::uint32_t crcBeklenen = hamdanU32(trailer + 12);
-  if (payloadBoyutu > static_cast<std::uint32_t>(toplamBoyut - trailerBoyutu)) {
-    throw std::runtime_error("Paket bozuk: payload boyutu gecersiz.");
-  }
-
-  const std::streamoff payloadBaslangic =
-      toplamBoyut - trailerBoyutu - static_cast<std::streamoff>(payloadBoyutu);
-  dosya.seekg(payloadBaslangic, std::ios::beg);
-  payload.resize(payloadBoyutu);
-  if (payloadBoyutu > 0) {
-    dosya.read(reinterpret_cast<char *>(payload.data()),
-               static_cast<std::streamsize>(payloadBoyutu));
-    if (static_cast<std::uint32_t>(dosya.gcount()) != payloadBoyutu) {
-      throw std::runtime_error("Paket bozuk: payload okunamadi.");
+  if (toplamBoyut >= trailerV2Boyutu) {
+    dosya.seekg(toplamBoyut - trailerV2Boyutu, std::ios::beg);
+    std::uint8_t trailerV2[80] = {};
+    dosya.read(reinterpret_cast<char *>(trailerV2), trailerV2Boyutu);
+    if (dosya.gcount() == trailerV2Boyutu &&
+        std::equal(std::begin(kPaketSihirV2), std::end(kPaketSihirV2),
+                   trailerV2)) {
+      const std::uint32_t payloadBoyutu = hamdanU32(trailerV2 + 8);
+      const std::uint32_t crcBeklenen = hamdanU32(trailerV2 + 12);
+      const std::string shaBeklenen(
+          reinterpret_cast<const char *>(trailerV2 + 16), 64);
+      if (paketFormati != nullptr) {
+        *paketFormati = "ORHNPKG2";
+      }
+      return payloadDogrula(trailerV2Boyutu, payloadBoyutu, crcBeklenen,
+                            shaBeklenen);
     }
   }
 
-  const std::uint32_t crcGercek = crc32Hesapla(payload);
-  if (crcGercek != crcBeklenen) {
-    throw std::runtime_error("Paket bozuk: CRC32 dogrulamasi basarisiz.");
+  if (toplamBoyut < trailerV1Boyutu) {
+    return false;
   }
-
-  return true;
+  dosya.clear();
+  dosya.seekg(toplamBoyut - trailerV1Boyutu, std::ios::beg);
+  std::uint8_t trailerV1[16] = {};
+  dosya.read(reinterpret_cast<char *>(trailerV1), trailerV1Boyutu);
+  if (dosya.gcount() != trailerV1Boyutu ||
+      !std::equal(std::begin(kPaketSihirV1), std::end(kPaketSihirV1),
+                  trailerV1)) {
+    return false;
+  }
+  if (paketFormati != nullptr) {
+    *paketFormati = "ORHNPKG1";
+  }
+  return payloadDogrula(trailerV1Boyutu, hamdanU32(trailerV1 + 8),
+                        hamdanU32(trailerV1 + 12), std::nullopt);
 }
 
 bool gomuluPaketiCalistir(
@@ -3387,6 +3427,19 @@ int komutObcDogrula(const std::string &obcDosyaYolu,
   return 0;
 }
 
+int komutPaketliDogrula(const std::string &paketliDosyaYolu) {
+  std::vector<std::uint8_t> payload;
+  std::string format;
+  if (!paketPayloadOku(paketliDosyaYolu, payload, &format)) {
+    throw std::runtime_error(
+        "Hata: paketli dosya gecerli bir Orhun payload trailer'i icermiyor.");
+  }
+  static_cast<void>(chunkCoz(payload));
+  std::cout << "Paketli artifact dogrulandi (" << format
+            << "): " << paketliDosyaYolu << "\n";
+  return 0;
+}
+
 int komutBytecodeJsonCalistir(const std::string &jsonDosyaYolu) {
   const BytecodeChunk chunk = bytecodeJsonCoz(dosyaOku(jsonDosyaYolu));
   VM vm;
@@ -6133,6 +6186,14 @@ int main(int argc, char *argv[]) {
             "Hata: obc-dogrula <dosya.obc> [metadata.json] kullanin.");
       }
       return komutObcDogrula(argv[2], argc == 4 ? argv[3] : "");
+    }
+
+    if (komut == "paketli-dogrula" || komut == "packaged-verify") {
+      if (argc != 3) {
+        throw std::runtime_error(
+            "Hata: paketli-dogrula <paketli-dosya> kullanin.");
+      }
+      return komutPaketliDogrula(argv[2]);
     }
 
     if (komut == "derle") {
