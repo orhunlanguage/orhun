@@ -670,7 +670,10 @@ Stable channel defaults:
   emits Orhun compiler bytecode JSON for the source path passed as its first
   program argument. `orhun-derleyici --derle <source.oh> [output]` uses the
   same Orhun-written compiler and the runtime serialization bridge to emit
-  `.obc`, packaged executable, and metadata artifacts directly.
+  `.obc`, packaged executable, and metadata artifacts directly. Source/output
+  argument parsing and the validated artifact request are produced by
+  `orhun/derleyici_cli.oh`; the OBC/package serialization bridge remains in the
+  C++ bootstrap runtime.
 - `bootstrap-yeniden-uret <seed-toolchain> <output-directory>` performs a
   reproducible three-stage bootstrap gate: the seed builds stage 2, stage 2
   builds stage 3, and every stage-2/stage-3 OBC artifact must be byte-identical.

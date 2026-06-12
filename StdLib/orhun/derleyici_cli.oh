@@ -2,10 +2,33 @@
 
 derleyici olsun dahil_et "orhun/derleyici.oh"
 
-surum olsun "0.1.0"
+surum olsun "0.2.0"
 
-eğer uzunluk(sistem.argumanlar) küçük 1 ise:
-    yazdır json.yaz({"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": "Kullanim: orhun-derleyici <kaynak.oh> veya orhun-derleyici --derle <kaynak.oh> [cikti]"}, "bytecode": 0})
-değilse:
-    kaynak olsun dosya.oku(sistem.argumanlar[0])
-    yazdır json.yaz(derleyici.derle(kaynak))
+işlev basarisiz(mesaj):
+    döndür {"durum": "fail", "hata_sayisi": 1, "hata": {"mesaj": mesaj}, "bytecode": 0}
+
+işlev kaynak_derle(kaynak_yolu):
+    kaynak olsun dosya.oku(kaynak_yolu)
+    döndür derleyici.derle(kaynak)
+
+işlev artifact_istegi_derle(argumanlar):
+    eğer uzunluk(argumanlar) küçük 2 veya uzunluk(argumanlar) büyük 3 ise:
+        döndür basarisiz("Kullanim: orhun-derleyici --derle <kaynak.oh> [cikti]")
+    sonuc olsun kaynak_derle(argumanlar[1])
+    eğer sonuc.durum eşit "ok" ise:
+        cikti olsun ""
+        eğer uzunluk(argumanlar) eşit 3 ise:
+            cikti olsun argumanlar[2]
+        sonuc["artifact_istegi"] = {"kaynak": argumanlar[1], "cikti": cikti}
+    döndür sonuc
+
+işlev cli_calistir(argumanlar):
+    eğer uzunluk(argumanlar) küçük 1 ise:
+        döndür basarisiz("Kullanim: orhun-derleyici <kaynak.oh> veya orhun-derleyici --derle <kaynak.oh> [cikti]")
+    eğer argumanlar[0] eşit "--derle" veya argumanlar[0] eşit "--compile" ise:
+        döndür artifact_istegi_derle(argumanlar)
+    eğer uzunluk(argumanlar) büyük 1 ise:
+        döndür basarisiz("Kullanim: orhun-derleyici <kaynak.oh>")
+    döndür kaynak_derle(argumanlar[0])
+
+yazdır json.yaz(cli_calistir(sistem.argumanlar))

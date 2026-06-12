@@ -442,6 +442,34 @@ def main() -> int:
         )
 
         compiler_bundle = tmpdir / "compiler_bundle"
+        compiler_cli_source = repo / "StdLib" / "orhun" / "derleyici_cli.oh"
+        cli_control_output = tmpdir / "cli_control_artifact"
+        cli_control = run_cmd(
+            [
+                str(binary),
+                "vm-kati",
+                str(compiler_cli_source),
+                "--derle",
+                str(artifact_source),
+                str(cli_control_output),
+            ],
+            repo,
+        )
+        require(
+            cli_control.returncode == 0,
+            f"Orhun compiler CLI control plane failed: {combined(cli_control)}",
+        )
+        cli_control_payload = json.loads(cli_control.stdout)
+        require(
+            cli_control_payload.get("durum") == "ok"
+            and cli_control_payload.get("artifact_istegi")
+            == {
+                "kaynak": str(artifact_source),
+                "cikti": str(cli_control_output),
+            },
+            "Orhun compiler CLI must own artifact source/output selection",
+        )
+
         bundle_create = run_cmd(
             [
                 str(binary),
@@ -532,6 +560,40 @@ def main() -> int:
         require(
             combined(bundled_direct_exe) == combined(artifact_direct),
             "bundled compiler packaged artifact must match direct VM output",
+        )
+
+        bundled_compile_alias = tmpdir / "bundled_compile_alias"
+        compile_alias = run_cmd(
+            [
+                str(bundle_exe),
+                "--compile",
+                str(artifact_source),
+                str(bundled_compile_alias),
+            ],
+            tmpdir,
+        )
+        require(
+            compile_alias.returncode == 0,
+            f"bundled compiler --compile alias failed: {combined(compile_alias)}",
+        )
+        require(
+            bundled_compile_alias.with_suffix(".obc").read_bytes()
+            == cxx_base.with_suffix(".obc").read_bytes(),
+            "bundled compiler --compile alias OBC must match C++ compiler artifact",
+        )
+
+        rejected_bundle_usage = run_cmd(
+            [str(bundle_exe), "--derle"],
+            tmpdir,
+        )
+        require(
+            rejected_bundle_usage.returncode != 0,
+            "bundled compiler must reject incomplete artifact arguments",
+        )
+        require(
+            "Orhun derleyici CLI: Kullanim: orhun-derleyici --derle"
+            in combined(rejected_bundle_usage),
+            "bundled compiler usage error must come from the Orhun CLI control plane",
         )
 
         bundle_parser = compiler_bundle / "StdLib" / "orhun" / "parser.obc"
@@ -628,8 +690,9 @@ def main() -> int:
         "1 prepared obc-only module chain, 1 source-free strict compile, "
         "1 standalone bootstrap compile, 1 standalone bootstrap run, "
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
-        "1 bundled direct artifact compile, 1 source override, "
-        "1 reproducible bootstrap rebuild, 9 rejected invalid inputs)."
+        "1 Orhun-owned compiler CLI control plane, 2 bundled direct artifact "
+        "compile modes, 1 source override, 1 reproducible bootstrap rebuild, "
+        "10 rejected invalid inputs)."
     )
     return 0
 

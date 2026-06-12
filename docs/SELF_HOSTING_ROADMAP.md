@@ -194,7 +194,9 @@ kaynak-kodsuz tasinabilir `orhun-derleyici` calistirilabilir dosyasini uretir.
 Bu ilk bagimsiz derleyici CLI'i bytecode JSON uretir; `--derle` modu ayni
 Orhun-yazili compiler zinciriyle byte-duzeyinde esit `.obc`, paketli
 calistirilabilir dosya ve metadata artifact'larini dogrudan uretir. Artifact
-serilestirme koprusu ve runtime halen C++ cekirdektedir.
+isteginin kaynak/cikti argumanlarini artik Orhun-yazili `derleyici_cli.oh`
+cozer; dogrulanmis istegin OBC/paket serilestirme koprusu ve runtime halen C++
+cekirdektedir.
 `orhun bootstrap-yeniden-uret <tohum-toolchain> <cikti-dizini>`, tohum ile
 asama 2'yi, asama 2 ile asama 3'u uretir ve son iki asamadaki dort artifact'in
 byte duzeyinde ayni olmasini zorunlu tutar. Dolu cikti dizinini ezmez ve

@@ -66,6 +66,9 @@ These percentages are planning estimates, not promises.
   `orhun-derleyici` executable bundle that discovers and validates its sibling
   strict toolchain before emitting bytecode JSON or complete `.obc`, packaged
   executable, and metadata artifacts.
+- The portable compiler's source/output argument parsing and artifact request
+  are owned by Orhun-written `derleyici_cli.oh`; C++ remains only as the
+  validated OBC/package serialization bootstrap bridge for that request.
 - `bootstrap-yeniden-uret` performs a seed -> stage 2 -> stage 3 rebuild and
   rejects the result unless every generated compiler artifact is byte-identical
   across the final two stages.
