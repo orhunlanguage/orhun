@@ -718,6 +718,26 @@ def main() -> int:
             combined(bundled_direct_exe) == combined(artifact_direct),
             "bundled compiler packaged artifact must match direct VM output",
         )
+        bundled_recompile = run_cmd(
+            [
+                str(bundle_exe),
+                "--compile",
+                str(artifact_source),
+                str(bundled_artifact),
+            ],
+            tmpdir,
+        )
+        require(
+            bundled_recompile.returncode == 0,
+            "bundled compiler must replace an existing complete artifact set: "
+            + combined(bundled_recompile),
+        )
+        require(
+            bundled_artifact.with_suffix(".obc").read_bytes()
+            == cxx_base.with_suffix(".obc").read_bytes()
+            and not list(tmpdir.glob("bundled_direct_artifact*.orhun-*")),
+            "successful artifact replacement must publish cleanly",
+        )
 
         bundled_compile_alias = tmpdir / "bundled_compile_alias"
         compile_alias = run_cmd(
@@ -813,6 +833,90 @@ def main() -> int:
         require(
             not (tmpdir / "bilinmeyen.obc").exists(),
             "unknown artifact plan must be rejected before writing files",
+        )
+
+        rollback_dir = tmpdir / "artifact_rollback"
+        rollback_dir.mkdir()
+        rollback_obc = rollback_dir / "korunan.obc"
+        rollback_exe = rollback_dir / "korunan.exe"
+        rollback_obc.write_bytes(b"eski-obc")
+        rollback_exe.write_bytes(b"eski-exe")
+        rollback_compiler = packaged_compiler_fixture(
+            binary,
+            repo,
+            tmpdir,
+            compiler_bundle,
+            bundle_exe,
+            "rollback_plan",
+            {
+                "format": "orhun-artifact-plan-v1",
+                "obc": str(rollback_obc),
+                "exe": str(rollback_exe),
+                "metadata": str(
+                    tmpdir / "olmayan_dizin" / "korunan.obc.meta.json"
+                ),
+                "kaynak_adi": "kaynak.oh",
+            },
+        )
+        rejected_rollback = run_cmd(
+            [
+                str(rollback_compiler),
+                "--derle",
+                str(artifact_source),
+                str(tmpdir / "ignored_rollback_output"),
+            ],
+            tmpdir,
+        )
+        require(
+            rejected_rollback.returncode != 0,
+            "artifact publication must fail when every output cannot be staged",
+        )
+        require(
+            rollback_obc.read_bytes() == b"eski-obc"
+            and rollback_exe.read_bytes() == b"eski-exe",
+            "failed artifact publication must preserve existing outputs",
+        )
+        require(
+            not list(rollback_dir.glob("*.orhun-*")),
+            "failed artifact publication must clean staged sibling files",
+        )
+
+        directory_target = tmpdir / "hedef_dizin.obc"
+        directory_target.mkdir()
+        directory_plan_compiler = packaged_compiler_fixture(
+            binary,
+            repo,
+            tmpdir,
+            compiler_bundle,
+            bundle_exe,
+            "directory_target_plan",
+            {
+                "format": "orhun-artifact-plan-v1",
+                "obc": str(directory_target),
+                "exe": str(tmpdir / "hedef_dizin.exe"),
+                "metadata": str(tmpdir / "hedef_dizin.obc.meta.json"),
+                "kaynak_adi": "kaynak.oh",
+            },
+        )
+        rejected_directory_target = run_cmd(
+            [
+                str(directory_plan_compiler),
+                "--derle",
+                str(artifact_source),
+                str(tmpdir / "ignored_directory_output"),
+            ],
+            tmpdir,
+        )
+        require(
+            rejected_directory_target.returncode != 0,
+            "artifact publication must reject an existing directory target",
+        )
+        require(
+            "artifact hedefi mevcut bir normal dosya olmali"
+            in combined(rejected_directory_target)
+            and directory_target.is_dir()
+            and not (tmpdir / "hedef_dizin.exe").exists(),
+            "directory target rejection must preserve the directory and write nothing",
         )
 
         rejected_bundle_usage = run_cmd(
@@ -926,9 +1030,10 @@ def main() -> int:
         "1 standalone bootstrap verification, 1 source-free compiler bundle, "
         "1 standalone compiler bundle verification, 1 Orhun-owned compiler CLI "
         "control plane, 4 Orhun-owned artifact plans, 2 bundled direct artifact "
-        "compile modes, 1 renamed "
+        "compile modes, 1 staged artifact replacement, 1 staged artifact "
+        "rollback, 1 renamed "
         "compiler bundle, 1 source override, 1 reproducible bootstrap rebuild, "
-        "13 rejected invalid inputs)."
+        "14 rejected invalid inputs)."
     )
     return 0
 

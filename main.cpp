@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -172,6 +173,11 @@ void dosyaYaz(const std::string &dosyaYolu, const std::string &icerik) {
     throw std::runtime_error("Hata: '" + dosyaYolu + "' dosyasina yazilamadi.");
   }
   dosya << icerik;
+  dosya.flush();
+  if (!dosya.good()) {
+    throw std::runtime_error("Hata: '" + dosyaYolu +
+                             "' dosyasina yazma tamamlanamadi.");
+  }
 }
 
 void dosyaYazIkili(const std::string &dosyaYolu,
@@ -183,6 +189,11 @@ void dosyaYazIkili(const std::string &dosyaYolu,
   if (!icerik.empty()) {
     dosya.write(reinterpret_cast<const char *>(icerik.data()),
                 static_cast<std::streamsize>(icerik.size()));
+  }
+  dosya.flush();
+  if (!dosya.good()) {
+    throw std::runtime_error("Hata: '" + dosyaYolu +
+                             "' dosyasina yazma tamamlanamadi.");
   }
 }
 
@@ -299,6 +310,11 @@ void paketliExeUret(const std::string &calisanExeYolu,
   cikti.write(kPaketSihir, static_cast<std::streamsize>(sizeof(kPaketSihir)));
   streamU32Yaz(cikti, boyut);
   streamU32Yaz(cikti, crc);
+  cikti.flush();
+  if (!cikti.good()) {
+    throw std::runtime_error("Hata: Paket exe yazimi tamamlanamadi: " +
+                             ciktiExeYolu);
+  }
 }
 
 bool paketPayloadOku(const std::string &calisanExeYolu,
@@ -3404,16 +3420,120 @@ void derlemeCiktiPlaniniDogrula(const DerlemeCiktiPlani &plan) {
     throw std::runtime_error(
         "Hata: artifact plani ayni dosyayi birden fazla cikti icin kullaniyor.");
   }
+  for (const fs::path &hedef : {obc, exe, meta}) {
+    std::error_code ec;
+    const bool var = fs::exists(hedef, ec);
+    if (ec) {
+      throw std::runtime_error("Hata: artifact hedefi denetlenemedi: " +
+                               hedef.string() + ": " + ec.message());
+    }
+    if (var && !fs::is_regular_file(hedef, ec)) {
+      throw std::runtime_error(
+          "Hata: artifact hedefi mevcut bir normal dosya olmali: " +
+          hedef.string());
+    }
+    if (ec) {
+      throw std::runtime_error("Hata: artifact hedef turu denetlenemedi: " +
+                               hedef.string() + ": " + ec.message());
+    }
+  }
+}
+
+std::uint64_t surecKimligi() {
+#ifdef _WIN32
+  return static_cast<std::uint64_t>(_getpid());
+#else
+  return static_cast<std::uint64_t>(getpid());
+#endif
+}
+
+std::filesystem::path benzersizKomsuYol(const std::filesystem::path &hedef,
+                                        const std::string &etiket) {
+  namespace fs = std::filesystem;
+  static std::uint64_t sayac = 0;
+  fs::path dizin = hedef.parent_path();
+  if (dizin.empty()) {
+    dizin = ".";
+  }
+  for (int deneme = 0; deneme < 1000; ++deneme) {
+    const fs::path aday =
+        dizin / (hedef.filename().u8string() + ".orhun-" + etiket + "-" +
+                 std::to_string(surecKimligi()) + "-" +
+                 std::to_string(++sayac));
+    std::error_code ec;
+    const bool var = fs::exists(aday, ec);
+    if (ec) {
+      throw std::runtime_error("Hata: gecici artifact yolu denetlenemedi: " +
+                               aday.string() + ": " + ec.message());
+    }
+    if (!var) {
+      return aday;
+    }
+  }
+  throw std::runtime_error("Hata: benzersiz gecici artifact yolu uretilemedi.");
+}
+
+struct ArtifactYayinKaydi {
+  std::filesystem::path hedef;
+  std::filesystem::path gecici;
+  std::filesystem::path yedek;
+  bool yedeklendi = false;
+  bool yayinlandi = false;
+};
+
+void artifactlariYayinla(std::vector<ArtifactYayinKaydi> &kayitlar) {
+  namespace fs = std::filesystem;
+  try {
+    for (ArtifactYayinKaydi &kayit : kayitlar) {
+      std::error_code ec;
+      const bool hedefVar = fs::exists(kayit.hedef, ec);
+      if (ec) {
+        throw std::runtime_error("Hata: artifact hedefi denetlenemedi: " +
+                                 kayit.hedef.string() + ": " + ec.message());
+      }
+      if (hedefVar) {
+        kayit.yedek = benzersizKomsuYol(kayit.hedef, "yedek");
+        fs::rename(kayit.hedef, kayit.yedek);
+        kayit.yedeklendi = true;
+      }
+    }
+    for (ArtifactYayinKaydi &kayit : kayitlar) {
+      fs::rename(kayit.gecici, kayit.hedef);
+      kayit.yayinlandi = true;
+    }
+  } catch (...) {
+    const std::exception_ptr asilHata = std::current_exception();
+    for (auto it = kayitlar.rbegin(); it != kayitlar.rend(); ++it) {
+      std::error_code ec;
+      if (it->yayinlandi) {
+        fs::remove(it->hedef, ec);
+      }
+      if (it->yedeklendi) {
+        ec.clear();
+        fs::rename(it->yedek, it->hedef, ec);
+      }
+    }
+    for (const ArtifactYayinKaydi &kayit : kayitlar) {
+      std::error_code ec;
+      fs::remove(kayit.gecici, ec);
+    }
+    std::rethrow_exception(asilHata);
+  }
+
+  for (const ArtifactYayinKaydi &kayit : kayitlar) {
+    if (kayit.yedeklendi) {
+      std::error_code ec;
+      fs::remove(kayit.yedek, ec);
+    }
+  }
 }
 
 int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
                           const std::string &calisanExeYolu,
                           const DerlemeCiktiPlani &plan) {
+  namespace fs = std::filesystem;
   derlemeCiktiPlaniniDogrula(plan);
   const std::vector<std::uint8_t> payload = chunkSerilestir(chunk);
-
-  dosyaYazIkili(plan.obcYolu, payload);
-  paketliExeUret(calisanExeYolu, plan.exeYolu, payload);
 
   const std::uint32_t payloadCrc = crc32Hesapla(payload);
   std::ostringstream meta;
@@ -3425,7 +3545,27 @@ int derlemeCiktilariniYaz(const BytecodeChunk &chunk,
        << "  \"source_name\": \""
        << jsonKacis(plan.kaynakAdi) << "\"\n"
        << "}\n";
-  dosyaYaz(plan.metaYolu, meta.str());
+
+  std::vector<ArtifactYayinKaydi> kayitlar = {
+      {fs::path(plan.obcYolu), benzersizKomsuYol(plan.obcYolu, "gecici"), {},
+       false, false},
+      {fs::path(plan.exeYolu), benzersizKomsuYol(plan.exeYolu, "gecici"), {},
+       false, false},
+      {fs::path(plan.metaYolu), benzersizKomsuYol(plan.metaYolu, "gecici"), {},
+       false, false},
+  };
+  try {
+    dosyaYazIkili(kayitlar[0].gecici.string(), payload);
+    paketliExeUret(calisanExeYolu, kayitlar[1].gecici.string(), payload);
+    dosyaYaz(kayitlar[2].gecici.string(), meta.str());
+    artifactlariYayinla(kayitlar);
+  } catch (...) {
+    for (const ArtifactYayinKaydi &kayit : kayitlar) {
+      std::error_code ec;
+      fs::remove(kayit.gecici, ec);
+    }
+    throw;
+  }
 
   std::cout << "Bytecode uretildi: " << plan.obcYolu << "\n";
   std::cout << "Paketli exe uretildi: " << plan.exeYolu << "\n";

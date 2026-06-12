@@ -70,7 +70,8 @@ These percentages are planning estimates, not promises.
   plan are owned by Orhun-written `derleyici_cli.oh`, including all output
   paths and the metadata source name. The plan is versioned as
   `orhun-artifact-plan-v1`; C++ remains only as the strict plan-validation and
-  OBC/package serialization bootstrap bridge.
+  OBC/package serialization bootstrap bridge. Artifact publication stages the
+  complete output set first and preserves existing outputs when staging fails.
 - The packaged compiler C++ host no longer recognizes individual compiler CLI
   command names; Orhun-written CLI bytecode returns the structured exit code
   and optional complete artifact plan for every invocation.

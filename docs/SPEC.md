@@ -677,7 +677,10 @@ Stable channel defaults:
   `orhun-artifact-plan-v1`. The C++ bootstrap runtime rejects unknown plan
   contracts, empty fields, unexpected output suffixes, source names containing
   path separators, and colliding output paths before its OBC/package
-  serialization bridge writes anything. The packaged host does not dispatch individual
+  serialization bridge writes anything. Existing non-file targets are also
+  rejected. Valid outputs are first written to unique sibling staging files;
+  existing outputs are preserved and staged files are cleaned if any artifact
+  cannot be produced. The packaged host does not dispatch individual
   compiler command names; it consumes the structured exit code and optional
   artifact plan returned by Orhun CLI bytecode. At startup it strictly
   validates the compiler-bundle manifest, embedded CLI payload size/CRC, and

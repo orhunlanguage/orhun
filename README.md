@@ -171,7 +171,8 @@ build/derleyici-paketi/orhun-derleyici.exe --derle dosya.oh cikti
 For complete artifacts, the Orhun-written compiler CLI owns the output plan,
 including `.obc`, packaged executable, metadata paths, and metadata source
 name. The plan uses the versioned `orhun-artifact-plan-v1` contract. The C++
-bootstrap host strictly validates that plan before serializing and writing it.
+bootstrap host strictly validates that plan, stages every artifact beside its
+destination, and publishes the complete set only after all writes succeed.
 
 ## Releases
 

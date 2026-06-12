@@ -200,7 +200,9 @@ metadata yollarindan olusan tam cikti planini artik Orhun-yazili
 surumlenir. C++ cekirdegi plani bilinmeyen sozlesme, bos alan, beklenmeyen
 uzanti, kaynak adinda yol ayirici ve cakisan cikti yollarina karsi
 dogruladiktan sonra yalniz OBC/paket serilestirme ve dosya yazma koprusu olarak
-kalir. Paketli C++ host `--derle` veya `--compile` komut adlarini bilmez; her
+kalir. Artifact'lar once hedeflerinin yanindaki benzersiz gecici dosyalara
+yazilir; tumu hazirlanmadan yayinlanmaz ve hazirlama hatasi mevcut ciktilari
+korur. Paketli C++ host `--derle` veya `--compile` komut adlarini bilmez; her
 cagrinin yapilandirilmis cikis kodu ve artifact plani Orhun CLI bytecode'u
 tarafindan uretilir. Compiler bundle kimligi dosya adina degil, dogrulanan
 bundle manifestine, embedded CLI payload boyut/CRC degerine ve kardes toolchain
