@@ -5,7 +5,6 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
 
 
 def encode_message(payload: dict) -> bytes:
@@ -36,14 +35,18 @@ def parse_messages(stream: bytes) -> list[dict]:
     return out
 
 
-def normalized_file_uri(uri: str) -> str:
-    parsed = urlsplit(uri)
-    if parsed.scheme.lower() != "file":
-        return uri
-    path = unquote(parsed.path)
-    if os.name == "nt" and len(path) >= 3 and path[0] == "/" and path[2] == ":":
-        path = path[1:]
-    return os.path.normcase(os.path.normpath(path))
+def workspace_root_argument(root: Path) -> str:
+    if os.name != "nt":
+        return str(root)
+    import ctypes
+
+    get_short_path = ctypes.windll.kernel32.GetShortPathNameW
+    required = get_short_path(str(root), None, 0)
+    if required <= 0:
+        return str(root)
+    buffer = ctypes.create_unicode_buffer(required)
+    written = get_short_path(str(root), buffer, required)
+    return buffer.value if written > 0 else str(root)
 
 
 def main() -> int:
@@ -119,7 +122,13 @@ def main() -> int:
         )
 
         proc = subprocess.Popen(
-            [str(binary), "lsp", "--stdio", "--workspace-root", str(root)],
+            [
+                str(binary),
+                "lsp",
+                "--stdio",
+                "--workspace-root",
+                workspace_root_argument(root),
+            ],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -148,8 +157,7 @@ def main() -> int:
         if not isinstance(result, list) or not result:
             raise SystemExit("workspace smoke failed: definition result empty")
         uris = [str(item.get("uri", "")) for item in result]
-        expected_uri = normalized_file_uri(def_uri)
-        if expected_uri not in {normalized_file_uri(uri) for uri in uris}:
+        if def_uri not in uris:
             raise SystemExit(
                 "workspace smoke failed: definition did not resolve to workspace file "
                 f"(expected={def_uri}, actual={uris})"

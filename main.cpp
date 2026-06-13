@@ -5651,6 +5651,19 @@ std::string lspDosyaYolundanUri(const std::filesystem::path &dosyaYolu) {
   if (ec) {
     tam = fs::absolute(dosyaYolu, ec);
   }
+#ifdef _WIN32
+  const std::wstring mevcutYol = tam.wstring();
+  const DWORD gerekliUzunluk =
+      GetLongPathNameW(mevcutYol.c_str(), nullptr, 0);
+  if (gerekliUzunluk > 0) {
+    std::vector<wchar_t> uzunYol(gerekliUzunluk);
+    const DWORD yazilan =
+        GetLongPathNameW(mevcutYol.c_str(), uzunYol.data(), gerekliUzunluk);
+    if (yazilan > 0 && yazilan < gerekliUzunluk) {
+      tam = fs::path(std::wstring(uzunYol.data(), yazilan));
+    }
+  }
+#endif
   std::string yol = tam.generic_string();
 #ifdef _WIN32
   if (yol.size() >= 2 && yol[1] == ':') {
