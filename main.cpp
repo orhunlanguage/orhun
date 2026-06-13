@@ -148,6 +148,18 @@ std::string dosyaOku(const std::string &dosyaYolu) {
   return tampon.str();
 }
 
+std::string dosyaOku(const std::filesystem::path &dosyaYolu) {
+  std::ifstream dosya(dosyaYolu, std::ios::binary);
+  if (!dosya.is_open()) {
+    throw std::runtime_error("Hata: '" + dosyaYolu.generic_u8string() +
+                             "' dosyasi acilamadi.");
+  }
+
+  std::ostringstream tampon;
+  tampon << dosya.rdbuf();
+  return tampon.str();
+}
+
 std::vector<std::uint8_t> dosyaOkuIkili(const std::string &dosyaYolu) {
   std::ifstream dosya(dosyaYolu, std::ios::binary);
   if (!dosya.is_open()) {
@@ -5644,6 +5656,28 @@ std::string lspDefinitionCokluJson(
   return ss.str();
 }
 
+std::string lspUriYolunuKodla(std::string_view yol) {
+  constexpr char kHex[] = "0123456789ABCDEF";
+  std::string sonuc;
+  sonuc.reserve(yol.size());
+  for (const unsigned char karakter : yol) {
+    const bool guvenli =
+        (karakter >= 'a' && karakter <= 'z') ||
+        (karakter >= 'A' && karakter <= 'Z') ||
+        (karakter >= '0' && karakter <= '9') || karakter == '-' ||
+        karakter == '.' || karakter == '_' || karakter == '~' ||
+        karakter == '/' || karakter == ':';
+    if (guvenli) {
+      sonuc.push_back(static_cast<char>(karakter));
+      continue;
+    }
+    sonuc.push_back('%');
+    sonuc.push_back(kHex[(karakter >> 4) & 0x0F]);
+    sonuc.push_back(kHex[karakter & 0x0F]);
+  }
+  return sonuc;
+}
+
 std::string lspDosyaYolundanUri(const std::filesystem::path &dosyaYolu) {
   namespace fs = std::filesystem;
   std::error_code ec;
@@ -5664,8 +5698,11 @@ std::string lspDosyaYolundanUri(const std::filesystem::path &dosyaYolu) {
     }
   }
 #endif
-  std::string yol = tam.generic_string();
+  const std::string yol = lspUriYolunuKodla(tam.generic_u8string());
 #ifdef _WIN32
+  if (yol.rfind("//", 0) == 0) {
+    return "file:" + yol;
+  }
   if (yol.size() >= 2 && yol[1] == ':') {
     return "file:///" + yol;
   }
@@ -5706,7 +5743,7 @@ void lspWorkspaceBelgeleriniYukle(
       continue;
     }
     try {
-      acikBelgeler.emplace(uri, dosyaOku(yol.string()));
+      acikBelgeler.emplace(uri, dosyaOku(yol));
     } catch (...) {
       // Ignore unreadable workspace files; LSP should continue.
     }

@@ -591,6 +591,9 @@ functions and modules such as `yaz`, `oku`, `aralik`, `ilk`, `son`, `json`,
 Signature help also includes common built-in and Orhun-source helper
 signatures, including `aralik([baslangic], bitis, [adim])` and
 `numaralandir(liste, [baslangic])`.
+Workspace file URIs use UTF-8 percent encoding for reserved and non-ASCII path
+bytes. On Windows, indexed workspace files are reported with long paths rather
+than legacy 8.3 short paths, and UNC paths retain their file-URI authority.
 
 Stable channel defaults:
 

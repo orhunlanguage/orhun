@@ -253,6 +253,7 @@ self-hosting plan.
 - Interpreter closure smoke: `tests/interpreter_closure_smoke.py`
 - VM closure extra smoke: `tests/vm_closure_extra_smoke.py`
 - LSP smoke: `tests/lsp_smoke.py`
+- Cross-platform workspace/file-URI LSP smoke: `tests/lsp_workspace_smoke.py`
 - VS Code tooling smoke: `tests/vscode_syntax_smoke.py`
 - VS Code tooling: `tools/vscode-orhun`
 - Deterministic release packager: `tools/release_package.py`

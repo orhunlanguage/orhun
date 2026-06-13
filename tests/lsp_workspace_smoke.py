@@ -60,9 +60,10 @@ def main() -> int:
         raise SystemExit(f"Binary not found: {binary}")
 
     with tempfile.TemporaryDirectory(prefix="orhun_lsp_ws_") as tmp:
-        root = Path(tmp)
-        def_file = root / "a.oh"
-        use_file = root / "b.oh"
+        root = Path(tmp) / "çalışma alanı # yüzde%"
+        root.mkdir()
+        def_file = root / "tanım #1.oh"
+        use_file = root / "kullanım %2.oh"
 
         def_file.write_text(
             "\n".join(
