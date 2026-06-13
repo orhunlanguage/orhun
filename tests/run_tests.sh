@@ -13,7 +13,10 @@ echo "[1/3] Building..."
   -o "${OUTPUT}"
 
 uname_lc="$(uname -s | tr '[:upper:]' '[:lower:]')"
-mapfile -t cases < <(find tests/cases -maxdepth 1 -name '*.expected.txt' | sed 's#\\#/#g' | sed 's/\.expected\.txt$//' | sort)
+cases=()
+while IFS= read -r test_case; do
+  cases+=("${test_case}")
+done < <(find tests/cases -maxdepth 1 -name '*.expected.txt' | sed 's#\\#/#g' | sed 's/\.expected\.txt$//' | sort)
 
 filtered_cases=()
 for case in "${cases[@]}"; do

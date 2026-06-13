@@ -32,7 +32,13 @@ fi
 extract_number() {
   local line="$1"
   local key="$2"
-  echo "${line}" | sed -n "s/.*\"${key}\":\([-0-9.]*\).*/\1/p"
+  echo "${line}" | sed -n "s/.*\"${key}\"[[:space:]]*:[[:space:]]*\([-+0-9.eE]*\).*/\1/p"
+}
+
+extract_string() {
+  local line="$1"
+  local key="$2"
+  echo "${line}" | sed -n "s/.*\"${key}\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p"
 }
 
 gate_failed=0
@@ -45,7 +51,7 @@ p90_ratio_values=""
 while IFS= read -r line; do
   [[ -z "${line}" ]] && continue
   line_count=$((line_count + 1))
-  dosya="$(echo "${line}" | sed -n 's/.*"dosya":"\([^"]*\)".*/\1/p')"
+  dosya="$(extract_string "${line}" "dosya")"
   p50="$(extract_number "${line}" "p50_oran")"
   p90="$(extract_number "${line}" "p90_oran")"
   if [[ -z "${p50}" || -z "${p90}" ]]; then
@@ -80,7 +86,13 @@ while IFS= read -r line; do
   fi
 
   if [[ "${budget_enabled}" -eq 1 ]]; then
-    base_line="$(grep -F "\"dosya\":\"${dosya}\"" "${BASELINE_JSONL}" | head -n 1 || true)"
+    base_line=""
+    while IFS= read -r candidate; do
+      if [[ "$(extract_string "${candidate}" "dosya")" == "${dosya}" ]]; then
+        base_line="${candidate}"
+        break
+      fi
+    done < "${BASELINE_JSONL}"
     if [[ -z "${base_line}" ]]; then
       echo "[FAIL] Baseline'da case bulunamadi: ${dosya}"
       infra_failed=1

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 
 def encode_message(payload: dict) -> bytes:
@@ -32,6 +34,16 @@ def parse_messages(stream: bytes) -> list[dict]:
         i += content_length
         out.append(json.loads(payload.decode("utf-8", errors="replace")))
     return out
+
+
+def normalized_file_uri(uri: str) -> str:
+    parsed = urlsplit(uri)
+    if parsed.scheme.lower() != "file":
+        return uri
+    path = unquote(parsed.path)
+    if os.name == "nt" and len(path) >= 3 and path[0] == "/" and path[2] == ":":
+        path = path[1:]
+    return os.path.normcase(os.path.normpath(path))
 
 
 def main() -> int:
@@ -136,8 +148,12 @@ def main() -> int:
         if not isinstance(result, list) or not result:
             raise SystemExit("workspace smoke failed: definition result empty")
         uris = [str(item.get("uri", "")) for item in result]
-        if def_uri not in uris:
-            raise SystemExit("workspace smoke failed: definition did not resolve to workspace file")
+        expected_uri = normalized_file_uri(def_uri)
+        if expected_uri not in {normalized_file_uri(uri) for uri in uris}:
+            raise SystemExit(
+                "workspace smoke failed: definition did not resolve to workspace file "
+                f"(expected={def_uri}, actual={uris})"
+            )
 
         if proc.returncode not in (0, None):
             err_text = stderr.decode("utf-8", errors="replace")
@@ -149,4 +165,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
