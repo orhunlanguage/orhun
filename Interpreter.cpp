@@ -1543,10 +1543,11 @@ void Interpreter::gomuluIslevleriYukle() {
     }
 
     const auto &mevcutListe = std::get<OrhunDegeri::ListeTipi>(args[0].veri);
-    OrhunDegeri::ListeVeri yeniListe =
-        mevcutListe ? *mevcutListe : OrhunDegeri::ListeVeri{};
-    yeniListe.push_back(args[1]);
-    return OrhunDegeri(std::move(yeniListe));
+    if (!mevcutListe) {
+      hataFirlat(satir, "listeye_ekle boş liste referansı üzerinde çalışamaz.");
+    }
+    mevcutListe->push_back(args[1]);
+    return OrhunDegeri(0);
   };
 
   auto aralikOlustur = [this](const std::vector<OrhunDegeri> &args,
@@ -4141,7 +4142,7 @@ OrhunDegeri Interpreter::ikiliIslemHesapla(const IkiliIslemNode *dugum) {
     return OrhunDegeri(a < b ? 1 : 0);
   }
 
-  if (op == "+" || op == "-" || op == "*" || op == "/") {
+  if (op == "+" || op == "-" || op == "*" || op == "/" || op == "%") {
     return listeIslemi(sol, sag, op, dugum->satir());
   }
 
@@ -4195,6 +4196,16 @@ OrhunDegeri Interpreter::listeIslemi(const OrhunDegeri &sol,
         hataFirlat(satir, "Sıfıra bölme yapılamaz.");
       }
       return OrhunDegeri(a / b);
+    }
+    if (op == "%") {
+      if (std::fabs(b) < 1e-12) {
+        hataFirlat(satir, "Sıfıra göre mod alınamaz.");
+      }
+      if (std::holds_alternative<int>(sol.veri) &&
+          std::holds_alternative<int>(sag.veri)) {
+        return OrhunDegeri(std::get<int>(sol.veri) % std::get<int>(sag.veri));
+      }
+      return OrhunDegeri(std::fmod(a, b));
     }
 
     hataFirlat(satir, "Bilinmeyen aritmetik operatör: " + op);

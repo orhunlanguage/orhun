@@ -18,7 +18,12 @@ def main() -> int:
     binary = Path(args.binary)
     require(binary.exists(), f"Binary not found: {binary}")
 
-    fixtures = ("assignment_equals_scope", "utf8_check")
+    fixtures = (
+        "assignment_equals_scope",
+        "listeye_ekle_parity",
+        "modulo_parity",
+        "utf8_check",
+    )
     for fixture in fixtures:
         source = repo / "tests" / "cases" / f"{fixture}.oh"
         expected_path = repo / "tests" / "cases" / f"{fixture}.expected.txt"

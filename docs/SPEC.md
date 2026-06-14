@@ -140,6 +140,13 @@ Multiple assignment and destructuring are supported by the current test suite.
 a, b olsun [1, 2]
 ```
 
+## Operators
+
+Arithmetic operators are `+`, `-`, `*`, `/`, and `%`. Modulo uses the same
+zero-divisor error contract in the interpreter and VM. `ve` and `veya` are
+short-circuit boolean operators in the interpreter; VM short-circuit parity is
+still being stabilized.
+
 ## Printing
 
 `yazdır` evaluates an expression and writes its text form. `yaz` is the short
@@ -157,6 +164,9 @@ Current display behavior:
 - `bos` prints as `bos`.
 - Booleans print as `1` and `0` for interpreter/VM parity.
 - Lists and dictionaries print in structural form.
+
+`listeye_ekle(liste, deger)` mutates the supplied list in both the interpreter
+and VM. The equivalent method form is `liste.ekle(deger)`.
 
 ## Input
 

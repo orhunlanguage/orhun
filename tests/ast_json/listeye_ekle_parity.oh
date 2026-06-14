@@ -1,0 +1,9 @@
+liste olsun []
+listeye_ekle(liste, 1)
+yazdır liste
+
+satirlar olsun []
+satir olsun []
+listeye_ekle(satir, 7)
+listeye_ekle(satirlar, satir)
+yazdır satirlar[0][0]
