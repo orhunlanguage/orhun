@@ -664,6 +664,8 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
   std::unique_ptr<ASTNode> ifade = parseBirincil();
 
   while (true) {
+    ifadeDevamDuzeniniAtla();
+
     if (eslesir(TokenTuru::ISLEM, "(")) {
       const OrhunToken acilisParantezi = onceki();
       std::vector<std::unique_ptr<ASTNode>> argumanlar;

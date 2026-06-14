@@ -338,6 +338,17 @@ toplam olsun (
 )
 ```
 
+Postfix chains may also continue on the next line inside an open delimiter.
+This includes field access, safe field access, calls, indexes, and slices.
+
+```orhun
+deger olsun (
+    kutu
+    .oku(
+    )
+)
+```
+
 List comprehensions are supported.
 
 ```orhun
@@ -573,7 +584,7 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 152 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 153 successful AST
 fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,

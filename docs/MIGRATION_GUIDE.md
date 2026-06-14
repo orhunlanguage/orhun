@@ -160,6 +160,8 @@
 - Açık `()`, `[]` veya `{}` ayracı içindeki ifadeler ikili ya da tekli
   operatörden sonra alt satırda devam edebilir. Ayraç dışındaki satır sonu
   davranışı değişmemiştir.
+- Açık ayraç içindeki alan erişimi, güvenli alan erişimi, çağrı, indeks ve
+  dilim zincirleri alt satırdan devam edebilir.
 
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri

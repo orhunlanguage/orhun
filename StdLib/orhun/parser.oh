@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.11.0"
+surum olsun "0.12.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -621,14 +621,15 @@ işlev eslesen_kapanis_konumu(tokenlar, acilis, son):
 
 işlev literal_postfix_turu(tokenlar, baslangic, son):
     kapanis olsun eslesen_kapanis_konumu(tokenlar, baslangic, son)
-    eğer kapanis küçük 0 veya kapanis + 1 büyük son - 1 ise:
+    sonraki_konum olsun duzenli_aralik_baslangici(tokenlar, kapanis + 1, son)
+    eğer kapanis küçük 0 veya sonraki_konum büyük son - 1 ise:
         döndür ""
 
-    sonraki olsun guvenli_token(tokenlar, kapanis + 1)
+    sonraki olsun guvenli_token(tokenlar, sonraki_konum)
     eğer sonraki.tur eşit_değil "ISLEM" ise:
         döndür ""
     eğer sonraki.deger eşit "[" ise:
-        iki_nokta olsun aralikta_deger_konumu(tokenlar, kapanis + 2, son - 1, ":")
+        iki_nokta olsun aralikta_deger_konumu(tokenlar, sonraki_konum + 1, son - 1, ":")
         eğer iki_nokta büyük 0 veya iki_nokta eşit 0 ise:
             döndür "DilimErisim"
         döndür "IndeksErisim"
@@ -718,7 +719,8 @@ işlev cagri_adi(tokenlar, baslangic, son):
     ad olsun ""
     i olsun baslangic
     sürece i küçük parantez_konum:
-        ad olsun ad + tokenlar[i].deger
+        eğer değil koleksiyon_duzen_tokeni_mi(tokenlar[i]) ise:
+            ad olsun ad + tokenlar[i].deger
         i olsun i + 1
     döndür ad
 
@@ -779,6 +781,8 @@ işlev dilim_erisimi_mi(tokenlar, baslangic, son):
     döndür iki_nokta büyük 0 veya iki_nokta eşit 0
 
 işlev ifade_turu(tokenlar, baslangic, son):
+    baslangic olsun duzenli_aralik_baslangici(tokenlar, baslangic, son)
+    son olsun duzenli_aralik_sonu(tokenlar, baslangic, son)
     eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
         döndür ""
 
@@ -861,6 +865,8 @@ işlev ifade_turu(tokenlar, baslangic, son):
     döndür ""
 
 işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
+    baslangic olsun duzenli_aralik_baslangici(tokenlar, baslangic, son)
+    son olsun duzenli_aralik_sonu(tokenlar, baslangic, son)
     eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
         döndür ""
 
@@ -911,6 +917,8 @@ işlev ifade_ayrintisi(tokenlar, baslangic, son, tur):
     döndür ""
 
 işlev ifade_satiri(tokenlar, baslangic, son, tur):
+    baslangic olsun duzenli_aralik_baslangici(tokenlar, baslangic, son)
+    son olsun duzenli_aralik_sonu(tokenlar, baslangic, son)
     eğer baslangic küçük 0 veya son küçük baslangic veya son eşit baslangic ise:
         döndür 0
 
@@ -1227,6 +1235,8 @@ işlev isimsiz_islev_altlari(tokenlar, baslangic, son):
     döndür [alt_ifade_ozeti(tokenlar, govde_baslangic, son)]
 
 işlev ifade_altlari(tokenlar, baslangic, son, tur):
+    baslangic olsun duzenli_aralik_baslangici(tokenlar, baslangic, son)
+    son olsun duzenli_aralik_sonu(tokenlar, baslangic, son)
     eğer dis_parantezle_sarili_mi(tokenlar, baslangic, son) ise:
         döndür ifade_altlari(tokenlar, baslangic + 1, son - 1, tur)
 
@@ -1263,6 +1273,11 @@ işlev ifade_altlari(tokenlar, baslangic, son, tur):
     döndür altlar
 
 işlev ifade_ozeti(tokenlar, baslangic, son):
+    baslangic olsun duzenli_aralik_baslangici(tokenlar, baslangic, son)
+    son olsun duzenli_aralik_sonu(tokenlar, baslangic, son)
+    sürece dis_parantezle_sarili_mi(tokenlar, baslangic, son):
+        baslangic olsun duzenli_aralik_baslangici(tokenlar, baslangic + 1, son - 1)
+        son olsun duzenli_aralik_sonu(tokenlar, baslangic, son - 1)
     tur olsun ifade_turu(tokenlar, baslangic, son)
     op olsun ""
     eğer tur eşit "IkiliIslem" veya tur eşit "TekliIslem" ise:

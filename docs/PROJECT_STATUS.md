@@ -116,6 +116,8 @@ These percentages are planning estimates, not promises.
   Orhun-written parser/compiler behavior.
 - Operator-led expression continuation inside open delimiters without changing
   normal newline and block semantics.
+- Multiline postfix chains inside open delimiters, including calls, fields,
+  safe fields, indexes, and slices.
 - Consistent `sistem.argumanlar` program arguments across direct VM,
   interpreter, OBC, packaged executable, and bootstrap execution paths.
 - Interpreter/VM parity covers modulo arithmetic and in-place

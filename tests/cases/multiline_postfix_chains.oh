@@ -1,0 +1,42 @@
+tip Kutu:
+    işlev kur(deger):
+        benim.deger olsun deger
+
+    işlev oku():
+        döndür benim.deger
+
+    işlev carp(carpan):
+        döndür benim.deger * carpan
+
+kutu olsun yeni Kutu(7)
+ayar olsun {"ad": "Orhun"}
+
+deger olsun (
+    kutu
+    .oku(
+    )
+)
+
+carpim olsun (
+    kutu
+    .carp(
+        3,
+    )
+)
+
+secili olsun (
+    [10, 20, 30]
+    [
+        1
+    ]
+)
+
+ad olsun (
+    ayar
+    ?.ad
+)
+
+yazdır deger
+yazdır carpim
+yazdır secili
+yazdır ad
