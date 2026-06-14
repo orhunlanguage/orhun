@@ -157,6 +157,9 @@
   varsayılan değer kullanılabilir.
 - İndeks ve dilim erişimleri artık köşeli parantez içinde birden fazla satıra
   bölünebilir.
+- Açık `()`, `[]` veya `{}` ayracı içindeki ifadeler ikili ya da tekli
+  operatörden sonra alt satırda devam edebilir. Ayraç dışındaki satır sonu
+  davranışı değişmemiştir.
 
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri

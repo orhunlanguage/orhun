@@ -326,6 +326,18 @@ orta olsun sayılar[
 ]
 ```
 
+Inside an open `()`, `[]`, or `{}` delimiter, an expression may continue on
+the next line after a binary or unary operator. Outside delimiters, a newline
+still ends the expression.
+
+```orhun
+toplam olsun (
+    10 +
+    20 *
+    2
+)
+```
+
 List comprehensions are supported.
 
 ```orhun
@@ -561,8 +573,8 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 151 successful AST
-fixtures and 62 parser error fixtures. Command metadata covers declaration
+`tests/parser_prototype_smoke.py`. Current coverage includes 152 successful AST
+fixtures and 63 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,
 parameter/default counts, external-function type counts, includes,

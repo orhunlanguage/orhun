@@ -19,6 +19,7 @@ public:
 private:
   std::vector<OrhunToken> tokenlar_;
   std::size_t konum_ = 0;
+  std::size_t ifadeAyracDerinligi_ = 0;
 
   // Komut ayrıştırma fonksiyonları.
   std::unique_ptr<ASTNode> parseKomut();
@@ -76,6 +77,7 @@ private:
 
   void yeniSatirlariAtla();
   void ayracDuzeniniAtla(std::size_t &girintiDerinligi);
+  void ifadeDevamDuzeniniAtla();
   bool ifadeBaslangiciMi(const OrhunToken &token) const;
 
   [[noreturn]] void syntaxError(const OrhunToken &token,

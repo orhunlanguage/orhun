@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.10.0"
+surum olsun "0.11.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -1619,6 +1619,10 @@ işlev eksik_ifade_hatasi(tokenlar, konum):
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "eğer" ve sonraki.tur eşit "ANAHTAR_KELIME" ve sonraki.deger eşit "ise" ise:
         döndür "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez)."
     eğer token.tur eşit "ANAHTAR_KELIME" ve token.deger eşit "tekrarla" ve sonraki.tur eşit "ANAHTAR_KELIME" ve sonraki.deger eşit "kez" ise:
+        döndür "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez)."
+
+    son_token olsun guvenli_token(tokenlar, satir_sonu - 1)
+    eğer ikili_operator_mu(son_token) ise:
         döndür "İfade bekleniyordu (sayı, metin, kimlik, liste, sözlük veya parantez)."
 
     i olsun konum

@@ -1,0 +1,48 @@
+işlev varsayilan(a olsun
+    2 +
+    3,
+):
+    döndür a
+
+işlev topla(a, b):
+    döndür a + b
+
+hesap olsun (
+    1 +
+    2 *
+    3
+)
+
+sayilar olsun [
+    1 +
+    2,
+    4 *
+    5,
+]
+
+sonuc olsun topla(
+    10 +
+    5,
+    2 *
+    3,
+)
+
+ayar olsun {
+    "deger": 7 +
+    1,
+}
+
+mantik olsun (
+    1 küçük
+    2 ve
+    değil
+    yanlış
+)
+
+yazdır varsayilan()
+yazdır hesap
+yazdır sayilar[0]
+yazdır sayilar[1]
+yazdır sonuc
+yazdır ayar.deger
+yazdır mantik

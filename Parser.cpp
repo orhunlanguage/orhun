@@ -336,6 +336,7 @@ std::unique_ptr<ASTNode> Parser::parseIslevTanim() {
       TokenTuru::KIMLIK, "'işlev' ifadesinden sonra işlev adı bekleniyor.");
 
   tuket(TokenTuru::ISLEM, "(", "İşlev adından sonra '(' bekleniyor.");
+  ++ifadeAyracDerinligi_;
 
   std::vector<std::string> parametreler;
   std::vector<std::unique_ptr<ASTNode>> varsayilanlar;
@@ -346,6 +347,7 @@ std::unique_ptr<ASTNode> Parser::parseIslevTanim() {
   }
 
   tuket(TokenTuru::ISLEM, ")", "Parametre listesinin sonunda ')' bekleniyor.");
+  --ifadeAyracDerinligi_;
   tuket(TokenTuru::ISLEM, ":", "İşlev başlığından sonra ':' bekleniyor.");
 
   return std::make_unique<IslevTanimNode>(
@@ -573,6 +575,7 @@ std::unique_ptr<ASTNode> Parser::parseVeya() {
 
   while (kontrol(TokenTuru::ANAHTAR_KELIME, "veya")) {
     const OrhunToken op = ilerle();
+    ifadeDevamDuzeniniAtla();
     std::unique_ptr<ASTNode> sag = parseVe();
     sol = std::make_unique<IkiliIslemNode>(std::move(sol), op.deger,
                                            std::move(sag), op.satir);
@@ -586,6 +589,7 @@ std::unique_ptr<ASTNode> Parser::parseVe() {
 
   while (kontrol(TokenTuru::ANAHTAR_KELIME, "ve")) {
     const OrhunToken op = ilerle();
+    ifadeDevamDuzeniniAtla();
     std::unique_ptr<ASTNode> sag = parseKarsilastirma();
     sol = std::make_unique<IkiliIslemNode>(std::move(sol), op.deger,
                                            std::move(sag), op.satir);
@@ -602,6 +606,7 @@ std::unique_ptr<ASTNode> Parser::parseKarsilastirma() {
          kontrol(TokenTuru::ANAHTAR_KELIME, "büyük") ||
          kontrol(TokenTuru::ANAHTAR_KELIME, "küçük")) {
     const OrhunToken op = ilerle();
+    ifadeDevamDuzeniniAtla();
     std::unique_ptr<ASTNode> sag = parseToplama();
     sol = std::make_unique<IkiliIslemNode>(std::move(sol), op.deger,
                                            std::move(sag), op.satir);
@@ -615,6 +620,7 @@ std::unique_ptr<ASTNode> Parser::parseToplama() {
 
   while (kontrol(TokenTuru::ISLEM, "+") || kontrol(TokenTuru::ISLEM, "-")) {
     const OrhunToken op = ilerle();
+    ifadeDevamDuzeniniAtla();
     std::unique_ptr<ASTNode> sag = parseCarpma();
     sol = std::make_unique<IkiliIslemNode>(std::move(sol), op.deger,
                                            std::move(sag), op.satir);
@@ -629,6 +635,7 @@ std::unique_ptr<ASTNode> Parser::parseCarpma() {
   while (kontrol(TokenTuru::ISLEM, "*") || kontrol(TokenTuru::ISLEM, "/") ||
          kontrol(TokenTuru::ISLEM, "%")) {
     const OrhunToken op = ilerle();
+    ifadeDevamDuzeniniAtla();
     std::unique_ptr<ASTNode> sag = parseTekli();
     sol = std::make_unique<IkiliIslemNode>(std::move(sol), op.deger,
                                            std::move(sag), op.satir);
@@ -640,11 +647,13 @@ std::unique_ptr<ASTNode> Parser::parseCarpma() {
 std::unique_ptr<ASTNode> Parser::parseTekli() {
   if (kontrol(TokenTuru::ANAHTAR_KELIME, "değil")) {
     const OrhunToken op = ilerle();
+    ifadeDevamDuzeniniAtla();
     return std::make_unique<TekliIslemNode>(op.deger, parseTekli(), op.satir);
   }
 
   if (kontrol(TokenTuru::ISLEM, "-")) {
     const OrhunToken op = ilerle();
+    ifadeDevamDuzeniniAtla();
     return std::make_unique<TekliIslemNode>(op.deger, parseTekli(), op.satir);
   }
 
@@ -659,6 +668,7 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
       const OrhunToken acilisParantezi = onceki();
       std::vector<std::unique_ptr<ASTNode>> argumanlar;
       std::size_t girintiDerinligi = 0;
+      ++ifadeAyracDerinligi_;
       ayracDuzeniniAtla(girintiDerinligi);
 
       if (!kontrol(TokenTuru::ISLEM, ")")) {
@@ -677,6 +687,7 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
 
       tuket(TokenTuru::ISLEM, ")",
             "Argüman listesinin sonunda ')' bekleniyor.");
+      --ifadeAyracDerinligi_;
 
       std::string cagriAdi;
       if (!cagrilabilirAdCoz(ifade.get(), cagriAdi)) {
@@ -694,6 +705,7 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
       std::unique_ptr<ASTNode> ilkParca;
       bool ilkParcaVar = false;
       std::size_t girintiDerinligi = 0;
+      ++ifadeAyracDerinligi_;
       ayracDuzeniniAtla(girintiDerinligi);
 
       if (!kontrol(TokenTuru::ISLEM, ":")) {
@@ -719,6 +731,7 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
         }
 
         tuket(TokenTuru::ISLEM, "]", "Dilim erişiminde ']' bekleniyor.");
+        --ifadeAyracDerinligi_;
         ifade = std::make_unique<DilimErisimNode>(
             std::move(ifade), std::move(baslangic), std::move(bitis),
             acilisKose.satir);
@@ -727,6 +740,7 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
           syntaxError(bak(), "İndeks ifadesi bekleniyor.");
         }
         tuket(TokenTuru::ISLEM, "]", "İndeks erişiminde ']' bekleniyor.");
+        --ifadeAyracDerinligi_;
         ifade = std::make_unique<IndeksErisimNode>(
             std::move(ifade), std::move(ilkParca), acilisKose.satir);
       }
@@ -825,6 +839,7 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
     const OrhunToken token = onceki();
     tuket(TokenTuru::ISLEM, "(",
           "Anonim işlev ifadesinde 'işlev' sonrası '(' bekleniyor.");
+    ++ifadeAyracDerinligi_;
 
     std::vector<std::string> parametreler;
     std::vector<std::unique_ptr<ASTNode>> varsayilanlar;
@@ -836,6 +851,7 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
 
     tuket(TokenTuru::ISLEM, ")",
           "Anonim işlev parametre listesinin sonunda ')' bekleniyor.");
+    --ifadeAyracDerinligi_;
     tuket(TokenTuru::ISLEM, ":",
           "Anonim işlev başlığından sonra ':' bekleniyor.");
     if (kontrol(TokenTuru::YENI_SATIR) || kontrol(TokenTuru::DOSYA_SONU)) {
@@ -869,6 +885,7 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
     std::vector<std::unique_ptr<ASTNode>> argumanlar;
     if (eslesir(TokenTuru::ISLEM, "(")) {
       std::size_t girintiDerinligi = 0;
+      ++ifadeAyracDerinligi_;
       ayracDuzeniniAtla(girintiDerinligi);
       if (!kontrol(TokenTuru::ISLEM, ")")) {
         while (true) {
@@ -885,6 +902,7 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
       }
       tuket(TokenTuru::ISLEM, ")",
             "Kurucu argüman listesinin sonunda ')' bekleniyor.");
+      --ifadeAyracDerinligi_;
     }
 
     return std::make_unique<YeniNesneNode>(sinifAdi.deger,
@@ -894,8 +912,10 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
   if (eslesir(TokenTuru::ISLEM, "[")) {
     const OrhunToken token = onceki();
     std::size_t girintiDerinligi = 0;
+    ++ifadeAyracDerinligi_;
     ayracDuzeniniAtla(girintiDerinligi);
     if (eslesir(TokenTuru::ISLEM, "]")) {
+      --ifadeAyracDerinligi_;
       return std::make_unique<ListeNode>(
           std::vector<std::unique_ptr<ASTNode>>{}, token.satir);
     }
@@ -917,6 +937,7 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
 
       ayracDuzeniniAtla(girintiDerinligi);
       tuket(TokenTuru::ISLEM, "]", "Liste üretecinin sonunda ']' bekleniyor.");
+      --ifadeAyracDerinligi_;
       return std::make_unique<ListeUretecNode>(
           std::move(ilkIfade), degisken.deger, std::move(kaynakListe),
           std::move(kosul), token.satir);
@@ -933,6 +954,7 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
       ayracDuzeniniAtla(girintiDerinligi);
     }
     tuket(TokenTuru::ISLEM, "]", "Liste ifadesinin sonunda ']' bekleniyor.");
+    --ifadeAyracDerinligi_;
     return std::make_unique<ListeNode>(std::move(ogeler), token.satir);
   }
 
@@ -940,6 +962,7 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
     const OrhunToken token = onceki();
     std::vector<SozlukNode::OgeTipi> ogeler;
     std::size_t girintiDerinligi = 0;
+    ++ifadeAyracDerinligi_;
     ayracDuzeniniAtla(girintiDerinligi);
 
     if (!kontrol(TokenTuru::ISLEM, "}")) {
@@ -962,15 +985,18 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
     }
 
     tuket(TokenTuru::ISLEM, "}", "Sözlük ifadesinin sonunda '}' bekleniyor.");
+    --ifadeAyracDerinligi_;
     return std::make_unique<SozlukNode>(std::move(ogeler), token.satir);
   }
 
   if (eslesir(TokenTuru::ISLEM, "(")) {
     std::size_t girintiDerinligi = 0;
+    ++ifadeAyracDerinligi_;
     ayracDuzeniniAtla(girintiDerinligi);
     std::unique_ptr<ASTNode> ic = parseIfade();
     ayracDuzeniniAtla(girintiDerinligi);
     tuket(TokenTuru::ISLEM, ")", "Parantezli ifade kapanırken ')' bekleniyor.");
+    --ifadeAyracDerinligi_;
     return ic;
   }
 
@@ -1084,6 +1110,14 @@ void Parser::ayracDuzeniniAtla(std::size_t &girintiDerinligi) {
     }
     break;
   }
+}
+
+void Parser::ifadeDevamDuzeniniAtla() {
+  if (ifadeAyracDerinligi_ == 0) {
+    return;
+  }
+  std::size_t girintiDerinligi = 0;
+  ayracDuzeniniAtla(girintiDerinligi);
 }
 
 bool Parser::ifadeBaslangiciMi(const OrhunToken &token) const {

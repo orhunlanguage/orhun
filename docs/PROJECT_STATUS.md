@@ -114,6 +114,8 @@ These percentages are planning estimates, not promises.
   with optional trailing commas and multiline default values.
 - Multiline index and slice access with matching interpreter, VM, and
   Orhun-written parser/compiler behavior.
+- Operator-led expression continuation inside open delimiters without changing
+  normal newline and block semantics.
 - Consistent `sistem.argumanlar` program arguments across direct VM,
   interpreter, OBC, packaged executable, and bootstrap execution paths.
 - Interpreter/VM parity covers modulo arithmetic and in-place
