@@ -693,6 +693,8 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
       const OrhunToken acilisKose = onceki();
       std::unique_ptr<ASTNode> ilkParca;
       bool ilkParcaVar = false;
+      std::size_t girintiDerinligi = 0;
+      ayracDuzeniniAtla(girintiDerinligi);
 
       if (!kontrol(TokenTuru::ISLEM, ":")) {
         if (kontrol(TokenTuru::ISLEM, "]")) {
@@ -700,6 +702,7 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
         }
         ilkParca = parseIfade();
         ilkParcaVar = true;
+        ayracDuzeniniAtla(girintiDerinligi);
       }
 
       if (eslesir(TokenTuru::ISLEM, ":")) {
@@ -708,9 +711,11 @@ std::unique_ptr<ASTNode> Parser::parsePostfix() {
           baslangic = std::move(ilkParca);
         }
 
+        ayracDuzeniniAtla(girintiDerinligi);
         std::unique_ptr<ASTNode> bitis;
         if (!kontrol(TokenTuru::ISLEM, "]")) {
           bitis = parseIfade();
+          ayracDuzeniniAtla(girintiDerinligi);
         }
 
         tuket(TokenTuru::ISLEM, "]", "Dilim erişiminde ']' bekleniyor.");

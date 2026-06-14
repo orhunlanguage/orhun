@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.9.0"
+surum olsun "0.10.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -313,7 +313,7 @@ işlev sonuc_hata(mesaj, token, token_sayisi):
     döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "tur": "", "satir": token.satir, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
 
 işlev baslik_hata_tokeni(tokenlar, konum, mesaj):
-    eğer mesaj eşit "Liste ifadesinin sonunda ']' bekleniyor." veya mesaj eşit "Liste üretecinin sonunda ']' bekleniyor." veya mesaj eşit "Sözlük ifadesinin sonunda '}' bekleniyor." veya mesaj eşit "Argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Kurucu argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Parantezli ifade kapanırken ')' bekleniyor." ise:
+    eğer mesaj eşit "Liste ifadesinin sonunda ']' bekleniyor." veya mesaj eşit "Liste üretecinin sonunda ']' bekleniyor." veya mesaj eşit "Sözlük ifadesinin sonunda '}' bekleniyor." veya mesaj eşit "Argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Kurucu argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Parantezli ifade kapanırken ')' bekleniyor." veya mesaj eşit "İndeks erişiminde ']' bekleniyor." veya mesaj eşit "Dilim erişiminde ']' bekleniyor." ise:
         döndür guvenli_token(tokenlar, satir_sonu_indeksi(tokenlar, konum))
     döndür guvenli_token(tokenlar, konum)
 
@@ -1115,9 +1115,13 @@ işlev dilim_altlari(tokenlar, baslangic, son):
     eğer iki_nokta küçük 0 ise:
         döndür altlar
     altlar.ekle(alt_ifade_ozeti(tokenlar, baslangic, koseli_konum))
-    eğer koseli_konum + 1 küçük iki_nokta ise:
+    baslangic_ilk olsun duzenli_aralik_baslangici(tokenlar, koseli_konum + 1, iki_nokta)
+    baslangic_son olsun duzenli_aralik_sonu(tokenlar, baslangic_ilk, iki_nokta)
+    eğer baslangic_ilk küçük baslangic_son ise:
         altlar.ekle(alt_ifade_ozeti(tokenlar, koseli_konum + 1, iki_nokta))
-    eğer iki_nokta + 1 küçük son - 1 ise:
+    bitis_ilk olsun duzenli_aralik_baslangici(tokenlar, iki_nokta + 1, son - 1)
+    bitis_son olsun duzenli_aralik_sonu(tokenlar, bitis_ilk, son - 1)
+    eğer bitis_ilk küçük bitis_son ise:
         altlar.ekle(alt_ifade_ozeti(tokenlar, iki_nokta + 1, son - 1))
     döndür altlar
 
@@ -1129,8 +1133,12 @@ işlev dilim_sinir_varligi(tokenlar, baslangic, son):
     iki_nokta olsun aralikta_deger_konumu(tokenlar, koseli_konum + 1, son - 1, ":")
     eğer iki_nokta küçük 0 ise:
         döndür sonuc
-    sonuc["baslangic_var"] = koseli_konum + 1 küçük iki_nokta
-    sonuc["bitis_var"] = iki_nokta + 1 küçük son - 1
+    baslangic_ilk olsun duzenli_aralik_baslangici(tokenlar, koseli_konum + 1, iki_nokta)
+    baslangic_son olsun duzenli_aralik_sonu(tokenlar, baslangic_ilk, iki_nokta)
+    bitis_ilk olsun duzenli_aralik_baslangici(tokenlar, iki_nokta + 1, son - 1)
+    bitis_son olsun duzenli_aralik_sonu(tokenlar, bitis_ilk, son - 1)
+    sonuc["baslangic_var"] = baslangic_ilk küçük baslangic_son
+    sonuc["bitis_var"] = bitis_ilk küçük bitis_son
     döndür sonuc
 
 işlev guvenli_alan_altlari(tokenlar, baslangic, son):

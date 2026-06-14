@@ -112,6 +112,8 @@ These percentages are planning estimates, not promises.
   commas, plus multiline parenthesized expressions.
 - Multiline named, method, anonymous, and external-function parameter lists
   with optional trailing commas and multiline default values.
+- Multiline index and slice access with matching interpreter, VM, and
+  Orhun-written parser/compiler behavior.
 - Consistent `sistem.argumanlar` program arguments across direct VM,
   interpreter, OBC, packaged executable, and bootstrap execution paths.
 - Interpreter/VM parity covers modulo arithmetic and in-place

@@ -155,6 +155,8 @@
 - Normal, metot, anonim ve dış işlev parametre listeleri artık birden fazla
   satıra bölünebilir; son parametreden sonra virgül ve alt satırda başlayan
   varsayılan değer kullanılabilir.
+- İndeks ve dilim erişimleri artık köşeli parantez içinde birden fazla satıra
+  bölünebilir.
 
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri

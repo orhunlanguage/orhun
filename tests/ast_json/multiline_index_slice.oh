@@ -1,0 +1,25 @@
+# ast: Atama,Yazdir,Atama,Atama,Atama,Yazdir,Yazdir,Yazdir,Yazdir
+sayilar olsun [10, 20, 30, 40]
+
+yazdır sayilar[
+    2
+]
+
+orta olsun sayilar[
+    1:
+    3
+]
+
+ilk olsun sayilar[
+    :
+    2
+]
+
+son olsun sayilar[
+    2:
+]
+
+yazdır orta[0]
+yazdır orta[1]
+yazdır ilk[1]
+yazdır son[1]

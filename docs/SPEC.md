@@ -317,6 +317,15 @@ ayarlar olsun {
 }
 ```
 
+Index and slice access may also span multiple lines.
+
+```orhun
+orta olsun sayılar[
+    1:
+    3
+]
+```
+
 List comprehensions are supported.
 
 ```orhun
@@ -552,7 +561,7 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 150 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 151 successful AST
 fixtures and 62 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,
