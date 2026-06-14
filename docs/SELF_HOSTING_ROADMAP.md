@@ -58,10 +58,10 @@ Durum: aktif; lexer prototipi `orhun/lexer.oh` 0.3.0 ile `hata_sayisi`,
 `token_sayisi` ve `tokenlar` payload'i ureten `ozetle` giris noktasini sagliyor. Lexer parity
 7 basarili fixture, 3 hata fixture ve genis `tests/cases` token sweep
 seviyesine tasindi; non-ASCII fixture'larda UTF-8 kod noktasi tabanli satir/sutun
-parity saglandi. Parser prototipi 148 basarili AST
+parity saglandi. Parser prototipi 149 basarili AST
 fixture ve 62 hata fixture seviyesine tasindi.
 Recursive block summary parity ve recursive expression child parity basladi.
-`orhun/parser.oh` 0.7.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
+`orhun/parser.oh` 0.8.0 `Program` ve `Block` yapisal IR turlerini, parse sonuc
 hata/token/komut sayisini ve komut turlerini, ifade satirlarini
 ve alt ifade sayilarini, atama `bildirim` ve hedef
 ozetlerini, coklu atama hedeflerini ve hedef sayisini, islev basligi parametre/varsayilan
@@ -146,7 +146,7 @@ Compiler prototype smoke su anda 97 programda C++ bytecode ozetini birebir
 eslestirir. Bu kapsam buyuk closure, OOP, varsayilan metod argumani ve
 liste-ureteci/lambda/paralel-yap fixture'larini da dogrudan karsilastirir;
 desteklenmeyen yapilar icin acik hata bekler.
-Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 136
+Tum `tests/cases` derleyici sweep'i, C++ derleyicisinin kabul ettigi 137
 programin tamaminda Orhun derleyicisinin bytecode ozetini birebir eslestirdigini
 dogrular; C++ tarafindaki 2 bilincli hata fixture'i ayri izlenir.
 `orhun baytkod-yurut <dosya.json>` koprusu, Orhun derleyicisinin cozumlenmis

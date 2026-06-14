@@ -243,6 +243,17 @@ işlev topla(a, b):
 yazdır topla(2, 3)
 ```
 
+Function, method, and constructor calls may span multiple lines. Newlines and
+indentation inside the argument list are layout only, and a trailing comma
+before `)` is allowed. Parenthesized expressions may also span multiple lines.
+
+```orhun
+sonuc olsun topla(
+    2,
+    3,
+)
+```
+
 Default arguments are supported.
 
 ```orhun
@@ -528,7 +539,7 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 148 successful AST
+`tests/parser_prototype_smoke.py`. Current coverage includes 149 successful AST
 fixtures and 62 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,

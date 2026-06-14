@@ -149,6 +149,9 @@
   parametreden sonra gelen zorunlu parametreler yakalanır.
 - Liste ve sözlük literalleri artık birden fazla satıra bölünebilir ve kapanış
   işaretinden önce son virgül kullanabilir.
+- İşlev, metot ve kurucu çağrıları artık birden fazla satıra bölünebilir ve
+  kapanış parantezinden önce son virgül kullanabilir. Parantezli ifadelerdeki
+  satır sonları ve girintiler de düzen olarak değerlendirilir.
 
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri

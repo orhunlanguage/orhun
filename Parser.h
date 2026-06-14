@@ -74,7 +74,7 @@ private:
                           const std::string &hataMesaji);
 
   void yeniSatirlariAtla();
-  void koleksiyonDuzeniniAtla(std::size_t &girintiDerinligi);
+  void ayracDuzeniniAtla(std::size_t &girintiDerinligi);
   bool ifadeBaslangiciMi(const OrhunToken &token) const;
 
   [[noreturn]] void syntaxError(const OrhunToken &token,

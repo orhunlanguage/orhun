@@ -1,0 +1,31 @@
+işlev topla(a, b):
+    döndür a + b
+
+tip Kutu:
+    işlev kur(deger):
+        benim.deger olsun deger
+
+    işlev oku():
+        döndür benim.deger
+
+sonuc olsun topla(
+    2,
+    3,
+)
+
+kutu olsun yeni Kutu(
+    sonuc,
+)
+
+parantezli olsun (
+    sonuc + 1
+)
+
+yazdır sonuc
+yazdır parantezli
+yazdır kutu.oku(
+)
+yazdır topla(
+    4,
+    5,
+)

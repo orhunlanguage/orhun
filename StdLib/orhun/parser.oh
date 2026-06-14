@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.7.0"
+surum olsun "0.8.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -311,7 +311,7 @@ işlev sonuc_hata(mesaj, token, token_sayisi):
     döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "tur": "", "satir": token.satir, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
 
 işlev baslik_hata_tokeni(tokenlar, konum, mesaj):
-    eğer mesaj eşit "Liste ifadesinin sonunda ']' bekleniyor." veya mesaj eşit "Liste üretecinin sonunda ']' bekleniyor." veya mesaj eşit "Sözlük ifadesinin sonunda '}' bekleniyor." ise:
+    eğer mesaj eşit "Liste ifadesinin sonunda ']' bekleniyor." veya mesaj eşit "Liste üretecinin sonunda ']' bekleniyor." veya mesaj eşit "Sözlük ifadesinin sonunda '}' bekleniyor." veya mesaj eşit "Argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Kurucu argüman listesinin sonunda ')' bekleniyor." veya mesaj eşit "Parantezli ifade kapanırken ')' bekleniyor." ise:
         döndür guvenli_token(tokenlar, satir_sonu_indeksi(tokenlar, konum))
     döndür guvenli_token(tokenlar, konum)
 

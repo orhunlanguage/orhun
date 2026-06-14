@@ -108,6 +108,8 @@ These percentages are planning estimates, not promises.
   reserving those words as keywords.
 - Multiline list and dictionary literals with optional trailing commas,
   including matching Orhun-written parser/compiler parity.
+- Multiline function, method, and constructor calls with optional trailing
+  commas, plus multiline parenthesized expressions.
 - Consistent `sistem.argumanlar` program arguments across direct VM,
   interpreter, OBC, packaged executable, and bootstrap execution paths.
 - Interpreter/VM parity covers modulo arithmetic and in-place
