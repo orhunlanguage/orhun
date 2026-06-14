@@ -20,7 +20,7 @@ mkdir -p "$(dirname "${JSON_OUT}")"
 
 if [[ ! -f "${OUTPUT}" ]]; then
   echo "[build] ${OUTPUT} bulunamadi, derleniyor..."
-  "${COMPILER}" -std=c++17 -Wall -Wextra -pedantic \
+  "${COMPILER}" -std=c++17 -O2 -DNDEBUG -Wall -Wextra -pedantic \
     main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp \
     -o "${OUTPUT}"
 fi

@@ -5,8 +5,13 @@ on:
     branches: ["master", "main"]
   pull_request:
 
+concurrency:
+  group: orhun-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -451,14 +456,6 @@ jobs:
         shell: pwsh
         run: py -3 tests/fuzz_smoke.py .\build\orhun_test.exe --count 80 --seed 2026 --timeout 2.5 --profile advanced
 
-      - name: Bench snapshot (Linux)
-        if: runner.os == 'Linux'
-        run: bash tests/benchmark.sh g++ build/orhun_bench 5 build/benchmark_results.jsonl "" 0 0 runtime 1
-
-      - name: Bench snapshot (macOS)
-        if: runner.os == 'macOS'
-        run: bash tests/benchmark.sh clang++ build/orhun_bench 5 build/benchmark_results.jsonl "" 0 0 runtime 1
-
       - name: Coverage report (Linux)
         if: runner.os == 'Linux'
         run: bash tests/coverage.sh g++ build/orhun_cov coverage
@@ -505,6 +502,7 @@ jobs:
 
   linux-sanitizers:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -528,6 +526,7 @@ jobs:
 
   static-analysis:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v5

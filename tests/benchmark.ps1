@@ -33,7 +33,7 @@ if ($jsonDir -and !(Test-Path $jsonDir)) {
 
 if (!(Test-Path $Output)) {
     Write-Host "[build] $Output bulunamadi, derleniyor..."
-    & $Compiler -std=c++17 -Wall -Wextra -pedantic `
+    & $Compiler -std=c++17 -O2 -DNDEBUG -Wall -Wextra -pedantic `
         main.cpp Lexer.cpp Parser.cpp Interpreter.cpp Chunk.cpp Compiler.cpp VM.cpp `
         -o $Output
 }

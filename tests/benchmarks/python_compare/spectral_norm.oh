@@ -44,9 +44,10 @@ işlev carp_AtA(v):
 
 işlev spectral_norm(n):
     u olsun vektor_olustur(n, 1.0)
+    v olsun vektor_olustur(n, 0.0)
     k olsun 0
     sürece k küçük 10:
-        v olsun carp_AtA(u)
+        v = carp_AtA(u)
         u = carp_AtA(v)
         k = k + 1
 

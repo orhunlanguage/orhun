@@ -13,7 +13,7 @@ işlev matris_olustur(n, d):
 
 işlev matris_carp(a, b):
     n olsun uzunluk(a)
-    c olsun matris_olustur(n, 0)
+    checksum olsun 0
     i olsun 0
     sürece i küçük n:
         j olsun 0
@@ -23,13 +23,13 @@ işlev matris_carp(a, b):
             sürece k küçük n:
                 toplam = toplam + a[i][k] * b[k][j]
                 k = k + 1
-            c[i][j] = toplam
+            checksum = checksum + toplam
             j = j + 1
         i = i + 1
-    döndür c
+    döndür checksum
 
 boyut olsun 50
 a olsun matris_olustur(boyut, 2)
 b olsun matris_olustur(boyut, 3)
 sonuc olsun matris_carp(a, b)
-yazdır sonuc[0][0]
+yazdır sonuc
