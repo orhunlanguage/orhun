@@ -1,4 +1,4 @@
-# ast-error
+# ast: Atama,Atama,Atama,Yazdir,Yazdir
 islemler olsun {
     "iki_kat": işlev(x): x * 2,
     "uc_kat": işlev(x): x * 3

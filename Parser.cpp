@@ -852,24 +852,29 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
 
   if (eslesir(TokenTuru::ISLEM, "[")) {
     const OrhunToken token = onceki();
+    std::size_t girintiDerinligi = 0;
+    koleksiyonDuzeniniAtla(girintiDerinligi);
     if (eslesir(TokenTuru::ISLEM, "]")) {
       return std::make_unique<ListeNode>(
           std::vector<std::unique_ptr<ASTNode>>{}, token.satir);
     }
 
     std::unique_ptr<ASTNode> ilkIfade = parseIfade();
+    koleksiyonDuzeniniAtla(girintiDerinligi);
     if (eslesir(TokenTuru::ANAHTAR_KELIME, "için")) {
       const OrhunToken degisken = tuket(
           TokenTuru::KIMLIK, "Liste üretecinde döngü değişkeni bekleniyor.");
       tuket(TokenTuru::ANAHTAR_KELIME, "içinde",
             "Liste üretecinde 'içinde' anahtar kelimesi bekleniyor.");
       std::unique_ptr<ASTNode> kaynakListe = parseIfade();
+      koleksiyonDuzeniniAtla(girintiDerinligi);
 
       std::unique_ptr<ASTNode> kosul;
       if (eslesir(TokenTuru::ANAHTAR_KELIME, "eğer")) {
         kosul = parseIfade();
       }
 
+      koleksiyonDuzeniniAtla(girintiDerinligi);
       tuket(TokenTuru::ISLEM, "]", "Liste üretecinin sonunda ']' bekleniyor.");
       return std::make_unique<ListeUretecNode>(
           std::move(ilkIfade), degisken.deger, std::move(kaynakListe),
@@ -879,7 +884,12 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
     std::vector<std::unique_ptr<ASTNode>> ogeler;
     ogeler.push_back(std::move(ilkIfade));
     while (eslesir(TokenTuru::ISLEM, ",")) {
+      koleksiyonDuzeniniAtla(girintiDerinligi);
+      if (kontrol(TokenTuru::ISLEM, "]")) {
+        break;
+      }
       ogeler.push_back(parseIfade());
+      koleksiyonDuzeniniAtla(girintiDerinligi);
     }
     tuket(TokenTuru::ISLEM, "]", "Liste ifadesinin sonunda ']' bekleniyor.");
     return std::make_unique<ListeNode>(std::move(ogeler), token.satir);
@@ -888,6 +898,8 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
   if (eslesir(TokenTuru::ISLEM, "{")) {
     const OrhunToken token = onceki();
     std::vector<SozlukNode::OgeTipi> ogeler;
+    std::size_t girintiDerinligi = 0;
+    koleksiyonDuzeniniAtla(girintiDerinligi);
 
     if (!kontrol(TokenTuru::ISLEM, "}")) {
       while (true) {
@@ -896,8 +908,13 @@ std::unique_ptr<ASTNode> Parser::parseBirincil() {
               "Sözlükte anahtardan sonra ':' bekleniyor.");
         std::unique_ptr<ASTNode> deger = parseIfade();
         ogeler.push_back({anahtar, std::move(deger)});
+        koleksiyonDuzeniniAtla(girintiDerinligi);
 
         if (!eslesir(TokenTuru::ISLEM, ",")) {
+          break;
+        }
+        koleksiyonDuzeniniAtla(girintiDerinligi);
+        if (kontrol(TokenTuru::ISLEM, "}")) {
           break;
         }
       }
@@ -1005,6 +1022,23 @@ const OrhunToken &Parser::tuket(TokenTuru tur, const std::string &deger,
 void Parser::yeniSatirlariAtla() {
   while (eslesir(TokenTuru::YENI_SATIR)) {
     // Bilerek boş.
+  }
+}
+
+void Parser::koleksiyonDuzeniniAtla(std::size_t &girintiDerinligi) {
+  while (true) {
+    if (eslesir(TokenTuru::YENI_SATIR)) {
+      continue;
+    }
+    if (eslesir(TokenTuru::GIRINTI)) {
+      ++girintiDerinligi;
+      continue;
+    }
+    if (girintiDerinligi > 0 && eslesir(TokenTuru::CIKINTI)) {
+      --girintiDerinligi;
+      continue;
+    }
+    break;
   }
 }
 

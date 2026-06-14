@@ -9,7 +9,6 @@ from compiler_prototype_smoke import parse_last_json, prototype_payload, require
 EXPECTED_CXX_FAILURES = {
     "default_args_non_trailing_error.oh",
     "error_parser_typo_keyword.oh",
-    "lambda_in_dict.oh",
 }
 
 

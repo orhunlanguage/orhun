@@ -1,0 +1,22 @@
+ayarlar olsun {
+    "ad": "orhun",
+    "sayilar": [
+        1,
+        2,
+        3,
+    ],
+    "ic": {
+        "aktif": doğru,
+    },
+}
+
+yazdır ayarlar.ad
+yazdır ayarlar.sayilar[2]
+yazdır ayarlar.ic.aktif
+
+eğer doğru ise:
+    degerler olsun [
+        4,
+        5,
+    ]
+    yazdır degerler[1]

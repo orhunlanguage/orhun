@@ -279,6 +279,20 @@ yazdır kullanıcı.ad
 yazdır kullanıcı["ad"]
 ```
 
+List and dictionary literals may span multiple lines. Newlines and indentation
+inside the literal are layout only, and a trailing comma before `]` or `}` is
+allowed.
+
+```orhun
+ayarlar olsun {
+    "ad": "orhun",
+    "portlar": [
+        8080,
+        8081,
+    ],
+}
+```
+
 List comprehensions are supported.
 
 ```orhun
@@ -514,8 +528,8 @@ children, assignment metadata, total child-block counts, child block line
 numbers and command counts, recursive child block command summaries, and result command kinds,
 command/error and token counts, then compares them
 against the C++ parser AST through
-`tests/parser_prototype_smoke.py`. Current coverage includes 142 successful AST
-fixtures and 63 parser error fixtures. Command metadata covers declaration
+`tests/parser_prototype_smoke.py`. Current coverage includes 148 successful AST
+fixtures and 62 parser error fixtures. Command metadata covers declaration
 assignment forms, assignment targets, multiple-assignment targets/counts,
 function/class/external-function headers, class parent presence,
 parameter/default counts, external-function type counts, includes,
@@ -530,9 +544,8 @@ missing `kez`, missing control-flow conditions/counts,
 missing assignment/return expression operands, required header names/colons,
 malformed external-function, `deneme/yakala`, anonymous-function, `yeni`,
 postfix, safe-access, collection/list-comprehension, and `paralel yap`
-expressions, unknown command typos such as `yzdır 1`,
-non-trailing required parameters after default values, and multiline dictionary
-key errors. Those error fixtures also compare the reported line, expected-token
+expressions, unknown command typos such as `yzdır 1`, and non-trailing required
+parameters after default values. Those error fixtures also compare the reported line, expected-token
 hint, unknown command name, and typo suggestion against the C++ parser. It is
 not yet the production parser.
 

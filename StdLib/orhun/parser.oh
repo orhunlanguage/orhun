@@ -6,7 +6,7 @@
 
 lexer olsun dahil_et "orhun/lexer.oh"
 
-surum olsun "0.6.0"
+surum olsun "0.7.0"
 
 işlev bos_ifade_ozeti():
     döndür {"tur": "", "satir": 0, "op": "", "ayrinti": "", "alt_sayisi": 0, "altlar": []}
@@ -310,6 +310,11 @@ işlev sonuc_ok(komutlar, token_sayisi, satir):
 işlev sonuc_hata(mesaj, token, token_sayisi):
     döndür {"ok": yanlış, "hata": {"mesaj": mesaj, "satir": token.satir, "sutun": token.sutun}, "hata_sayisi": 1, "tur": "", "satir": token.satir, "token_sayisi": token_sayisi, "komut_sayisi": 0, "komut_turleri": [], "komutlar": []}
 
+işlev baslik_hata_tokeni(tokenlar, konum, mesaj):
+    eğer mesaj eşit "Liste ifadesinin sonunda ']' bekleniyor." veya mesaj eşit "Liste üretecinin sonunda ']' bekleniyor." veya mesaj eşit "Sözlük ifadesinin sonunda '}' bekleniyor." ise:
+        döndür guvenli_token(tokenlar, satir_sonu_indeksi(tokenlar, konum))
+    döndür guvenli_token(tokenlar, konum)
+
 işlev token_yok():
     döndür {"tur": "DOSYA_SONU", "deger": "", "satir": 0, "sutun": 0}
 
@@ -322,17 +327,22 @@ işlev satir_sonu_mu(token):
     döndür token.tur eşit "YENI_SATIR" veya token.tur eşit "DOSYA_SONU"
 
 işlev satir_sonuna_git(tokenlar, konum):
-    i olsun konum
-    sürece i küçük uzunluk(tokenlar):
-        eğer satir_sonu_mu(tokenlar[i]) ise:
-            döndür i + 1
-        i olsun i + 1
-    döndür i
+    son olsun satir_sonu_indeksi(tokenlar, konum)
+    eğer son küçük uzunluk(tokenlar) ise:
+        döndür son + 1
+    döndür son
 
 işlev satir_sonu_indeksi(tokenlar, konum):
     i olsun konum
+    ayrac_derinligi olsun 0
     sürece i küçük uzunluk(tokenlar):
-        eğer satir_sonu_mu(tokenlar[i]) ise:
+        token olsun tokenlar[i]
+        eğer acilis_islemi_mi(token) ise:
+            ayrac_derinligi olsun ayrac_derinligi + 1
+        değilse:
+            eğer kapanis_islemi_mi(token) ve ayrac_derinligi büyük 0 ise:
+                ayrac_derinligi olsun ayrac_derinligi - 1
+        eğer token.tur eşit "DOSYA_SONU" veya (token.tur eşit "YENI_SATIR" ve ayrac_derinligi eşit 0) ise:
             döndür i
         i olsun i + 1
     döndür i
@@ -930,8 +940,27 @@ işlev ifade_satiri(tokenlar, baslangic, son, tur):
             konum olsun soru_konumu
     döndür guvenli_token(tokenlar, konum).satir
 
+işlev koleksiyon_duzen_tokeni_mi(token):
+    döndür token.tur eşit "YENI_SATIR" veya token.tur eşit "GIRINTI" veya token.tur eşit "CIKINTI"
+
+işlev duzenli_aralik_baslangici(tokenlar, baslangic, son):
+    i olsun baslangic
+    sürece i küçük son ve koleksiyon_duzen_tokeni_mi(guvenli_token(tokenlar, i)):
+        i olsun i + 1
+    döndür i
+
+işlev duzenli_aralik_sonu(tokenlar, baslangic, son):
+    i olsun son
+    sürece i büyük baslangic ve koleksiyon_duzen_tokeni_mi(guvenli_token(tokenlar, i - 1)):
+        i olsun i - 1
+    döndür i
+
 işlev alt_ifade_ozeti(tokenlar, baslangic, son):
-    döndür ifade_ozeti(tokenlar, baslangic, son)
+    duzenli_baslangic olsun duzenli_aralik_baslangici(tokenlar, baslangic, son)
+    duzenli_son olsun duzenli_aralik_sonu(tokenlar, duzenli_baslangic, son)
+    eğer duzenli_baslangic büyük duzenli_son - 1 ise:
+        döndür bos_ifade_ozeti()
+    döndür ifade_ozeti(tokenlar, duzenli_baslangic, duzenli_son)
 
 işlev aralik_altlari(tokenlar, baslangic, son, ayirici):
     altlar olsun []
@@ -949,12 +978,16 @@ işlev aralik_altlari(tokenlar, baslangic, son, ayirici):
                     derinlik olsun 0
             değilse:
                 eğer derinlik eşit 0 ve token.tur eşit "ISLEM" ve token.deger eşit ayirici ise:
-                    eğer parca_baslangic küçük i ise:
+                    duzenli_baslangic olsun duzenli_aralik_baslangici(tokenlar, parca_baslangic, i)
+                    duzenli_son olsun duzenli_aralik_sonu(tokenlar, duzenli_baslangic, i)
+                    eğer duzenli_baslangic küçük duzenli_son ise:
                         altlar.ekle(alt_ifade_ozeti(tokenlar, parca_baslangic, i))
                     parca_baslangic olsun i + 1
         i olsun i + 1
 
-    eğer parca_baslangic küçük son ise:
+    duzenli_baslangic olsun duzenli_aralik_baslangici(tokenlar, parca_baslangic, son)
+    duzenli_son olsun duzenli_aralik_sonu(tokenlar, duzenli_baslangic, son)
+    eğer duzenli_baslangic küçük duzenli_son ise:
         altlar.ekle(alt_ifade_ozeti(tokenlar, parca_baslangic, son))
     döndür altlar
 
@@ -1415,16 +1448,6 @@ işlev islev_parametre_sirasi_hatasi(tokenlar, konum):
         i olsun i + 1
     döndür ""
 
-işlev cok_satirli_sozluk_hatasi(tokenlar, konum):
-    baslangic olsun atama_ifade_baslangici(tokenlar, konum)
-    eğer baslangic küçük 0 ise:
-        baslangic olsun konum
-    ilk olsun guvenli_token(tokenlar, baslangic)
-    sonraki olsun guvenli_token(tokenlar, baslangic + 1)
-    eğer ilk.tur eşit "ISLEM" ve ilk.deger eşit "{" ve satir_sonu_mu(sonraki) ise:
-        döndür "Sözlük anahtarı bekleniyor (kimlik veya metin)."
-    döndür ""
-
 işlev paralel_yap_hatasi(tokenlar, konum):
     i olsun konum
     sürece i küçük uzunluk(tokenlar):
@@ -1797,9 +1820,6 @@ işlev baslik_hatasi(tokenlar, konum):
     paralel_hata olsun paralel_yap_hatasi(tokenlar, konum)
     eğer uzunluk(paralel_hata) büyük 0 ise:
         döndür paralel_hata
-    sozluk_hata olsun cok_satirli_sozluk_hatasi(tokenlar, konum)
-    eğer uzunluk(sozluk_hata) büyük 0 ise:
-        döndür sozluk_hata
     döndür ""
 
 işlev blok_ozeti(tokenlar, konum, satir):
@@ -1933,7 +1953,7 @@ işlev ozetle_tokenlar(tokenlar):
                         değilse:
                             baslik_hata olsun baslik_hatasi(tokenlar, i)
                             eğer uzunluk(baslik_hata) büyük 0 ise:
-                                döndür sonuc_hata(baslik_hata, token, token_sayisi)
+                                döndür sonuc_hata(baslik_hata, baslik_hata_tokeni(tokenlar, i, baslik_hata), token_sayisi)
                             deneme_hata olsun deneme_yakala_hatasi(tokenlar, i)
                             eğer uzunluk(deneme_hata.mesaj) büyük 0 ise:
                                 döndür sonuc_hata(deneme_hata.mesaj, deneme_hata.token, token_sayisi)

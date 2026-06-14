@@ -106,6 +106,8 @@ These percentages are planning estimates, not promises.
 - Beginner-friendly `yaz` print alias, `oku` input alias, global
   `aralik`/`aralık` range helper, and simple collection helpers without
   reserving those words as keywords.
+- Multiline list and dictionary literals with optional trailing commas,
+  including matching Orhun-written parser/compiler parity.
 - Consistent `sistem.argumanlar` program arguments across direct VM,
   interpreter, OBC, packaged executable, and bootstrap execution paths.
 - Interpreter/VM parity covers modulo arithmetic and in-place

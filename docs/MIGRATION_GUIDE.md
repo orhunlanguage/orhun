@@ -146,8 +146,9 @@
   `parse --json` AST çıktısıyla fixture bazında karşılaştırılır.
 - Hata eşleşmeleri olarak `eğer`, `sürece`, `tekrarla`, `işlev`, `tip` ve
   `deneme` başlıklarındaki eksikler, tanınmayan komutlar, varsayılan
-  parametreden sonra gelen zorunlu parametreler ve çok satırlı sözlük anahtarı
-  hataları yakalanır.
+  parametreden sonra gelen zorunlu parametreler yakalanır.
+- Liste ve sözlük literalleri artık birden fazla satıra bölünebilir ve kapanış
+  işaretinden önce son virgül kullanabilir.
 
 ## 13. Closure Capture
 - Döndürülen iç içe işlevler ve anonim işlevler artık dış yerel değişkenleri
