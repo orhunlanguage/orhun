@@ -6,7 +6,7 @@
 
 parser olsun dahil_et "orhun/parser.oh"
 
-surum olsun "0.25.0"
+surum olsun "0.26.0"
 
 işlev durum_yeni():
     döndür {"ip": 0, "komutlar": [], "sabitler": [], "hata": "", "islev_derinligi": 0, "yereller": [], "donguler": [], "gecici_sayac": 0}
@@ -545,6 +545,32 @@ işlev ifade_derle(durum, ifade):
             döndür 0
         eğer uzunluk(ifade.altlar) eşit_değil 2 ise:
             hata_ayarla(durum, "Ikili islem iki alt ifade bekliyor.")
+            döndür 0
+        eğer ifade.op eşit "ve" ise:
+            ifade_derle(durum, ifade.altlar[0])
+            sol_yanlis_atlama olsun atlama_ekle(durum, "OP_ATLA_EGER_YANLIS", ifade.satir)
+            komut_ekle(durum, "OP_POP", ifade.satir)
+            ifade_derle(durum, ifade.altlar[1])
+            komut_ekle(durum, "OP_DOGRU", ifade.satir)
+            komut_ekle(durum, "OP_VE", ifade.satir)
+            son_atlama olsun atlama_ekle(durum, "OP_ATLA", ifade.satir)
+            atlama_yamala(durum, sol_yanlis_atlama)
+            komut_ekle(durum, "OP_POP", ifade.satir)
+            komut_ekle(durum, "OP_YANLIS", ifade.satir)
+            atlama_yamala(durum, son_atlama)
+            döndür 0
+        eğer ifade.op eşit "veya" ise:
+            ifade_derle(durum, ifade.altlar[0])
+            sag_tarafa_atla olsun atlama_ekle(durum, "OP_ATLA_EGER_YANLIS", ifade.satir)
+            komut_ekle(durum, "OP_POP", ifade.satir)
+            komut_ekle(durum, "OP_DOGRU", ifade.satir)
+            son_atlama olsun atlama_ekle(durum, "OP_ATLA", ifade.satir)
+            atlama_yamala(durum, sag_tarafa_atla)
+            komut_ekle(durum, "OP_POP", ifade.satir)
+            ifade_derle(durum, ifade.altlar[1])
+            komut_ekle(durum, "OP_YANLIS", ifade.satir)
+            komut_ekle(durum, "OP_VEYA", ifade.satir)
+            atlama_yamala(durum, son_atlama)
             döndür 0
         ifade_derle(durum, ifade.altlar[0])
         ifade_derle(durum, ifade.altlar[1])

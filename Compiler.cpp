@@ -555,6 +555,38 @@ void Compiler::ifadeDerle(const ASTNode *dugum) {
       }
     }
 
+    if (opEsitMi(op, "ve")) {
+      ifadeDerle(ikili->sol());
+      const std::size_t solYanlisaAtla =
+          atlaYaz(OpCode::OP_ATLA_EGER_YANLIS, ikili->satir());
+      opcodeYaz(OpCode::OP_POP, ikili->satir());
+      ifadeDerle(ikili->sag());
+      opcodeYaz(OpCode::OP_DOGRU, ikili->satir());
+      opcodeYaz(OpCode::OP_VE, ikili->satir());
+      const std::size_t sonaAtla = atlaYaz(OpCode::OP_ATLA, ikili->satir());
+      atlaYamala(solYanlisaAtla);
+      opcodeYaz(OpCode::OP_POP, ikili->satir());
+      opcodeYaz(OpCode::OP_YANLIS, ikili->satir());
+      atlaYamala(sonaAtla);
+      return;
+    }
+
+    if (opEsitMi(op, "veya")) {
+      ifadeDerle(ikili->sol());
+      const std::size_t sagTarafaAtla =
+          atlaYaz(OpCode::OP_ATLA_EGER_YANLIS, ikili->satir());
+      opcodeYaz(OpCode::OP_POP, ikili->satir());
+      opcodeYaz(OpCode::OP_DOGRU, ikili->satir());
+      const std::size_t sonaAtla = atlaYaz(OpCode::OP_ATLA, ikili->satir());
+      atlaYamala(sagTarafaAtla);
+      opcodeYaz(OpCode::OP_POP, ikili->satir());
+      ifadeDerle(ikili->sag());
+      opcodeYaz(OpCode::OP_YANLIS, ikili->satir());
+      opcodeYaz(OpCode::OP_VEYA, ikili->satir());
+      atlaYamala(sonaAtla);
+      return;
+    }
+
     ifadeDerle(ikili->sol());
     ifadeDerle(ikili->sag());
 
@@ -606,15 +638,6 @@ void Compiler::ifadeDerle(const ASTNode *dugum) {
       opcodeYaz(OpCode::OP_NOT, ikili->satir());
       return;
     }
-    if (opEsitMi(op, "ve")) {
-      opcodeYaz(OpCode::OP_VE, ikili->satir());
-      return;
-    }
-    if (opEsitMi(op, "veya")) {
-      opcodeYaz(OpCode::OP_VEYA, ikili->satir());
-      return;
-    }
-
     derlemeHatasi(ikili->satir(),
                   "Desteklenmeyen ikili operator: '" + ikili->op() + "'.");
   }

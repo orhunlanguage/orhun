@@ -103,10 +103,11 @@ Basari olcutu:
 
 Durum: aktif; C++ derleyici ciktisini artifact uretmeden cozumleyen
 `orhun baytkod <dosya.oh> --json` parity yuzeyi ve sozlesme smoke testi
-hazirlandi. `orhun/derleyici.oh` 0.25.0; sabitler, bicimlendirilmis metinler,
+hazirlandi. `orhun/derleyici.oh` 0.26.0; sabitler, bicimlendirilmis metinler,
 global kimlik okuma/atama,
 temel ikili/tekli islemler, liste/sozluk literal'leri, basit global islev
-cagrilari, indeks/alan/guvenli alan okumalari, `eger/degilse`, basit `surece`
+cagrilari, kisa devreli `ve`/`veya`, indeks/alan/guvenli alan okumalari,
+`eger/degilse`, basit `surece`
 ve `tekrarla` donguleri ve `yazdir` icin opcode, operand, IP, kaynak satiri ve
 sabit havuzu parity'si uretiyor.
 Zorunlu/varsayilan parametreli islev tanimlari, yerel tanim/okuma/yazma, acik/ortuk donus ve

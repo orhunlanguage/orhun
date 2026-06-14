@@ -1,0 +1,9 @@
+yanlis_sonuc olsun yanlış
+dogru_sonuc olsun doğru
+
+yazdır yanlis_sonuc ve (1 / 0)
+yazdır dogru_sonuc veya (1 / 0)
+yazdır dogru_sonuc ve 5
+yazdır yanlis_sonuc veya 5
+yazdır dogru_sonuc ve 0
+yazdır yanlis_sonuc veya 0

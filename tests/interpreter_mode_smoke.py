@@ -22,6 +22,7 @@ def main() -> int:
         "assignment_equals_scope",
         "listeye_ekle_parity",
         "modulo_parity",
+        "short_circuit_parity",
         "utf8_check",
     )
     for fixture in fixtures:

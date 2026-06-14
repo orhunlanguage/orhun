@@ -144,8 +144,9 @@ a, b olsun [1, 2]
 
 Arithmetic operators are `+`, `-`, `*`, `/`, and `%`. Modulo uses the same
 zero-divisor error contract in the interpreter and VM. `ve` and `veya` are
-short-circuit boolean operators in the interpreter; VM short-circuit parity is
-still being stabilized.
+short-circuit boolean operators in both runtimes. They return normalized boolean
+results and do not evaluate the right operand when the left operand determines
+the result.
 
 ## Printing
 
